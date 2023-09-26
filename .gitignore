@@ -1,0 +1,16 @@
+.DS_STORE
+__pycache__/
+tmp
+tmp*
+
+*.zip
+*.npy
+*.tif
+*.png
+*.cpg
+*.dbf
+*.prj
+*.qmd
+*.shp
+*.shz
+*.nc
