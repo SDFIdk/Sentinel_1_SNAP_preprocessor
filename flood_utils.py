@@ -1,20 +1,20 @@
 import zipfile
-from osgeo import gdal, ogr
-import xml.etree.ElementTree as ET
+from osgeo import gdal
+# import xml.etree.ElementTree as ET
 import os
 import sys
 import geopandas as gpd
 import numpy as np
 import rasterio as rio
-from rasterio.mask import mask
-from rasterio.windows import Window
-from rasterio.transform import from_origin
+# from rasterio.mask import mask
+# from rasterio.windows import Window
+# from rasterio.transform import from_origin
 from pathlib import Path
 import glob
 import shutil
 import uuid
 import pyproj
-import xarray as xr
+import pickle
 
 class Utils(object):
 
@@ -31,6 +31,34 @@ class Utils(object):
         print('Error Number: %s' % (err_num))
         print('Error Type: %s' % (err_class))
         print('Error Message: %s' % (err_msg))
+        
+
+    def check_pkl_file(input_dir):
+        pkl_file = Utils.file_list_from_dir('' + '*.pkl')
+        if not pkl_file:
+            print('## No mean data found for SAR2SAR!')
+            sys.exit()
+
+        with open(pkl_file, 'rb') as f:
+            mean_dict = pickle.load(f)
+
+        input_files = Utils.file_list_from_dir(input_dir + '*.tif')
+        input_files = [os.path.splitext(file)[0][:-3] for file in input_files]
+        input_files = list(set(input_files))
+
+        if not len(input_files) == len(mean_dict) / 2:
+            print('# Mismatch in input file amount and mean data amount! Files may be missing!')
+            print(f'# {len(input_files)} files in input')
+            print(f'# {len(mean_dict) / 2} * 2 lines of data available')
+            print(f'# Ensure mean data extractor has been running on same SAFE files as has been input')
+            terminator  = 'a'
+
+        for filename in mean_dict:
+            if not filename in input_files:
+                print(f'# {filename} not present in list!')
+                terminator = 'a'
+            if 'terminator' in locals(): sys.exit()
+        return
 
 
     def file_list_from_dir(directory, extension, accept_no_files = False):
@@ -132,155 +160,6 @@ class Utils(object):
         shutil.move(output, dataset)
 
     
-    def shape_to_crs(shape, crs, output_dir):
-        gdf = gpd.read_file(shape)
-
-        gdf_warp = gdf.to_crs(epsg=crs[5:])
-
-        output_shape = output_dir + 'new_' + os.path.basename(shape)
-        gdf_warp.to_file(output_shape)
-
-        return output_shape
-
-
-    def clip_to_256(geotiff_path, shape, tmp_dir, crs):
-
-        ds = ogr.Open(shape)
-        layer = ds.GetLayer()
-        extent = layer.GetExtent()
-        minX, maxX, minY, maxY = extent
-
-        maxX = maxX + 2560
-        maxY = maxY + 2560
-        nodata_value = -9999
-
-        src = gdal.Open(geotiff_path, gdal.GA_ReadOnly)
-
-        warp_options = gdal.WarpOptions(
-            outputBounds=[minX, minY, maxX, maxY], 
-            cutlineDSName=shape, 
-            cropToCutline=True, 
-            dstNodata=nodata_value, 
-            srcSRS = 'EPSG:4326', 
-            dstSRS = 'EPSG:25832', 
-            resampleAlg=gdal.GRA_NearestNeighbour
-            )
-        
-        _ = gdal.Warp(tmp_dir + 'clipped_raster.tif', src, options=warp_options)
-
-        ds = None
-        src = None
-
-        with rio.open(tmp_dir + 'clipped_raster.tif') as src:
-
-            new_width = (src.width // 256) * 256
-            new_height = (src.height // 256) * 256
-
-            window = Window(0, 0, new_width, new_height)
-            clipped_data = src.read(window=window)
-            new_transform = src.window_transform(window)
-
-            with rio.open(tmp_dir + 'clipped_raster2.tif', 'w', 
-                       driver='GTiff', 
-                       height=new_height,
-                       width=new_width, 
-                       count=src.count,
-                       dtype=str(clipped_data.dtype),
-                       crs=crs,
-                       nodata = -9999,
-                       transform=new_transform
-                       ) as dst:
-                dst.write(clipped_data)
-
-        shutil.move(tmp_dir + 'clipped_raster2.tif', geotiff_path)
-    
-    
-    def convert_to_npy(input_folder, noisy_npy_folder):
-        Path(noisy_npy_folder).mkdir(exist_ok = True, parents = True)
-        input_data_list = Utils.file_list_from_dir(input_folder, '*.tif')
-        Path(noisy_npy_folder).mkdir(exist_ok = True)
-
-        print('## Converting to .npy...')
-        for i, data in enumerate(input_data_list):
-            print('# ' + str(i+1) + ' / ' + str(len(input_data_list)), end = '\r')
-            with rio.open(data, 'r') as ds:
-                nds = ds.read().squeeze()
-
-            savename = noisy_npy_folder + os.path.basename(data.replace('.tif', '.npy')) 
-
-            if os.path.exists(savename):
-                os.remove(savename)
-            np.save(savename, nds)
-            ds = None
-            nds = None
-
-        return noisy_npy_folder
-    
-    
-    def apply_mean_filter(geotiff_folder, output_folder):
-        import xarray as xr
-        from xrspatial.focal import mean as xrs_mean
-
-        input_file_list = Utils.file_list_from_dir(geotiff_folder, '*.tif')
-        Path(output_folder).mkdir(exist_ok = True, parents = True)
-        
-        for i, data in enumerate(input_file_list):
-            print('# ' + str(i+1) + ' / ' + str(len(input_file_list)), end = '\r')
-
-            xds = xr.open_dataset(data, engine = 'rasterio').to_array().squeeze()
-            xds = xrs_mean(xds)
-
-            savename = output_folder + os.path.basename(data).replace('.tif', '.npy')
-            np.save(savename, xds.to_numpy())
-            xds = None
-
-        return output_folder
-    
-
-    def recreate_geotiff(denoised_npy, original_geotiff_dir, denoise_tmp_output):
-        gdal.UseExceptions()
-        print('## Recreating geotiffs from .npy...')
-
-        npy_file_list = Utils.file_list_from_dir(denoised_npy, '*.npy')
-        Path(denoise_tmp_output + 'denoised_geotiffs').mkdir(exist_ok = True, parents = True)
-
-        for i, npy_file in enumerate(npy_file_list):
-            print('# ' + str(i+1) + ' / ' + str(len(npy_file_list)), end = '\r')            
-
-            original_geotiff_path = npy_file.replace('.npy', '.tif').replace('tmp/denoised_numpys', 'unfinished_geotiffs')
-            reconverted_geotiff_path = original_geotiff_path.replace('unfinished_geotiffs', 'tmp/denoised_geotiffs')
-
-            original_dataset = gdal.Open(original_geotiff_path)
-            if original_dataset is None:
-                print("## Failed to open original GeoTIFF")
-                continue
-
-            reconverted_array = np.load(npy_file)
-
-            driver = gdal.GetDriverByName("GTiff")
-            reconverted_dataset = driver.Create(
-                reconverted_geotiff_path,
-                reconverted_array.shape[1],
-                reconverted_array.shape[0],
-                original_dataset.RasterCount,
-                original_dataset.GetRasterBand(1).DataType
-            )
-
-            reconverted_dataset.SetProjection(original_dataset.GetProjection())
-            reconverted_dataset.SetGeoTransform(original_dataset.GetGeoTransform())
-
-            for band_index in range(original_dataset.RasterCount):
-                reconverted_band = reconverted_dataset.GetRasterBand(band_index + 1)
-                reconverted_band.WriteArray(reconverted_array)
-
-            original_dataset = None
-            reconverted_dataset = None
-
-            shutil.move(reconverted_geotiff_path, original_geotiff_path)
-
-        return original_geotiff_dir
-
-
     def create_sorted_outputs(output, polarization):
 
         output = output + 'sorted_denoised_geotiffs/'

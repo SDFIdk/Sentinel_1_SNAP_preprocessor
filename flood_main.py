@@ -1,5 +1,7 @@
 import sys
 from flood_preprocessing import Preprocessor
+from denoiser import Denoiser
+from clip_256 import Clipper
 
 if __name__== '__main__':
 
@@ -35,42 +37,38 @@ if __name__== '__main__':
 
     denoise_mode = 'SAR2SAR'
     # denoise_mode = 'mean'
-    # if 'SAR2SAR', script will use ML based denoising. Defaults to mean filter (3x3 window)
-
+    # if 'SAR2SAR', script will use ML based denoising.
+    # if 'SAR2SAR', self check will look for a .pkl file and check that it has relevant files.
+    
 # TODO option for FTP export
 
 preprocessor = Preprocessor(input_dir, output_dir)
+clipper = Clipper(output_dir)
+denoiser = Denoiser(output_dir)
 
-# preprocessor.self_check(crs, polarization, unit, denoise_mode)
+preprocessor.self_check(crs, polarization, unit, denoise_mode)
 # TODO check for checkpoint folder (SAR2SAR) 
     # SAR2SAR may need to be recreated entirely to comply with tf v2
 
-# preprocessor.convert_to_geotiff(polarization)
+preprocessor.convert_to_geotiff(polarization)
 
-# sys.exit()
+clipper.clip_to_256(shape, crs)
 
-preprocessor.clip_to_256(shape, crs)
+preprocessor.to_linear()
 
-# sys.exit()
+denoiser.select_denoiser(denoise_mode)
+# TODO fix (and locate) warnings about TF deprecations
+# BUG enable GPU properly
+#   tensorflow may need to be rewritten entirely
 
-# preprocessor.to_linear()
-
-# preprocessor.denoise(denoise_mode)
-# # TODO fix (and locate) warnings about TF deprecations
-# # BUG enable GPU properly
-# #   tensorflow may need to be rewritten entirely
-
-# preprocessor.to_db()
-
-# sys.exit()
+preprocessor.to_db()
 
 # preprocessor.warp_files_to_crs(crs)
 # TODO crate gdal options in Preprocessing without gdal. Pass string somehow? 
 #   import gdaloptions as gdalopts ? only imports single thing, should be more efficient
 
+preprocessor.realign_rasters()
 
-# preprocessor.realign_rasters()
+preprocessor.clip_to_256(shape)
 
-# preprocessor.clip_to_256(shape)
-
-# preprocessor.sort_output(polarization)
+preprocessor.sort_output(polarization)
