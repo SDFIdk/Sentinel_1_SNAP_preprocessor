@@ -2,7 +2,6 @@ from osgeo import gdal
 import sys
 import os
 from flood_utils import Utils
-from denoiser import denoiser
 
 class Preprocessor(object):
     def __init__(self, input_dir, output_dir):
@@ -20,7 +19,7 @@ class Preprocessor(object):
         gdal.UseExceptions()
 
 
-    def self_check(self, crs, polarization, unit, denoise_mode):
+    def self_check(self, crs, polarization, unit, denoise_mode, mean_dict):
     
         # if not unit in ['decibel', 'linear']:
         #     print('## Unit must be either linear or decibel')
@@ -29,8 +28,9 @@ class Preprocessor(object):
         if not denoise_mode in ['SAR2SAR', 'mean']:
             print('## Unit must be either linear or decibel')
             sys.exit()
+
         if denoise_mode == 'SAR2SAR':
-            Utils.check_pkl_file(self.input)        
+            Utils.check_pkl_file(self.input_dir, mean_dict)        
 
         if not Utils.is_valid_epsg(crs.replace('EPSG:', '')):
             print('## CRS is not valid')
@@ -91,13 +91,13 @@ class Preprocessor(object):
             Utils.sort_outputs(tif, polarization, output)
 
 
-    def to_linear(self):
+    def to_linear(self, zero_max = False):
         print('## Converting from linear to dB...')
         input_file_list = Utils.file_list_from_dir(self.geotiff_output_dir, '*.tif')
         for i, db_geotiff in enumerate(input_file_list):
             print('# ' + str(i+1) + ' / ' + str(len(input_file_list)), end = '\r')
 
-            Utils.db_to_linear(db_geotiff)
+            Utils.db_to_linear(db_geotiff, zero_max = zero_max)
         return
 
     def to_db(self):

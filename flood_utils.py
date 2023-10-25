@@ -33,31 +33,39 @@ class Utils(object):
         print('Error Message: %s' % (err_msg))
         
 
-    def check_pkl_file(input_dir):
-        pkl_file = Utils.file_list_from_dir('' + '*.pkl')
-        if not pkl_file:
-            print('## No mean data found for SAR2SAR!')
-            sys.exit()
+    def check_pkl_file(input_dir, mean_dict):
 
-        with open(pkl_file, 'rb') as f:
+        with open(mean_dict, 'rb') as f:
             mean_dict = pickle.load(f)
 
-        input_files = Utils.file_list_from_dir(input_dir + '*.tif')
+        input_files = Utils.file_list_from_dir(input_dir, '*.nc')
         input_files = [os.path.splitext(file)[0][:-3] for file in input_files]
         input_files = list(set(input_files))
 
         if not len(input_files) == len(mean_dict) / 2:
-            print('# Mismatch in input file amount and mean data amount! Files may be missing!')
+            print('# Mismatch in input file amount and mean data amount!')
             print(f'# {len(input_files)} files in input')
-            print(f'# {len(mean_dict) / 2} * 2 lines of data available')
+            print(f'# {int(len(mean_dict) / 2)} * 2 lines of data available')
             print(f'# Ensure mean data extractor has been running on same SAFE files as has been input')
-            terminator  = 'a'
+            # terminator  = 'a'
 
-        for filename in mean_dict:
-            if not filename in input_files:
-                print(f'# {filename} not present in list!')
+        input_filenames = [os.path.basename(x) for x in input_files]
+        mean_file_list = [x[:-6] for x in list(mean_dict.keys())]
+
+        # for mean_file in mean_dict:
+        #     if not mean_file[:-6] in input_filenames:
+        #         print(f'# {mean_file[:-6]} not present in mean dict!')
+        #         terminator = 'a'
+
+        for filename in input_filenames:
+            if not filename in mean_file_list:
+                print(f'# {filename[:-6]} not present in input files!')
                 terminator = 'a'
-            if 'terminator' in locals(): sys.exit()
+
+        if 'terminator' in locals(): 
+            print('# Input files lack corresponding SAFE mean!')
+            sys.exit()
+        print('# All inputs files have .SAFE mean values!')
         return
 
 
@@ -114,20 +122,22 @@ class Utils(object):
                 print('# Orbital direction error!')
                 sys.exit()
 
-            if band_type in polarization:
-                translate_options = gdal.TranslateOptions(
-                    format = "GTiff",
-                    options = ["TILED=YES", "COMPRESS=LZW"],
-                    # outputType = gdal.GDT_Float32
-                    # outputType = gdal.GDT_Int16
-                )
+            if not band_type in polarization:
+                continue
+            
+            translate_options = gdal.TranslateOptions(
+                format = "GTiff",
+                options = ["TILED=YES", "COMPRESS=LZW"],
+                # outputType = gdal.GDT_Float32
+                # outputType = gdal.GDT_Int16
+            )
 
-                band_info = band_type + '_' + orbit_direction
-                
-                filename = os.path.basename(input_file).replace(extension, '_') + band_info + "_band.tif"
-                output_geotiff = os.path.join(geotiff_output_dir, filename)
+            band_info = band_type + '_' + orbit_direction
+            
+            filename = os.path.basename(input_file).replace(extension, '_') + band_info + "_band.tif"
+            output_geotiff = os.path.join(geotiff_output_dir, filename)
 
-                gdal.Translate(output_geotiff, band, options=translate_options)
+            gdal.Translate(output_geotiff, band, options=translate_options)
 
         input_dataset = None        
         return
@@ -193,11 +203,13 @@ class Utils(object):
         return
     
     
-    def db_to_linear(db_geotiff):
+    def db_to_linear(db_geotiff, zero_max = False):
         with rio.open(db_geotiff, 'r+') as src:
             sar_db = src.read(1)
+            
+            #removes positive decibel values
+            if zero_max: sar_db[sar_db > 0] = 0
 
-            sar_db[sar_db > 0] = 0  #removing positive decibel values improves denoising outout
             sar_linear = 10.0 ** (sar_db / 10.0)
             sar_linear = sar_linear * 200
 

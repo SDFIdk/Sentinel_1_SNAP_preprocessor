@@ -2,6 +2,7 @@ import sys
 from flood_preprocessing import Preprocessor
 from denoiser import Denoiser
 from clip_256 import Clipper
+from snap_converter import SNAP_preprocessor
 
 if __name__== '__main__':
 
@@ -15,16 +16,28 @@ if __name__== '__main__':
     # If both variables are set to 'None', script will look for .netrc file for authentication
     #  See https://sentinelsat.readthedocs.io/en/stable/api_overview.html#authentication
 
-
     # input_dir = "D:/s1_snap_netcdf/"
     # output_dir = "D:/s1_snap_geotiff/"
 
-    input_dir = 'input/'
+    safe_dir = 'D:/s1_raw_data_ribe/'
+    # netcdf_dir = 'input/'
+    netcdf_dir = 'D:/s1_test_nc/'
     output_dir = 'output/'
     # input/output will be created if not present
 
     shape = 'ribe_aoi/ribe_aoi.shp'
     # path to .shp file in unzipped shape dir
+
+    snap_graph = 'new_preproc_graph.xml'
+    #xml file with SNAP preprocessing stack. 
+    # TODO ensure xml is available on github!
+
+    gpt_exe = 'C:/Users/b307579/AppData/Local/Programs/snap/bin/gpt.exe'
+    # Path to SNAPs gpt.exe. SNAP is required for this program to run.
+
+    mean_dict = 'clipped_data_means.pkl'
+    # pkl file with SAFE data averages relevant to all input files
+    # TODO build this in somehow...
 
     crs = 'EPSG:25832'
     # CRS in EPSG:XXXXX format. Reverts to EPSG:4326 if invalid 
@@ -42,33 +55,40 @@ if __name__== '__main__':
     
 # TODO option for FTP export
 
-preprocessor = Preprocessor(input_dir, output_dir)
+preprocessor = Preprocessor(netcdf_dir, output_dir)
 clipper = Clipper(output_dir)
 denoiser = Denoiser(output_dir)
 
-preprocessor.self_check(crs, polarization, unit, denoise_mode)
+# preprocessor.self_check(crs, polarization, unit, denoise_mode, mean_dict)
 # TODO check for checkpoint folder (SAR2SAR) 
-    # SAR2SAR may need to be recreated entirely to comply with tf v2
+# TODO check that gpt exe points to SNAP
+
+SNAP_preprocessor.safe_preprocessing(safe_dir, snap_graph, netcdf_dir, gpt_exe)
+# TODO add the SAFE mean extractor
+
 
 preprocessor.convert_to_geotiff(polarization)
+# TODO fix the metadata!
 
-clipper.clip_to_256(shape, crs)
+clipper.start_clipper(shape, crs)
 
-preprocessor.to_linear()
+preprocessor.to_linear(max_zero = True)
 
-denoiser.select_denoiser(denoise_mode)
+# denoiser.select_denoiser(denoise_mode, mean_dict)
 # TODO fix (and locate) warnings about TF deprecations
 # BUG enable GPU properly
 #   tensorflow may need to be rewritten entirely
+# SAR2SAR may need to be recreated entirely to comply with tf v2
 
-preprocessor.to_db()
+# preprocessor.to_db()
 
 # preprocessor.warp_files_to_crs(crs)
-# TODO crate gdal options in Preprocessing without gdal. Pass string somehow? 
-#   import gdaloptions as gdalopts ? only imports single thing, should be more efficient
+# # BUG possibly deprecated now
+# # TODO crate gdal options in Preprocessing without gdal. Pass string somehow? 
+# #   import gdaloptions as gdalopts ? only imports single thing, should be more efficient
 
-preprocessor.realign_rasters()
+# preprocessor.realign_rasters()
 
-preprocessor.clip_to_256(shape)
+# clipper.start_clipper(shape, crs)
 
-preprocessor.sort_output(polarization)
+# preprocessor.sort_output(polarization)

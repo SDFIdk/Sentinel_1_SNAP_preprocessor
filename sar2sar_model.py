@@ -4,7 +4,7 @@ import os
 
 # SAR2SAR: https://doi.org/10.1109/JSTARS.2021.3071864
 
-class denoiser(object):
+class sar2sar_denoiser(object):
     def __init__(self, sess, input_c_dim=1):
         self.sess = sess
         self.input_c_dim = input_c_dim
