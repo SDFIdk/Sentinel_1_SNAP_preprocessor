@@ -17,7 +17,7 @@ from sar2sar_model import sar2sar_denoiser
 
 
 class Denoiser(object):
-    def __init__(self, output_dir):
+    def __init__(self, output_dir, safe_dir, shapefile_path):
 
         self.output_dir = output_dir
         self.geotiff_output_dir = output_dir + 'unfinished_geotiffs/'
@@ -25,6 +25,8 @@ class Denoiser(object):
         self.denoised_geotiffs = output_dir + 'denoised_geotiffs/'
         self.checkpoint = 'checkpoint/'
         self.orbit_dir = 'orbit/'
+        self.safe_dir = safe_dir
+        self.shape = shapefile_path
 
         Utils.check_create_folder(self.tmp)
 
@@ -40,6 +42,9 @@ class Denoiser(object):
 
         if denoise_mode == 'SAR2SAR':
             print('## SAR2SAR mode selected')
+
+            correction_finder = Correction_dict(self.safe_dir, self.shape, self.tmp)
+            mean_dict = correction_finder.populate_correction_dict(self.geotiff_output_dir)
 
             noisy_npy_folder = self.convert_to_npy(noisy_npy_folder, mean_dict = mean_dict)
 

@@ -29,10 +29,3 @@ class SNAP_preprocessor(object):
         else:
             print(stdout.decode())
 
-if __name__ == '__main__':
-
-    #PRECONFIGURE THIS THING IF YA WANNA USE IT STANDLAONE!
-
-    safe_directory = 'path_to_directory_with_SAFE_files'
-    graph_path = 'path_to_your_graph.xml'
-    output_directory = 'path_for_netCDF_outputs'

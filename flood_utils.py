@@ -1,14 +1,10 @@
 import zipfile
 from osgeo import gdal
-# import xml.etree.ElementTree as ET
 import os
 import sys
 import geopandas as gpd
 import numpy as np
 import rasterio as rio
-# from rasterio.mask import mask
-# from rasterio.windows import Window
-# from rasterio.transform import from_origin
 from pathlib import Path
 import glob
 import shutil

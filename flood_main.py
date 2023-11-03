@@ -57,7 +57,7 @@ if __name__== '__main__':
 
 preprocessor = Preprocessor(netcdf_dir, output_dir)
 clipper = Clipper(output_dir)
-denoiser = Denoiser(output_dir)
+denoiser = Denoiser(output_dir, safe_dir, shape)
 
 # preprocessor.self_check(crs, polarization, unit, denoise_mode, mean_dict)
 # TODO check for checkpoint folder (SAR2SAR) 
