@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import tensorflow as tf
 from glob import glob
 import os
@@ -14,7 +12,7 @@ import rasterio as rio
 import pickle
 
 from sar2sar_model import sar2sar_denoiser
-
+from mean_extractor import Correction_dict
 
 class Denoiser(object):
     def __init__(self, output_dir, safe_dir, shapefile_path):
@@ -33,53 +31,44 @@ class Denoiser(object):
         gdal.PushErrorHandler(Utils.gdal_error_handler)
         gdal.UseExceptions()
 
+
     def select_denoiser(self, denoise_mode, mean_dict):
 
-        noisy_npy_folder = self.tmp + 'npy_files/'
-        denoised_npy_folder = self.tmp + 'denoised_numpys/'
-        os.makedirs(noisy_npy_folder, exist_ok = True)
-        os.makedirs(denoised_npy_folder, exist_ok = True)
+        denoised_npy = self.tmp + 'denoised_numpys/'
+        Path(self.tmp + 'denoised_geotiffs').mkdir(exist_ok = True, parents = True)
 
         if denoise_mode == 'SAR2SAR':
+            # SAR2SAR: https://doi.org/10.1109/JSTARS.2021.3071864
             print('## SAR2SAR mode selected')
 
-            correction_finder = Correction_dict(self.safe_dir, self.shape, self.tmp)
-            mean_dict = correction_finder.populate_correction_dict(self.geotiff_output_dir)
+            correction_finder = Correction_dict(
+                safe_dir = self.safe_dir, 
+                shape = self.shape, 
+                tmp_dir = self.tmp, 
+                example_dir = self.geotiff_output_dir
+                )
+            mean_dict = correction_finder.populate_correction_dict()
 
-            noisy_npy_folder = self.convert_to_npy(noisy_npy_folder, mean_dict = mean_dict)
-
-            self.SAR2SAR_main(noisy_npy_folder, denoised_npy_folder)
-
-            self.recreate_geotiff(denoised_npy_folder, mean_dict = mean_dict)
+            noisy_npy_folder = self.convert_to_npy(mean_dict = mean_dict)
+            self.SAR2SAR_main(noisy_npy_folder, denoised_npy)
+            self.recreate_geotiff(denoised_npy, mean_dict)
 
             Utils.remove_folder(noisy_npy_folder)
         else:
             print('## Mean filter mode selected')
-        
-            denoised_npy_folder = self.apply_mean_filter(denoised_npy_folder)
-
-            self.recreate_geotiff(denoised_npy_folder)
+            self.apply_mean_filter(input_files = self.geotiff_output_dir, output_files = denoised_npy)
+            self.recreate_geotiff(denoised_npy)
 
         Utils.remove_folder(self.tmp)
 
-    # SAR2SAR: https://doi.org/10.1109/JSTARS.2021.3071864
 
-    
-    def get_mean_dict(self, mean_dict):
-
-        with open(mean_dict, 'rb') as f:
-            mean_dict = pickle.load(f) 
-
-        return mean_dict
-            
-
-    def convert_to_npy(self, noisy_npy_folder, mean_dict = False):
+    def convert_to_npy(self, mean_dict = False):
         print('## Converting to .npy...')
 
-        Path(noisy_npy_folder).mkdir(exist_ok = True, parents = True)
-        input_data_list = Utils.file_list_from_dir(self.geotiff_output_dir, '*.tif')
+        noisy_npy_folder = self.tmp + 'npy_files/'
+        os.makedirs(noisy_npy_folder, exist_ok = True)
 
-        if mean_dict: mean_dict = self.get_mean_dict(mean_dict)
+        input_data_list = Utils.file_list_from_dir(self.geotiff_output_dir, '*.tif')
 
         for i, geotiff in enumerate(input_data_list):
             print('# ' + str(i+1) + ' / ' + str(len(input_data_list)), end = '\r')
@@ -88,7 +77,7 @@ class Denoiser(object):
                 nds = ds.read().squeeze()
             
             if mean_dict: 
-                rescale_factor = mean_dict[os.path.basename(geotiff)[:-13]]
+                rescale_factor = mean_dict[os.path.basename(geotiff)]
                 nds = nds * rescale_factor
 
             savename = noisy_npy_folder + os.path.basename(geotiff.replace('.tif', '.npy')) 
@@ -98,13 +87,14 @@ class Denoiser(object):
             np.save(savename, nds)
             ds = None
             nds = None
-
-        return noisy_npy_folder    
+        return noisy_npy_folder
     
     
-    def apply_mean_filter(self, output_folder):
+    def apply_mean_filter(input_files, output_folder, self):
         import xarray as xr
         from xrspatial.focal import mean as xrs_mean
+
+        os.makedirs(output_folder, exist_ok = True)
 
         input_file_list = Utils.file_list_from_dir(self.geotiff_output_dir, '*.tif')
         Path(output_folder).mkdir(exist_ok = True, parents = True)
@@ -118,7 +108,6 @@ class Denoiser(object):
             savename = output_folder + os.path.basename(data).replace('.tif', '.npy')
             np.save(savename, xds.to_numpy())
             xds = None
-
         return output_folder
     
 
@@ -128,16 +117,14 @@ class Denoiser(object):
 
         parser = argparse.ArgumentParser(description = '')
         parser.add_argument('--use_gpu', dest = 'use_gpu', type = int, default = 1, help = 'GPU flag. 1 = gpu, 0 = cpu')
-        parser.add_argument('--output_dir', dest = 'output_dir', default = output_dir, help = 'test examples are saved here')
-        parser.add_argument('--input_data', dest = 'input_data', default = input_data, help = 'data set for testing')
         parser.add_argument('--stride_size', dest = 'stride_size', type = int, default = 64, help = 'define stride when image dim exceeds 264')
         args = parser.parse_args()
 
         if not os.path.exists(output_dir):
                 os.makedirs(output_dir)
 
-        def denoiser_test(denoiser):
-            input_data = args.input_data
+        def denoiser_test(denoiser, input_data):
+            input_data = input_data
 
             test_files = glob((input_data + '/*.npy').format('float32')) 
             denoiser.test(test_files, ckpt_dir = self.checkpoint, save_dir = output_dir, dataset_dir=input_data, stride=args.stride_size)
@@ -147,19 +134,17 @@ class Denoiser(object):
 
             with tf.compat.v1.Session(config = tf.compat.v1.ConfigProto(gpu_options = gpu_options)) as sess:
                 model = sar2sar_denoiser(sess)
-                denoiser_test(model)
+                denoiser_test(model, input_data)
         else:
             with tf.compat.v1.Session() as sess:
                 model = sar2sar_denoiser(sess)
-                denoiser_test(model)
-
+                denoiser_test(model, input_data)
         return
     
 
     def recreate_geotiff(self, denoised_npy, mean_dict = False):
         gdal.UseExceptions()
         print('## Recreating geotiffs from .npy...')
-        if mean_dict: mean_dict = self.get_mean_dict(mean_dict)
 
         npy_file_list = Utils.file_list_from_dir(denoised_npy, '*.npy')
         Path(self.tmp + 'denoised_geotiffs').mkdir(exist_ok = True, parents = True)
@@ -171,14 +156,14 @@ class Denoiser(object):
             reconverted_geotiff_path = original_geotiff_path.replace('unfinished_geotiffs', 'tmp/denoised_geotiffs')
 
             original_dataset = gdal.Open(original_geotiff_path)
-            if original_dataset is None:
+            if original_dataset == None:
                 print("## Failed to open original GeoTIFF")
                 continue
 
             reconverted_array = np.load(npy_file)
 
             if mean_dict: 
-                rescale_factor = mean_dict[os.path.basename(original_geotiff_path)[:-13]]
+                rescale_factor = mean_dict[os.path.basename(original_geotiff_path)]
                 reconverted_array = reconverted_array / rescale_factor
 
             driver = gdal.GetDriverByName("GTiff")
@@ -201,5 +186,4 @@ class Denoiser(object):
             reconverted_dataset = None
 
             shutil.move(reconverted_geotiff_path, original_geotiff_path)
-
         return 

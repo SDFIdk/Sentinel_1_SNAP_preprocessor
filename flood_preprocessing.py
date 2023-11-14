@@ -14,38 +14,26 @@ class Preprocessor(object):
 
         Utils.check_create_folder(self.input_dir)
         Utils.check_create_folder(self.tmp)
-
         gdal.PushErrorHandler(Utils.gdal_error_handler)
         gdal.UseExceptions()
 
 
-    def self_check(self, crs, polarization, unit, denoise_mode, mean_dict):
-    
-        # if not unit in ['decibel', 'linear']:
-        #     print('## Unit must be either linear or decibel')
-        #     sys.exit()
+    def self_check(self, crs, polarization, denoise_mode):
 
-        if not denoise_mode in ['SAR2SAR', 'mean']:
-            print('## Unit must be either linear or decibel')
-            sys.exit()
-
-        if denoise_mode == 'SAR2SAR':
-            Utils.check_pkl_file(self.input_dir, mean_dict)        
-
-        if not Utils.is_valid_epsg(crs.replace('EPSG:', '')):
-            print('## CRS is not valid')
-            sys.exit()
-
-        if polarization == None:
-            print('## Polarization cannot be none')
-            print('## Polarization must be either VV, VH, HV or HH')
-            sys.exit()
+        assert denoise_mode in ['SAR2SAR', 'mean'], f"## {denoise_mode} must match SAR2SAR or mean"   
+        assert Utils.is_valid_epsg(crs.replace('EPSG:', '')), (
+            '## CRS is not valid'
+            )
+        assert polarization != None, (
+            '## Polarization cannot be none'
+            '## Polarization must be either VV, VH, HV or HH'
+            )
         if not isinstance(polarization, list):
             polarization = [polarization]
         for pol in polarization:
-            if not pol in ['VV', 'VH', 'HV', 'HH']:
-                print('## Polarization must be either VV, VH, HV or HH')
-                sys.exit()
+            assert pol in ['VV', 'VH', 'HV', 'HH'], (
+                '## Polarization must be either VV, VH, HV or HH'
+            )
         return
 
 
@@ -53,11 +41,9 @@ class Preprocessor(object):
         print('## Converting input files to geotiff...')
             
         os.makedirs(self.geotiff_output_dir, exist_ok = True)
-
         input_file_list = Utils.file_list_from_dir(self.input_dir, '*.nc')
         for i, input_file in enumerate(input_file_list):
             print('# ' + str(i+1) + ' / ' + str(len(input_file_list)), end = '\r')
-
             Utils.extract_polarization_band(self.geotiff_output_dir, input_file, polarization)
         return
 
@@ -69,21 +55,29 @@ class Preprocessor(object):
         os.makedirs(self.tmp, exist_ok = True)
         
         for data in input_data_list:
-
             output_tif = self.tmp + os.path.basename(data)
             Utils.crs_warp(data, crs, output_tif)
         Utils.remove_folder(self.tmp)
+        return
+    
 
+    def change_resolution(self, x_res, y_res):
+        print('## Resampling resolution')
+        os.makedirs(self.tmp, exist_ok = True)
+
+        input_data_list = Utils.file_list_from_dir(self.geotiff_output_dir, '*.tif')
+        tmp_output = self.tmp + 'tmp.tif'
+        for data in input_data_list:
+            Utils.change_raster_resolution(data, tmp_output, x_res, y_res)
         return
 
 
-    def sort_output(self, polarization):
+    def sort_output(self, polarization, folder_name):
         print('## Sorting polarization and orbital direction')
 
         if not isinstance(polarization, list):
             polarization = [polarization]
-
-        output = Utils.create_sorted_outputs(self.tmp, polarization)
+        output = Utils.create_sorted_outputs(self.output_dir, polarization, folder_name)
 
         denoised_tifs = Utils.file_list_from_dir(self.geotiff_output_dir, '*.tif')
         for i, tif in enumerate(denoised_tifs):
@@ -100,6 +94,7 @@ class Preprocessor(object):
             Utils.db_to_linear(db_geotiff, zero_max = zero_max)
         return
 
+
     def to_db(self):
         print('## Converting from dB to linear...')
         input_file_list = Utils.file_list_from_dir(self.geotiff_output_dir, '*.tif')
@@ -113,13 +108,10 @@ class Preprocessor(object):
         print('## Fixing pixel alignment')
         input_file_list = Utils.file_list_from_dir(self.geotiff_output_dir, '*.tif')
 
-        reference_projection, reference_geotransform = Utils.get_references(input_file_list)
+        _, reference_geotransform = Utils.get_references(input_file_list)
 
         os.makedirs(self.tmp, exist_ok = True)
         for i, raster_path in enumerate(input_file_list):
             print('# ' + str(i+1) + ' / ' + str(len(input_file_list)), end = '\r')
-
-            output_path = self.tmp + 'tmp.tif'
-
-            Utils.align_raster(raster_path, output_path, reference_projection, reference_geotransform)
+            Utils.align_raster(raster_path, self.tmp + 'tmp.tif', reference_geotransform)
             

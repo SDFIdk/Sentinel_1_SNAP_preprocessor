@@ -35,7 +35,6 @@ class Clipper(object):
             print('# ' + str(i+1) + ' / ' + str(len(geotiff_list)), end = '\r')
 
             self.clip_to_256(geotiff, shape, crs)
-
         return 
     
 
@@ -68,7 +67,7 @@ class Clipper(object):
             cutlineDSName=shape, 
             cropToCutline=True, 
             dstNodata=nodata_value, 
-            srcSRS = 'EPSG:4326', 
+            srcSRS = src.GetProjection(), 
             dstSRS = 'EPSG:25832', 
             resampleAlg=gdal.GRA_NearestNeighbour
             )
@@ -100,4 +99,3 @@ class Clipper(object):
                 dst.write(clipped_data)
 
         shutil.move(self.tmp + 'clipped_raster2.tif', geotiff_path)
-    

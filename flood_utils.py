@@ -38,39 +38,34 @@ class Utils(object):
         input_files = [os.path.splitext(file)[0][:-3] for file in input_files]
         input_files = list(set(input_files))
 
-        if not len(input_files) == len(mean_dict) / 2:
-            print('# Mismatch in input file amount and mean data amount!')
-            print(f'# {len(input_files)} files in input')
-            print(f'# {int(len(mean_dict) / 2)} * 2 lines of data available')
-            print(f'# Ensure mean data extractor has been running on same SAFE files as has been input')
-            # terminator  = 'a'
+        assert len(input_files) == len(mean_dict) / 2, (
+            '# Mismatch in input file amount and mean data amount!'
+            f'# {len(input_files)} files in input'
+            f'# {int(len(mean_dict) / 2)} * 2 lines of data available'
+            f'# Ensure mean data extractor has been running on same SAFE files as has been input'
+            )
 
         input_filenames = [os.path.basename(x) for x in input_files]
         mean_file_list = [x[:-6] for x in list(mean_dict.keys())]
 
-        # for mean_file in mean_dict:
-        #     if not mean_file[:-6] in input_filenames:
-        #         print(f'# {mean_file[:-6]} not present in mean dict!')
-        #         terminator = 'a'
-
         for filename in input_filenames:
-            if not filename in mean_file_list:
-                print(f'# {filename[:-6]} not present in input files!')
-                terminator = 'a'
+            assert filename in mean_file_list, (
+                f'# {filename[:-6]} not present in input files!'
+                )
 
-        if 'terminator' in locals(): 
-            print('# Input files lack corresponding SAFE mean!')
-            sys.exit()
+        assert 'terminator' not in locals(), (
+            '# Input files lack corresponding SAFE mean!'
+            )
         print('# All inputs files have .SAFE mean values!')
         return
 
 
     def file_list_from_dir(directory, extension, accept_no_files = False):
         file_list = glob.glob(directory + extension)
-        if len(file_list) == 0 and accept_no_files == False:
-            print('## No ' + extension + ' files in input!')
-            sys.exit()
-
+        if not accept_no_files: 
+            assert len(file_list) != 0, (
+                f'## No {extension} files in input!'
+                )
         return file_list
     
     
@@ -108,15 +103,10 @@ class Utils(object):
             band_type = subdataset_name[-5:][:2]
             orbit = metadata['/Metadata_Group/Abstracted_Metadata/NC_GLOBAL#PASS']
 
-            # band = input_dataset.GetRasterBand(band_index)
-            # band_type = band.GetMetadata().get('POLARIZATION', '')
-            # orbit = input_dataset.GetMetadata().get('ORBIT_DIRECTION', '')
-
             if orbit == 'ASCENDING': orbit_direction = 'ASC'
             elif orbit == 'DESCENDING': orbit_direction = 'DSC'
             else: 
-                print('# Orbital direction error!')
-                sys.exit()
+                raise Exception('# Orbital direction error!')
 
             if not band_type in polarization:
                 continue
@@ -124,8 +114,7 @@ class Utils(object):
             translate_options = gdal.TranslateOptions(
                 format = "GTiff",
                 options = ["TILED=YES", "COMPRESS=LZW"],
-                # outputType = gdal.GDT_Float32
-                # outputType = gdal.GDT_Int16
+                outputType = gdal.GDT_Float32
             )
 
             band_info = band_type + '_' + orbit_direction
@@ -165,10 +154,20 @@ class Utils(object):
         gdal.Warp(output, gdal_dataset, options = options)
         shutil.move(output, dataset)
 
-    
-    def create_sorted_outputs(output, polarization):
 
-        output = output + 'sorted_denoised_geotiffs/'
+    def change_raster_resolution(input_raster_path, output_raster_path, new_x_res, new_y_res):
+        input_raster = gdal.Open(input_raster_path)
+
+        warp_options = gdal.WarpOptions(xRes=new_x_res, yRes=new_y_res, resampleAlg='near', format='GTiff')
+        output_raster = gdal.Warp(output_raster_path, input_raster, options=warp_options)
+
+        input_raster = None
+        output_raster = None
+        shutil.move(output_raster_path, input_raster_path)
+
+    
+    def create_sorted_outputs(output, polarization, folder_name):
+        output = output + folder_name
         Path(output).mkdir(exist_ok = True)
 
         for pol in polarization:
@@ -225,7 +224,6 @@ class Utils(object):
     
     
     def get_references(input_file_list):
-
         #largest file will in all likelihood contain an image which overlaps whole shape
         reference_file = max(input_file_list, key=os.path.getsize)
 
@@ -237,8 +235,7 @@ class Utils(object):
         return reference_projection, reference_geotransform
     
 
-    def align_raster(raster_path, output_path, reference_projection, reference_geotransform):
-
+    def align_raster(raster_path, output_path, reference_geotransform):
         gdal.Warp(output_path,
                 raster_path,
                 xRes=reference_geotransform[1],

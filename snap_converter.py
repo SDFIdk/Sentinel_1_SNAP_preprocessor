@@ -1,7 +1,6 @@
 import subprocess
 import os
 from glob import glob
-import sys
 
 class SNAP_preprocessor(object):
     def safe_preprocessing(safe_directory, graph_xml, output_directory, gpt_path):
@@ -28,4 +27,3 @@ class SNAP_preprocessor(object):
             print(f"GPT exited with an error:\n{stderr.decode()}")
         else:
             print(stdout.decode())
-
