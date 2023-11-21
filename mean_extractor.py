@@ -4,8 +4,10 @@ from pathlib import Path
 from osgeo import gdal
 import zipfile
 import shutil
+from snap_converter import SNAP_preprocessor
 from pprint import pprint
 import sys
+
 
 class Correction_dict(object):
     def __init__(self, safe_dir, shape, tmp_dir, example_dir):
@@ -58,6 +60,9 @@ class Correction_dict(object):
                 outputType = gdal.GDT_Int16
             )
             gdal.Translate(output_geotiff, gdal_safe, options=translate_options)
+
+            SNAP_preprocessor.single_file_safe_preprocessing(safe_dir, 'snap_graphs/preprocessing_workflow_2023_lsm.xml', output_geotiff, 'land_sea_mask.xml')
+
 
             assert filename not in mean_dict, f"## {filename} already in dict! Check for duplicate input files"
             mean_dict[filename] = self.get_mean_from_shape_extent(output_geotiff, 'input/CLIP_TEST_OUT.tif')

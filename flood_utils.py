@@ -10,7 +10,6 @@ import glob
 import shutil
 import uuid
 import pyproj
-import pickle
 
 class Utils(object):
 
@@ -28,37 +27,6 @@ class Utils(object):
         print('Error Type: %s' % (err_class))
         print('Error Message: %s' % (err_msg))
         
-
-    def check_pkl_file(input_dir, mean_dict):
-
-        with open(mean_dict, 'rb') as f:
-            mean_dict = pickle.load(f)
-
-        input_files = Utils.file_list_from_dir(input_dir, '*.nc')
-        input_files = [os.path.splitext(file)[0][:-3] for file in input_files]
-        input_files = list(set(input_files))
-
-        assert len(input_files) == len(mean_dict) / 2, (
-            '# Mismatch in input file amount and mean data amount!'
-            f'# {len(input_files)} files in input'
-            f'# {int(len(mean_dict) / 2)} * 2 lines of data available'
-            f'# Ensure mean data extractor has been running on same SAFE files as has been input'
-            )
-
-        input_filenames = [os.path.basename(x) for x in input_files]
-        mean_file_list = [x[:-6] for x in list(mean_dict.keys())]
-
-        for filename in input_filenames:
-            assert filename in mean_file_list, (
-                f'# {filename[:-6]} not present in input files!'
-                )
-
-        assert 'terminator' not in locals(), (
-            '# Input files lack corresponding SAFE mean!'
-            )
-        print('# All inputs files have .SAFE mean values!')
-        return
-
 
     def file_list_from_dir(directory, extension, accept_no_files = False):
         file_list = glob.glob(directory + extension)
