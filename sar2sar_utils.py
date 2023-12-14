@@ -16,6 +16,10 @@ cn = c / (M - m)  # normalized (0,1) mean of log speckle
 def normalize_sar(im):
     return ((np.log(np.clip(im,0.24,np.max(im))) - m) * 255 / (M - m)).astype('float32')
 
+    # EXPERIMENTAL
+    # return ((np.log(np.clip(im,0.24,np.max(im))) - m) * (M - m)).astype('float32')
+
+
 def denormalize_sar(im):
     return np.exp((M - m) * (np.squeeze(im)).astype('float32') + m)
 
@@ -24,6 +28,7 @@ def load_sar_images(filelist):
         im = np.load(filelist)
         im = normalize_sar(im)
         return np.array(im).reshape(1, np.size(im, 0), np.size(im, 1), 1)
+    
     data = []
     for file in filelist:
         im = np.load(file)

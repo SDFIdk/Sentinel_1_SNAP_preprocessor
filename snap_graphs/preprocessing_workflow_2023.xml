@@ -45,7 +45,7 @@
       <auxFile>Latest Auxiliary File</auxFile>
       <externalAuxFile/>
       <outputImageInComplex>false</outputImageInComplex>
-      <outputImageScaleInDb>true</outputImageScaleInDb>
+      <outputImageScaleInDb>false</outputImageScaleInDb>
       <createGammaBand>false</createGammaBand>
       <createBetaBand>false</createBetaBand>
       <selectedPolarisations/>
@@ -109,19 +109,10 @@
       <externalAuxFile/>
     </parameters>
   </node>
-  <node id="LinearToFromdB">
-    <operator>LinearToFromdB</operator>
-    <sources>
-      <sourceProduct refid="Terrain-Correction"/>
-    </sources>
-    <parameters class="com.bc.ceres.binding.dom.XppDomElement">
-      <sourceBands/>
-    </parameters>
-  </node>
   <node id="Write">
     <operator>Write</operator>
     <sources>
-      <sourceProduct refid="LinearToFromdB"/>
+      <sourceProduct refid="Terrain-Correction"/>
     </sources>
     <parameters class="com.bc.ceres.binding.dom.XppDomElement">
       <file>${outputSafeFile}</file>
@@ -140,7 +131,7 @@
       <displayPosition x="36.0" y="105.0"/>
     </node>
     <node id="Calibration">
-      <displayPosition x="36.0" y="168.0"/>
+      <displayPosition x="36.0" y="167.0"/>
     </node>
     <node id="Remove-GRD-Border-Noise">
       <displayPosition x="36.0" y="136.0"/>
@@ -148,11 +139,8 @@
     <node id="Terrain-Correction">
       <displayPosition x="36.0" y="199.0"/>
     </node>
-    <node id="LinearToFromdB">
-      <displayPosition x="36.0" y="228.0"/>
-    </node>
     <node id="Write">
-            <displayPosition x="36.0" y="257.0"/>
+            <displayPosition x="36.0" y="229.0"/>
     </node>
   </applicationData>
 </graph>

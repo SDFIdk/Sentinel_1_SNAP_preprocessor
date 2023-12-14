@@ -5,6 +5,7 @@
     <sources/>
     <parameters class="com.bc.ceres.binding.dom.XppDomElement">
       <useAdvancedOptions>false</useAdvancedOptions>
+      <file>${inputSafeFile}</file>
       <copyMetadata>true</copyMetadata>
       <bandNames/>
       <pixelRegion>0,0,2147483647,2147483647</pixelRegion>
@@ -111,7 +112,7 @@
   <node id="LinearToFromdB">
     <operator>LinearToFromdB</operator>
     <sources>
-      <sourceProduct refid="Terrain-Correction"/>
+      <sourceProduct refid="Land-Sea-Mask"/>
     </sources>
     <parameters class="com.bc.ceres.binding.dom.XppDomElement">
       <sourceBands/>
@@ -120,11 +121,11 @@
   <node id="Land-Sea-Mask">
     <operator>Land-Sea-Mask</operator>
     <sources>
-      <sourceProduct refid="LinearToFromdB"/>
+      <sourceProduct refid="Terrain-Correction"/>
     </sources>
     <parameters class="com.bc.ceres.binding.dom.XppDomElement">
       <sourceBands/>
-      <landMask>true</landMask>
+      <landMask>false</landMask>
       <useSRTM>true</useSRTM>
       <geometry/>
       <invertGeometry>false</invertGeometry>
@@ -134,10 +135,10 @@
   <node id="Write">
     <operator>Write</operator>
     <sources>
-      <sourceProduct.1 refid="Land-Sea-Mask"/>
+      <sourceProduct refid="LinearToFromdB"/>
     </sources>
     <parameters class="com.bc.ceres.binding.dom.XppDomElement">
-      <file>C:\Users\b307579\Documents\target.nc</file>
+      <file>${outputSafeFile}</file>
       <formatName>NetCDF4-CF</formatName>
     </parameters>
   </node>
@@ -162,13 +163,13 @@
       <displayPosition x="36.0" y="199.0"/>
     </node>
     <node id="LinearToFromdB">
-      <displayPosition x="36.0" y="228.0"/>
+      <displayPosition x="37.0" y="259.0"/>
     </node>
     <node id="Land-Sea-Mask">
-      <displayPosition x="36.0" y="257.0"/>
+      <displayPosition x="37.0" y="230.0"/>
     </node>
     <node id="Write">
-            <displayPosition x="36.0" y="286.0"/>
+            <displayPosition x="38.0" y="289.0"/>
     </node>
   </applicationData>
 </graph>
