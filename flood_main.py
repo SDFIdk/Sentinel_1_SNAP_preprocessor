@@ -7,8 +7,8 @@ import unit_converter
 
 if __name__== '__main__':
 
-    safe_dir = 'D:/s1_raw_data/holstebro_2015_12_07/'
-    # safe_dir = 'D:/s1_raw_data/holstebro_2022_12_31/'
+    # safe_dir = 'D:/s1_raw_data/holstebro_2015_12_07/'
+    safe_dir = 'D:/s1_raw_data/holstebro_2022_12_31/'
     # safe_dir = 'D:/s1_raw_data/kolding_2020_02_17/'
     # safe_dir = 'D:/s1_raw_data/stavis_odense_2022_02_21/'
 
@@ -37,6 +37,7 @@ if __name__== '__main__':
 
     # denoise_mode = 'SAR2SAR'        # if 'SAR2SAR', script will use ML based denoising.
     denoise_mode = 'mean'
+    # denoise_mode = 'SAR2SAR_mean_dict'
 
     
 preprocessor = Preprocessor(netcdf_dir, geotiff_dir)
@@ -51,24 +52,48 @@ snap_executor = SNAP_preprocessor(gpt_path=gpt_exe)
 # TODO check for files in netcdf and geotiff folders, ask for delete?
 
 #------modular SNAP------
+dataset_name = 'holstebro_2022'
 
 # snap_executor.graph_processing(safe_dir, netcdf_dir, pre_process_graph, output_ext='.nc', input_ext='.zip')
 preprocessor.netcdf_to_geotiff(netcdf_dir, geotiff_dir, polarization)
 clipper.start_clipper(input_dir=geotiff_dir, shape=shape, crs=crs)
+
+sys.exit()
+
 denoiser.select_denoiser(denoise_mode, to_intensity = False)
+preprocessor.change_resolution(x_size=10, y_size=10)
 
 # unit_converter.convert_unit('D:/s1_geotiff_out/', 'power', 'linear')
-preprocessor.change_resolution(x_size=10, y_size=10)
+# unit_converter.convert_unit('D:/s1_geotiff_out/', 'power', 'decibel')
 
 unit_converter.convert_unit('D:/s1_geotiff_out/', 'linear', 'decibel')
 preprocessor.realign_rasters()
-preprocessor.sort_output(polarization, 'holstebro_2015_mean_denoised_geotiffs_decibel_10m/')
+preprocessor.sort_output(polarization, f'{dataset_name}_{denoise_mode}_denoised_geotiffs_decibel_10m/')
 
 unit_converter.convert_unit('D:/s1_geotiff_out/', 'decibel', 'power')
 preprocessor.realign_rasters()
-preprocessor.sort_output(polarization, 'holstebro_2015_mean_denoised_geotiffs_power_transform_10m/')
+preprocessor.sort_output(polarization, f'{dataset_name}_{denoise_mode}_denoised_geotiffs_power_transform_10m/')
+
+# ---------------------- reload bu then run this ------------------------------
+unit_converter.convert_unit('D:/s1_geotiff_out/', 'power', 'linear')
+
+preprocessor.change_resolution(x_size=20, y_size=20)
+
+unit_converter.convert_unit('D:/s1_geotiff_out/', 'linear', 'decibel')
+preprocessor.realign_rasters()
+preprocessor.sort_output(polarization, f'{dataset_name}_{denoise_mode}_denoised_geotiffs_decibel_20m/')
+
+unit_converter.convert_unit('D:/s1_geotiff_out/', 'decibel', 'power')
+preprocessor.realign_rasters()
+preprocessor.sort_output(polarization, f'{dataset_name}_{denoise_mode}_denoised_geotiffs_power_transform_20m/')
 
 #------modular SNAP------
+
+
+
+
+
+
 
 
 # snap_executor.graph_processing(safe_dir, geotiff_dir, pre_process_graph, output_ext='.nc', input_ext='.zip')

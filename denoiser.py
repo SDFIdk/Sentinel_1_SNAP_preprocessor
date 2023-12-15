@@ -35,29 +35,6 @@ class Denoiser(object):
         denoised_npy = self.tmp + 'denoised_numpys/'
         Path(self.tmp + 'denoised_geotiffs').mkdir(exist_ok = True, parents = True)
 
-        # OLD DENOISER WITH MEAN DIR
-
-        # if denoise_mode == 'SAR2SAR':
-        #     # SAR2SAR: https://doi.org/10.1109/JSTARS.2021.3071864
-        #     print('## SAR2SAR mode selected')
-
-        #     correction_finder = Correction_dict(
-        #         safe_dir = self.safe_dir, 
-        #         shape = self.shape, 
-        #         tmp_dir = self.tmp, 
-        #         example_dir = self.geotiff_output_dir,
-        #         gpt_path = self.gpt_exe
-        #         )
-        #     mean_dict = correction_finder.populate_correction_dict()
-
-        #     noisy_npy_folder = self.convert_to_npy(mean_dict = mean_dict)
-        #     self.SAR2SAR_main(noisy_npy_folder, denoised_npy)
-        #     self.recreate_geotiff(denoised_npy, mean_dict)
-
-        #     Utils.remove_folder(noisy_npy_folder)
-
-        # OLD DENOISER WITH MEAN DIR
-
         if denoise_mode == 'SAR2SAR':
             # SAR2SAR: https://doi.org/10.1109/JSTARS.2021.3071864
             print('## SAR2SAR mode selected')
@@ -67,9 +44,27 @@ class Denoiser(object):
             self.recreate_geotiff(denoised_npy, to_amplitude = to_intensity)
 
             Utils.remove_folder(noisy_npy_folder)
+        elif denoise_mode == 'SAR2SAR_mean_dict':
+            print('## SAR2SAR mode selected')
+
+            correction_finder = Correction_dict(
+                safe_dir = self.safe_dir, 
+                shape = self.shape, 
+                tmp_dir = self.tmp, 
+                example_dir = self.geotiff_output_dir,
+                gpt_path = self.gpt_exe
+                )
+            mean_dict = correction_finder.populate_correction_dict()
+
+            noisy_npy_folder = self.convert_to_npy(mean_dict = mean_dict)
+            self.SAR2SAR_main(noisy_npy_folder, denoised_npy)
+            self.recreate_geotiff(denoised_npy, mean_dict)
+
+            Utils.remove_folder(noisy_npy_folder)
+
         else:
             print('## Mean filter mode selected')
-            self.apply_mean_filter(output_files = denoised_npy)
+            self.apply_mean_filter(output_folder = denoised_npy)
             self.recreate_geotiff(denoised_npy)
 
         Utils.remove_folder(self.tmp)
@@ -106,7 +101,7 @@ class Denoiser(object):
         return noisy_npy_folder
     
     
-    def apply_mean_filter(output_folder, self):
+    def apply_mean_filter(self, output_folder):
         import xarray as xr
         from xrspatial.focal import mean as xrs_mean
 
