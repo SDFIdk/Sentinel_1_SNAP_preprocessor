@@ -80,7 +80,18 @@ class Preprocessor(object):
             output_tif = self.tmp + os.path.basename(data)
             Utils.crs_warp(data, crs, output_tif)
         Utils.remove_folder(self.tmp)
-    
+
+
+    def remove_empty(self):
+        print('## Removing empty files')
+        input_data_list = Utils.file_list_from_dir(self.geotiff_dir, '*.tif')
+        
+        for i, data in enumerate(input_data_list):
+            print('# ' + str(i+1) + ' / ' + str(len(input_data_list)), end = '\r')
+            if Utils.find_empty_raster(data):
+                print(f'## No data in {data}')
+                os.remove(data)
+
 
     def change_resolution(self, x_size, y_size):
         print('## Resampling resolution')
@@ -89,9 +100,9 @@ class Preprocessor(object):
 
         input_data_list = Utils.file_list_from_dir(self.geotiff_dir, '*.tif')
         
-        for i, data in enumerate(input_data_list):
+        for i, geotiff in enumerate(input_data_list):
             print('# ' + str(i+1) + ' / ' + str(len(input_data_list)), end = '\r')
-            Utils.change_raster_resolution(data, tmp_output, x_size, y_size)
+            Utils.change_raster_resolution(geotiff, tmp_output, x_size, y_size)
 
 
     def sort_output(self, polarization, folder_name):

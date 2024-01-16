@@ -123,7 +123,6 @@ class Denoiser(object):
     
 
     def SAR2SAR_main(self, noisy_npy_folder, denoised_npy):
-
         print('## Starting SAR2SAR...')
 
         use_gpu = True

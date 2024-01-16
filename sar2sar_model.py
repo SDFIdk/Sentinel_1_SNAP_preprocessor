@@ -26,6 +26,15 @@ class sar2sar_denoiser(object):
             return True
         else:
             return False
+        
+    def check_if_denoised_exists(self, noisy_img_path, save_dir):
+        filename = os.path.basename(noisy_img_path)
+
+        filename = save_dir + filename
+        if os.path.isfile(filename): return True
+
+        return False
+
 
     def test(self, test_files, ckpt_dir, save_dir, dataset_dir, stride):
         tf.compat.v1.initialize_all_variables().run()
@@ -40,6 +49,12 @@ class sar2sar_denoiser(object):
         print("# Denoising files...")
         for i, idx in enumerate(range(len(test_files))):
             print('# ' + str(i+1) + ' / ' + str(len(test_files)), end = '\r')
+
+            #only use this if process has failed and good densoised npy are lying in the folder
+            if self.check_if_denoised_exists(test_files[idx], save_dir):
+                print('GOTCHA!!!')
+                continue
+
 
             real_image = load_sar_images(test_files[idx]).astype(np.float32) / 255.0
             # scan on image dimensions

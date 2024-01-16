@@ -178,64 +178,8 @@ class Utils(object):
     def split_polarizations(geotiff_dir, input_geotiff, polarization):
         print('## Splitting geotiffs into single bands...')
 
-        # # EXPERIMENTAL
-        # # EXPERIMENTAL
-        # # EXPERIMENTAL
-        # # EXPERIMENTAL
-        # # EXPERIMENTAL
-        
-        # input_dataset = gdal.Open(input_geotiff, gdal.GA_ReadOnly)
-        # for subdataset in input_dataset.GetRasterBands():
-        #     subdataset_name, _ = subdataset
-        #     band = gdal.Open(subdataset_name)
-        #     print(subdataset_name)
-
-        #     band_type = subdataset_name[-5:][:2]
-        #     if not band_type in polarization:   continue
-
-        #     metadata = band.GetMetadata()
-        #     orbit = metadata['/Metadata_Group/Abstracted_Metadata/NC_GLOBAL#PASS']
-        #     if orbit == 'ASCENDING': orbit_direction = 'ASC'
-        #     elif orbit == 'DESCENDING': orbit_direction = 'DSC'
-        #     else: 
-        #         raise Exception('# Orbital direction error!')
-        #     # band_info = band_type + '_' + orbit_direction
-        #     band_info = f"{band_type}_{orbit_direction}"
-            
-        #     translate_options = gdal.TranslateOptions(
-        #         format = "GTiff",
-        #         options = ["TILED=YES", "COMPRESS=LZW"],
-        #         outputType = gdal.GDT_Float32
-        #     )
-
-        #     filename = os.path.basename(input_geotiff).replace(os.path.splitext(input_geotiff)[1], '_') + band_info + "_band.tif"
-        #     output_geotiff = os.path.join(geotiff_dir, filename)
-        #     print(output_geotiff)
-        #     gdal.Translate(output_geotiff, band, options=translate_options)
-
-        # input_dataset = None    
-        # # os.remove(input_geotiff)
-
         with rio.open(input_geotiff) as src:
             meta = src.meta.copy()
-
-            # print(src.crs)
-            # print(src.width)
-            # print(src.height)
-            # print(src.bounds)
-            # print(src.transform)
-            # print(src.tags())
-            # print({band: src.tags(band) for band in src.indexes})
-
-            # sys.exit()
-
-            # for i in range(1, src.count + 1):
-            #     meta.update(count=1)
-            #     output_filename = f"{geotiff_dir}/band_{i}.tif"
-
-            #     with rio.open(output_filename, 'w', **meta) as dst:
-            #         band_data = src.read(i)
-            #         dst.write(band_data, 1)
 
             for band in range(1, src.count + 1):
                 data = src.read(band)
@@ -260,6 +204,18 @@ class Utils(object):
             Path(output + pol + '_DSC/').mkdir(exist_ok = True)
         return output
     
+    
+    def find_empty_raster(geotiff):
+            with rio.open(geotiff) as src:
+                for i in range(1, src.count + 1):
+                    data = src.read(i)
+
+                    if not np.all(np.isnan(data)):
+                        return False
+
+            return True
+
+        
     def sort_outputs(tif, polarization, output):
         file_polarization = None
         for pol in polarization:
@@ -279,7 +235,6 @@ class Utils(object):
         sort_dir = output + file_polarization + '_' + orbit_dir + '/'
         sort_filename = sort_dir + os.path.basename(tif)
         shutil.copyfile(tif, sort_filename)
-
         return
     
     
