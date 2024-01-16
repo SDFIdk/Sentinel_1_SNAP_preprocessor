@@ -54,14 +54,14 @@ snap_executor = SNAP_preprocessor(gpt_path=gpt_exe)
 #------modular SNAP------
 dataset_name = 'kolding'
 
-# snap_executor.graph_processing(safe_dir, netcdf_dir, pre_process_graph, output_ext='.nc', input_ext='.zip')
-# preprocessor.netcdf_to_geotiff(netcdf_dir, geotiff_dir, polarization)
-# clipper.start_clipper(input_dir=geotiff_dir, shape=shape, crs=crs)
+snap_executor.graph_processing(safe_dir, netcdf_dir, pre_process_graph, input_ext='.zip')
+preprocessor.netcdf_to_geotiff(netcdf_dir, geotiff_dir, polarization)
+clipper.start_clipper(input_dir=geotiff_dir, shape=shape, crs=crs)
 # preprocessor.remove_empty()
 
 # sys.exit()
 
-# denoiser.select_denoiser(denoise_mode, to_intensity = False)
+denoiser.select_denoiser(denoise_mode, to_intensity = False)
 
 preprocessor.change_resolution(x_size=10, y_size=10)
 

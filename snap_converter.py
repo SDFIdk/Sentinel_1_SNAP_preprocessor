@@ -15,16 +15,12 @@ class SNAP_preprocessor(object):
         self.gpt = gpt_path
 
 
-    def graph_processing(self, input_path, output_dir, graph_xml, output_ext, input_ext = '.zip'):
+    def graph_processing(self, input_path, output_dir, graph_xml, input_ext = '.zip'):
         print(f'## Applying SNAP processing stack to {input_ext} files...')
 
         input_files = glob(input_path + f'*{input_ext}')
 
-        # if input_path == output_path:
-        #     output_path = ''
-
-        # output_ext = self.extract_output_ext(graph_xml)
-        # TODO parse graph xml to extract output extension for saving.
+        output_ext = self.extract_output_ext(graph_xml)
 
         for i, input_file in enumerate(input_files):
             print('# ' + str(i+1) + ' / ' + str(len(input_files)), end = '\r')
@@ -48,47 +44,26 @@ class SNAP_preprocessor(object):
             print(stdout.decode())
 
 
-    # def extract_output_ext(self, graph_xml):
-    #     tree = ET.parse(graph_xml)
-    #     root = tree.getroot()
+    def extract_output_ext(self, graph_xml):
+        """
+        Function looks for the field formatName in the Write node.
+        This is specific to SNAP generated processing graphs
+        """
+        format_dict = {
+            "Geotiff": ".tif",
+            "NetCDF": ".nc"
+        } 
 
-    #     format = None
-    #     # print(list(root))
-    #     print(root.findall('graph'))
-    #     # print('a')
-        
-    #     value = tree.find('graph/node/parameters/formatName')
-    #     print(value)
-    #     import sys; sys.exit()
-
-
-    #     for node in root.findall('graph'):
-    #         print(node.find('operator').text)
-    #         import sys; sys.exit()
-    #         if not node.get('id') == 'Write':
-    #             pass
-
-    #         parameters = node.find('parameters')
-    #         if not parameters:
-    #             raise Exception('## SNAP Graph Write commponent broken, contains no parameters!')
-            
-    #         format_name = parameters.find('formatName')
-    #         assert format_name, (
-    #             'No specified format name in Write component! Specify in SNAP'
-    #         )
-    #         format = format_name.text
-    #     if not format: raise Exception('## SNAP Graph contains no Write component!')
-
-    #     output_ext = any(format in key for key in format_dict)
-    #     print(output_ext)
-    #     import sys; sys.exit()
-    #     return(output_ext)
+        root = ET.parse(graph_xml).getroot()
                 
-    #     print(ext_format)
-    #     import sys; sys.exit()
-    #     return None
+        for node in root.findall('node'):
+            name = node.get('id')
+            if name == 'Write':
+                params = node.find('parameters')
+                format_element = params.find('formatName')
+                format_name = format_element.text
 
-format_dict = {
-    "Geotiff": ".tif",
-    "NetCDF": ".nc"
-}   #expand with other SNAP write parameters according to need
+                for format, ext in format_dict.items():
+                    if format in format_name:
+                        return ext
+                raise Exception('## No Write node found! Check graph!')

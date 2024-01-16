@@ -212,7 +212,6 @@ class Utils(object):
 
                     if not np.all(np.isnan(data)):
                         return False
-
             return True
 
         
@@ -257,7 +256,6 @@ class Utils(object):
                 targetAlignedPixels=True,
                 resampleAlg=gdal.GRA_NearestNeighbour
                 )
-        
         shutil.move(output_path, raster_path)
                     
 
