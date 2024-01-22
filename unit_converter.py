@@ -2,6 +2,9 @@ import rasterio as rio
 import numpy as np
 from glob import glob
 
+"""Converts units from raw backscatter to decibel or "power transform". 
+"""
+
 def convert_unit(geotiff_dir, source_unit, destination_unit, zero_max = False):
     input_file_list = glob(geotiff_dir + '*.tif')
     assert len(input_file_list) != 0, (

@@ -1,21 +1,19 @@
 DOCUMENTATION FOR SENTINEL 1 PREPROCESSOR
-31-08-2023
+17-01-2024
 
-This script downloads, crops and denoises Sentinel-1 SAFE files.
+This script converts, crops and denoises Sentinel-1 SAFE files.
 
 The denoising component is an implementation of SAR2SAR
 SAR2SAR: https://doi.org/10.1109/JSTARS.2021.3071864
 
 USER INPUTS
-    Date range
-
-        The date range must be a tuple with a start and end date formatted in DDMMYYYY.
-        The script will fail if not provided.
-
     Input and output folders
-
-        Path to folders. If not present, will be created as 'input/' and 'output/'.
-        Output folder will contain, unprocessed geotiffs and sorted denoised geotiffs
+        The script require three folders for IO, SAFE-, NetCDF and GeoTIFF directories. 
+        The SAFE directory contains the input files from Sentinel-1 L1 GRD to be pre-processed.
+        NetCDF files are generated as an inbetween step after SNAP processing and require a 
+        directory. If not provided, these files will be placed in the scripts directory, but as these
+        are usually very large, it is recommended to specify this location manually.
+        GeoTIFF files are the final output.
 
     Shape
         Shape must be a path to the .shp file of an unzipped shapedir.
@@ -29,15 +27,17 @@ USER INPUTS
         Used to warp both shape and images.
 
     Polarization
-        Polarization of the radar product. Must be either VV, VH, HV or HH.
-        Can be either a single string or a list of strings, in any combination of the four.
+        Polarization of the radar product. Must be either VV, VH or both.
+        Can be either a single string or a list of strings, in any combination of the two.
 
         A geotiff will be created for each polarization specified, tagged in filename.
 
     Unit
+        The unit converter takes a source and destination unit and converts the geotiff datasets between them.
         If 'decibel', the unti will be converted from the linar measurements provided by 
         Sentinel-1 to decibel using the formula 10*log10(x).
-        Reverts to linear if not 'decibel'.
+        If 'power', a power transform will be applied, using x = y^0,1.
+        'linear' will revert to raw backscatter values.
 
     Denoise mode
         If 'SAR2SAR', the denoising module will use a tensorflow based denoising method. 

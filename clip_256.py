@@ -56,7 +56,6 @@ class Clipper(object):
 
 
     def clip_to_256(self, geotiff_path, shape, crs):
-
         ds = ogr.Open(shape)
         layer = ds.GetLayer()
         extent = layer.GetExtent()

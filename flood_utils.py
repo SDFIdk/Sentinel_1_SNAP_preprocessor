@@ -30,6 +30,9 @@ class Utils(object):
         
 
     def file_list_from_dir(directory, extension, accept_no_files = False):
+        """
+        Returns file content of dir with given extension
+        """
         file_list = glob.glob(directory + extension)
         if not accept_no_files: 
             assert len(file_list) != 0, (
@@ -39,6 +42,9 @@ class Utils(object):
     
     
     def is_valid_epsg(epsg_code):
+        """
+        Checks whether provided EPSG code is valid
+        """
         try:
             pyproj.CRS.from_epsg(epsg_code)
             return True
@@ -115,23 +121,27 @@ class Utils(object):
         return
 
 
-    def crs_assign(self, input_raster, output_raster, crs):
-        """
-        Assigns a CRS but does not warp. Only useful for datasets which are referenced but have no metadata
-        """
-        with rio.open(input_raster) as src:
-            data = src.read()
-            meta = src.meta.copy()
+    # def crs_assign(self, input_raster, output_raster, crs):
+    #     """
+    #     Assigns a CRS but does not warp. Only useful for datasets which are referenced but have no metadata
+    #     """
+    #     with rio.open(input_raster) as src:
+    #         data = src.read()
+    #         meta = src.meta.copy()
 
-        meta.update({'crs': CRS.from_string(crs)})
+    #     meta.update({'crs': CRS.from_string(crs)})
 
-        with rio.open(output_raster, 'w', **meta) as dst:
-            dst.write(data)
+    #     with rio.open(output_raster, 'w', **meta) as dst:
+    #         dst.write(data)
 
-        shutil.move(output_raster, input_raster)
+    #     shutil.move(output_raster, input_raster)
 
 
     def unzip_data_to_dir(data, tmp):
+        """
+        Outputs content of zipfile to randomly named folder.
+        Used for SAFE files
+        """
         unzipped_safe = tmp + str(uuid.uuid4())
         Path(unzipped_safe).mkdir(exist_ok = True)
         with zipfile.ZipFile(data, 'r') as zip_ref:
@@ -195,6 +205,9 @@ class Utils(object):
 
     
     def create_sorted_outputs(output, polarization, folder_name):
+        """
+        Function creates ASC and DSC folders for each polarization given.
+        """
         Path(folder_name).mkdir(exist_ok = True)
         output = output + folder_name
         Path(output).mkdir(exist_ok = True)
@@ -206,16 +219,23 @@ class Utils(object):
     
     
     def find_empty_raster(geotiff):
-            with rio.open(geotiff) as src:
-                for i in range(1, src.count + 1):
-                    data = src.read(i)
+        """
+        Finds geotiffs with no data
+        """
+        with rio.open(geotiff) as src:
+            for i in range(1, src.count + 1):
+                data = src.read(i)
 
-                    if not np.all(np.isnan(data)):
-                        return False
-            return True
+                if not np.all(np.isnan(data)):
+                    return False
+        return True
 
         
     def sort_outputs(tif, polarization, output):
+
+        if not isinstance(polarization, list):
+            polarization = [polarization]
+
         file_polarization = None
         for pol in polarization:
             if pol in tif:  file_polarization = pol
@@ -238,6 +258,7 @@ class Utils(object):
     
     
     def get_reference_geotransform(input_file_list):
+        #pre init function!
         #largest file will in all likelihood contain an image which overlaps whole shape
         reference_file = max(input_file_list, key=os.path.getsize)
 
@@ -245,7 +266,9 @@ class Utils(object):
         reference_geotransform = reference.GetGeoTransform()
         reference = None
 
-        return reference_geotransform
+        arg_name = "reference_geotransform"
+
+        return reference_geotransform, arg_name
     
 
     def align_raster(raster_path, output_path, reference_geotransform):
