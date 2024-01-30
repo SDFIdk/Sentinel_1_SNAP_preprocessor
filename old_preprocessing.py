@@ -1,11 +1,11 @@
 from osgeo import gdal
 import sys
 import os
-from flood_utils import Utils
+from old_utils import Utils
 from multiprocessing.pool import Pool
-from flood_utils_ditest import TEST_Utils
+from utils import TEST_Utils
 
-class Preprocessor(object):
+class OLD_Preprocessor(object):
     def __init__(self, netcdf_dir, geotiff_dir):
         if netcdf_dir == None: netcdf_dir = 'netcdf_output/'
         self.netcdf_dir = netcdf_dir
@@ -17,8 +17,6 @@ class Preprocessor(object):
         Utils.check_create_folder(self.tmp)
         gdal.PushErrorHandler(Utils.gdal_error_handler)
         gdal.UseExceptions()
-
-        t_utils = TEST_Utils(self.netcdf_dir, self.geotiff_dir)
 
 
     def self_check(self, crs, polarization, denoise_mode):
@@ -138,69 +136,3 @@ class Preprocessor(object):
             print('# ' + str(i+1) + ' / ' + str(len(input_data_list)), end = '\r')
             Utils.align_raster(raster_path, self.tmp + 'tmp.tif', reference_geotransform)
         Utils.remove_folder(self.tmp)
-
-
-        #_________________experimental stuff____________________________________________________
-
-
-    def tool_manager(self, tool, threads, kwargs = {}):
-
-
-        pre_init_util = pre_init_dict.get(tool)
-        if not pre_init_util == None:            
-            kwargs = pre_init_util(kwargs)
-
-        if threads == 1:
-            self.start_singleproc(tool, kwargs)
-        elif threads >1:
-            self.start_multiproc(tool, threads, kwargs)
-        else:
-            raise Exception(f'## Thread var must contain number greater than 0. Got {threads}')
-    
-
-    def start_singleproc(self, tool, kwargs):
-        input_file_list = Utils.file_list_from_dir(self.geotiff_dir, '*.tif')
-
-        #creation of tmp dir should always be left to the tool itself
-        #the name of the dir should always be uuid4 based.
-        tmp = os.makedirs(self.tmp, exist_ok = True)
-
-        # should kwargs be supplied by self? In all likelyhood not.
-        # or maybe the Utils class should provide them?
-        # move preprocessing init to utils?
-
-        for i, input_file in enumerate(input_file_list):
-            # print('# ' + str(i+1) + ' / ' + str(len(input_file_list)), end = '\r')
-            print(kwargs)
-            tool_dict[tool](input_file, **kwargs)
-            sys.exit()
-        Utils.remove_folder(self.tmp)
-
-
-    def start_multiproc(self, tool, threads, kwargs):
-        items = []
-        for file in Utils.file_list_from_dir(self.geotiff_dir, '*.tif'):
-            items.append((file, kwargs))
-        
-        for result in Pool.starmap(tool_dict[tool], items):
-            print() #do something?
-            #also use that multiproc. thing that lets you specify threads.
-
-
-    def tool_printer(self, tool):
-        print()
-        #tool should somehow provide info for a print statement
-
-tool_dict = {
-    "split_geotiff": TEST_Utils.split_polarizations,
-    "change_resolution": TEST_Utils.change_raster_resolution,
-    "sort_outputs": TEST_Utils.create_sorted_outputs,
-    "align_raster": TEST_Utils.align_raster,
-    "warp_crs": TEST_Utils.crs_warp    
-}   #TODO later add clipper, denoiser, snap executor and unit converter
-
-#if util in dict, value is a preinit function which must be run before util.
-pre_init_dict = {
-    "align_raster": TEST_Utils.get_reference_geotransform,
-    "sort_outputs": TEST_Utils.create_sorted_outputs
-}

@@ -12,7 +12,7 @@ import shutil
 import uuid
 import pyproj
 
-class Utils(object):
+class OLD_Utils(object):
 
     def gdal_error_handler(err_class, err_num, err_msg):
         errtype = {

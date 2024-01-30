@@ -5,52 +5,42 @@ import sys
 import geopandas as gpd
 import numpy as np
 import rasterio as rio
-from rasterio.crs import CRS
 from pathlib import Path
 import glob
 import shutil
 import uuid
 import pyproj
 
-class TEST_Utils(object):
+class Utils(object):
+    def __init__(self):
+        def gdal_error_handler(err_class, err_num, err_msg):
+            errtype = {
+                    gdal.CE_None:'None',
+                    gdal.CE_Debug:'Debug',
+                    gdal.CE_Warning:'Warning',
+                    gdal.CE_Failure:'Failure',
+                    gdal.CE_Fatal:'Fatal'
+            }
+            err_msg = err_msg.replace('\n',' ')
+            err_class = errtype.get(err_class, 'None')
+            print('Error Number: %s' % (err_num))
+            print('Error Type: %s' % (err_class))
+            print('Error Message: %s' % (err_msg))
 
-    #functions should in principle output to same folder as input, unless directly specified otherwise.
-    #in/out should be either handled by self or by the tool manager.
-    
-
-    def __init__(self, netcdf_dir, geotiff_dir):
-        if netcdf_dir == None: netcdf_dir = 'netcdf_output/'
-        self.netcdf_dir = netcdf_dir
-        if geotiff_dir == None: geotiff_dir = 'geotiff_output/'
-        self.geotiff_dir = geotiff_dir
-        self.tmp = 'tmp/'
-
-        gdal.PushErrorHandler(TEST_Utils.gdal_error_handler)
+        gdal.PushErrorHandler(gdal_error_handler)
         gdal.UseExceptions()
 
-    def gdal_error_handler(self, err_class, err_num, err_msg):
-        errtype = {
-                gdal.CE_None:'None',
-                gdal.CE_Debug:'Debug',
-                gdal.CE_Warning:'Warning',
-                gdal.CE_Failure:'Failure',
-                gdal.CE_Fatal:'Fatal'
-        }
-        err_msg = err_msg.replace('\n',' ')
-        err_class = errtype.get(err_class, 'None')
-        print('Error Number: %s' % (err_num))
-        print('Error Type: %s' % (err_class))
-        print('Error Message: %s' % (err_msg))
-        
+        self.test = 'test'
 
-    def file_list_from_dir(self, directory, extension, accept_no_files = False):
+        
+    def file_list_from_dir(directory, extensions, accept_no_files = False):
         """
         Returns file content of dir with given extension.
         If given a list of extensions, the function will whatever yields any files firt
         under assumption that the folder will only contain one type of files.
         """
-        if isinstance(extension, list):
-            for ext in extension:
+        if isinstance(extensions, list):
+            for extension in extensions:
                 file_list = glob.glob(directory + extension)
                 if file_list: break
 
@@ -58,16 +48,16 @@ class TEST_Utils(object):
                 '# No files in input directory!'
             ) 
         else:
-            file_list = glob.glob(directory + extension)
+            file_list = glob.glob(directory + extensions)
 
         if not accept_no_files: 
             assert len(file_list) != 0, (
-                f'## No {extension} files in {directory}!'
+                f'## No {extensions} files in {directory}!'
                 )
         return file_list
     
     
-    def is_valid_epsg(self, epsg_code):
+    def is_valid_epsg(epsg_code):
         """
         Checks whether provided EPSG code is valid
         """
@@ -78,11 +68,11 @@ class TEST_Utils(object):
             return False
         
 
-    def check_create_folder(self, directory):
+    def check_create_folder(directory):
         Path(directory).mkdir(exist_ok = True)
     
 
-    def shape_to_geojson(self, **kwargs):
+    def shape_to_geojson(kwargs):
         """
         Converts a shape to geoJSON
         Takes output_file and shape
@@ -96,7 +86,7 @@ class TEST_Utils(object):
         return geojson
 
 
-    def extract_polarization_band(self, **kwargs):
+    def extract_polarization_band(self, kwargs):
         """
         Splits a netcdf into constituent bands depending depending on polarization
         Takes input_file, polarization and output_dir
@@ -158,7 +148,7 @@ class TEST_Utils(object):
         return
 
 
-    # def crs_assign(self, input_raster, crs):
+    # def crs_assign(input_raster, crs):
     #     """
     #     Assigns a CRS but does not warp. Only useful for datasets which are referenced but have no metadata
     #     """
@@ -175,7 +165,7 @@ class TEST_Utils(object):
     #     shutil.move(output_raster, input_raster)
 
 
-    def unzip_data_to_dir(self, **kwargs):
+    def unzip_data_to_dir(kwargs):
         """
         Outputs content of zipfile to randomly named folder.
         Used for SAFE files
@@ -183,7 +173,7 @@ class TEST_Utils(object):
         """
         input_file = kwargs.get('input_file')
 
-        unzipped_safe = self.tmp + str(uuid.uuid4())
+        unzipped_safe = 'tmp/' + str(uuid.uuid4()) + '/'
         Path(unzipped_safe).mkdir(exist_ok = True)
         with zipfile.ZipFile(input_file, 'r') as zip_ref:
             zip_ref.extractall(unzipped_safe)
@@ -191,11 +181,11 @@ class TEST_Utils(object):
         return unzipped_safe
     
 
-    def remove_folder(self, folder):
+    def remove_folder(folder):
         shutil.rmtree(folder)
     
     
-    def crs_warp(self, **kwargs):
+    def crs_warp(self, kwargs):
         """
         Warps a raster to a new crs
         Takes input_file and crs 
@@ -216,7 +206,7 @@ class TEST_Utils(object):
         shutil.move(output_file, input_file)
 
 
-    def change_raster_resolution(self, **kwargs):
+    def change_raster_resolution(kwargs):
         """
         Resamples a raster to a new resolution
         Takes input_file, x_size, y_size
@@ -225,38 +215,45 @@ class TEST_Utils(object):
         x_size = kwargs.get('x_size')
         y_size = kwargs.get('y_size')
 
-        input_file = gdal.Open('input_file')
+        gdal_dataset = gdal.Open(input_file)
 
         output_file = str(uuid.uuid4()) + '.tif'
 
         warp_options = gdal.WarpOptions(xRes=x_size, yRes=y_size, resampleAlg='near', format='GTiff')
-        output_raster = gdal.Warp(output_file, input_file, options=warp_options)
-
-        input_file = None
+        output_raster = gdal.Warp(output_file, gdal_dataset, options=warp_options)
+        gdal_dataset = None
         output_raster = None
+
         shutil.move(output_file, input_file)
 
 
-    # def split_polarizations(self, geotiff_dir, input_geotiff, polarization):
-    #     print('## Splitting geotiffs into single bands...')
+    def split_polarizations(self, kwargs):
+        """
+        Splits a multiband geotiff into seperate files with single bands
+        MAY NOT BE NEEDED, DEPENDS ENTIRELY ON HOW SNAP EXECUTOR EVOLVES
+        Takes input_file and polarization
+        """
+        input_file = kwargs.get('input_file')
+        polarization = kwargs.get('polarization')
 
-    #     with rio.open(input_geotiff) as src:
-    #         meta = src.meta.copy()
+        geotiff_dir = Path(input_file).parent
 
-    #         for band in range(1, src.count + 1):
-    #             data = src.read(band)
+        with rio.open(input_file) as src:
+            meta = src.meta.copy()
 
-    #             output_filename = f"{geotiff_dir}/band________{band}.tif"
-    #             print(output_filename)
+            for band in range(1, src.count + 1):
+                data = src.read(band)
 
-    #             meta = src.meta.copy()
-    #             meta.update({'count': 1})
+                output_filename = f"{geotiff_dir}/band________{band}.tif"
 
-    #             with rio.open(output_filename, 'w', **meta) as dst:
-    #                 dst.write(data, 1)
+                meta = src.meta.copy()
+                meta.update({'count': 1})
+
+                with rio.open(output_filename, 'w', **meta) as dst:
+                    dst.write(data, 1)
 
     
-    def find_empty_raster(self, **kwargs):
+    def find_empty_raster(self, kwargs):
         """
         Finds geotiffs with no data
         Takes input_file
@@ -272,26 +269,24 @@ class TEST_Utils(object):
         return True
 
 
-    def create_sorted_outputs(self, **kwargs):
+    def create_sorted_outputs(kwargs):
         """
         Function is prequisite for "sort outputs" folder.
         Function creates ASC and DSC folders for each polarization given.
-        Takes folder_name and polarization
+        Takes output_path and polarization
         """
-        folder_name = kwargs.get('folder_name')
+        output_path = kwargs.get('output_path')
         polarization = kwargs.get('polarization')
 
-        Path(folder_name).mkdir(exist_ok = True)
-        output = output + folder_name
-        Path(output).mkdir(exist_ok = True)
+        Path(output_path).mkdir(exist_ok = True)
 
         for pol in polarization:
-            Path(output + pol + '_ASC/').mkdir(exist_ok = True)
-            Path(output + pol + '_DSC/').mkdir(exist_ok = True)
+            Path(output_path + pol + '_ASC/').mkdir(exist_ok = True)
+            Path(output_path + pol + '_DSC/').mkdir(exist_ok = True)
         return kwargs
         
 
-    def sort_outputs(self, **kwargs):
+    def sort_output(kwargs):
         """
         Sorts geotiffs into folder based on polarizaton and orbital direction
         Requires "create_sorted_outputs" function to be run beforehand
@@ -307,14 +302,12 @@ class TEST_Utils(object):
         file_polarization = None
         for pol in polarization:
             if pol in input_file:  file_polarization = pol
-        if file_polarization == None: 
-            print(f'# ERROR: No polarization information in {input_file}!')
-            return
+        if not file_polarization: print(f'# ERROR: No polarization information in {input_file}!')
 
         orbit_dir = None
         if '_ASC_' in input_file: orbit_dir = 'ASC'
         elif '_DSC_' in input_file: orbit_dir = 'DSC'
-        if orbit_dir == None: print('# ERROR: No orbital direction information in file!')
+        if not orbit_dir: print(f'# ERROR: No orbital direction information in {input_file}!')
 
         if None in (file_polarization, orbit_dir):
             Path(output_path + 'unsorted/').mkdir(exist_ok = True)
@@ -327,15 +320,16 @@ class TEST_Utils(object):
         return
     
     
-    def get_reference_geotransform(self, **kwargs):
+    def get_reference_geotransform(kwargs):
         """
         Function prequisite for using align_raster
         Function returns the geotransform from the largest file in dir
-        Takes input_file_list
+        Takes input_dir
         """
-        input_file_list = kwargs.get('input_file_list')
-        
-        reference_file = max(input_file_list, key=os.path.getsize)
+        input_dir = kwargs.get('input_dir')
+
+        input_file_list = Utils.file_list_from_dir(input_dir, '*.tif')
+        reference_file = max(input_file_list, key = os.path.getsize)
 
         reference = gdal.Open(reference_file)
         reference_geotransform = reference.GetGeoTransform()
@@ -347,23 +341,27 @@ class TEST_Utils(object):
         return kwargs
     
 
-    def align_raster(self, **kwargs):
+    def align_raster(kwargs):
         """
         Ensures pixels in a raster are aligned to same grid.
         Requires "get_reference_geotransform" function to be run beforehand
-        Takes raster path, output_path, reference_geotransform
+        Takes input_file, tmp_dir, reference_geotransform
         """
-        raster_path = kwargs.get('raster_path')
-        output_path = kwargs.get('output_path')
+        input_file = kwargs.get('input_file')
+        tmp_dir = kwargs.get('tmp_dir')
+        reference_geotransform = kwargs.get('reference_geotransform')
 
-        gdal.Warp(output_path,
-                raster_path,
-                xRes = kwargs.get('reference_geotransform')[1],
-                yRes = -kwargs.get('reference_geotransform')[5],
+        Utils.check_create_folder(tmp_dir)
+        tmp_file = tmp_dir + str(uuid.uuid4()) + '.tif'
+
+        gdal.Warp(tmp_file,
+                input_file,
+                xRes = reference_geotransform[1],
+                yRes = -reference_geotransform[5],
                 targetAlignedPixels = True,
                 resampleAlg = gdal.GRA_NearestNeighbour
                 )
-        shutil.move(output_path, raster_path)
+        shutil.move(tmp_file, input_file)
         return
                     
 

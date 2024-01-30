@@ -1,27 +1,12 @@
-from osgeo import gdal
 import sys
 import os
-from flood_utils import Utils
 from multiprocessing.pool import Pool
-from flood_utils_ditest import TEST_Utils
+from utils import Utils
 
 class Tool_manager(object):
-    def __init__(self, netcdf_dir, geotiff_dir):
-        if netcdf_dir == None: netcdf_dir = 'netcdf_output/'
-        self.netcdf_dir = netcdf_dir
-        if geotiff_dir == None: geotiff_dir = 'geotiff_output/'
-        self.geotiff_dir = geotiff_dir
-        self.tmp = 'tmp/'
-
-        Utils.check_create_folder(self.netcdf_dir)
-        Utils.check_create_folder(self.tmp)
-        gdal.PushErrorHandler(Utils.gdal_error_handler)
-        gdal.UseExceptions()
-
-
-    def self_check(self, crs, polarization, denoise_mode):
+    def self_check(crs, polarization, denoise_mode):
         
-        #possibly shouldnt be here
+        #maybe this entire section shouldnt be here
         assert denoise_mode in ['SAR2SAR', 'mean'], f"## {denoise_mode} must match SAR2SAR or mean"   
         assert Utils.is_valid_epsg(crs.replace('EPSG:', '')), (
             '## CRS is not valid'
@@ -39,59 +24,67 @@ class Tool_manager(object):
         return
 
 
-    def util_starter(self, tool, threads, kwargs = {}):
+    def util_starter(tool, threads, kwargs = {}):
 
-        pre_init_util = pre_init_dict.get(tool)
-        if not pre_init_util == None:            
-            kwargs = pre_init_util(kwargs)
+        if pre_init_dict.get(tool):
+            kwargs = pre_init_dict.get(tool)(kwargs)
 
         if threads == 1:
-            self.start_singleproc(tool, kwargs)
+            Tool_manager.start_singleproc(tool, kwargs)
         elif threads >1:
-            self.start_multiproc(tool, threads, kwargs)
+            print('fix multiproc. first!')
+            Tool_manager.start_singleproc(tool, kwargs)
+            # Tool_manager.start_multiproc(tool, threads, kwargs)
         else:
             raise Exception(f'## Thread var must contain number greater than 0. Got {threads}')
+        
+        # a "tool printer" would display a single printh the statement the tools previously provided 
     
 
-    def start_singleproc(self, tool, kwargs):
-        input_file_list = Utils.file_list_from_dir(self.geotiff_dir, ['*.tif', '*.nc', '*.zip'])
-
-        #creation of tmp dir should always be left to the tool itself
-        #the name of the dir should always be uuid4 based.
-        tmp = os.makedirs(self.tmp, exist_ok = True)
+    def start_singleproc(tool, kwargs):
+        input_file_list = Utils.file_list_from_dir(kwargs.get('input_dir'), ['*.tif', '*.nc', '*.zip'])
 
         for i, input_file in enumerate(input_file_list):
-            # print('# ' + str(i+1) + ' / ' + str(len(input_file_list)), end = '\r')
-            print(kwargs)
-            tool_dict[tool](input_file, **kwargs)
-            sys.exit()
-        Utils.remove_folder(self.tmp)
+            print('# ' + str(i+1) + ' / ' + str(len(input_file_list)), end = '\r')
+            
+            kwargs['input_file'] = input_file
+            tool_dict[tool](kwargs)
 
 
     def start_multiproc(self, tool, threads, kwargs):
-        items = []
-        for input_file in Utils.file_list_from_dir(self.geotiff_dir, ['*.tif', '*.nc', '*.zip']):
-            items.append((input_file, kwargs))
+
+        # items = []
+        # for input_file in Utils.file_list_from_dir(kwargs.get('input_dir'), ['*.tif', '*.nc', '*.zip']):
+        #     items.append((input_file, kwargs))
         
-        for result in Pool.starmap(tool_dict[tool], items):
-            print() #?
-            #also use that multiproc. thing that lets you specify threads.
+        # for result in Pool.starmap(tool_dict[tool], items):
+        #     print() #?
+        #     #also use that multiproc. thing that lets you specify threads.
 
+        # with Pool(threads) as p:
+        #     p.map(tool_dict[tool], (items))
 
-    def tool_printer(self, tool):
-        print()
-        #tool should somehow provide info for a print statement
+        import concurrent.futures
+        
+        input_files = Utils.file_list_from_dir(kwargs.get('input_dir'), ['*.tif', '*.nc', '*.zip'])
+
+        def process_file(tool, input_file, **kwargs):
+            return tool_dict[tool](input_file, **kwargs)
+
+        with concurrent.futures.ProcessPoolExecutor(max_workers=threads) as executor:
+            tasks = [executor.submit(process_file, tool, file, **kwargs) for file in input_files]
+            results = [task.result() for task in concurrent.futures.as_completed(tasks)]
+
 
 tool_dict = {
-    "split_geotiff": TEST_Utils.split_polarizations,
-    "change_resolution": TEST_Utils.change_raster_resolution,
-    "sort_outputs": TEST_Utils.create_sorted_outputs,
-    "align_raster": TEST_Utils.align_raster,
-    "warp_crs": TEST_Utils.crs_warp    
+    "split_geotiff": Utils.split_polarizations,
+    "change_resolution": Utils.change_raster_resolution,
+    "sort_output": Utils.sort_output,
+    "align_raster": Utils.align_raster,
+    "warp_crs": Utils.crs_warp    
 }   #TODO later add clipper, denoiser, snap executor and unit converter
 
-#if util in dict, value is a preinit function which must be run before util.
 pre_init_dict = {
-    "align_raster": TEST_Utils.get_reference_geotransform,
-    "sort_outputs": TEST_Utils.create_sorted_outputs
+    "align_raster": Utils.get_reference_geotransform,
+    "sort_output": Utils.create_sorted_outputs
 }
