@@ -1,9 +1,9 @@
 from osgeo import gdal
 import sys
 import os
-from old_utils import Utils
+from old_utils import OLD_Utils
 from multiprocessing.pool import Pool
-from utils import TEST_Utils
+from utils import Utils
 
 class OLD_Preprocessor(object):
     def __init__(self, netcdf_dir, geotiff_dir):

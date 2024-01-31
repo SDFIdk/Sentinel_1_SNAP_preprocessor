@@ -4,13 +4,12 @@ import os
 import argparse
 import sys
 from osgeo import gdal
-from old_utils import Utils
 from pathlib import Path
 import numpy as np
 import shutil
 import rasterio as rio
-import pickle
 
+from utils import Utils
 from sar2sar_model import sar2sar_denoiser
 from mean_extractor import Correction_dict
 

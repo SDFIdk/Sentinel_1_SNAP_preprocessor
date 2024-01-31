@@ -218,17 +218,6 @@ class OLD_Utils(object):
         return output
     
     
-    def find_empty_raster(geotiff):
-        """
-        Finds geotiffs with no data
-        """
-        with rio.open(geotiff) as src:
-            for i in range(1, src.count + 1):
-                data = src.read(i)
-
-                if not np.all(np.isnan(data)):
-                    return False
-        return True
 
         
     def sort_outputs(tif, polarization, output):

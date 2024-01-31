@@ -13,24 +13,24 @@ import pyproj
 
 class Utils(object):
     def __init__(self):
-        def gdal_error_handler(err_class, err_num, err_msg):
-            errtype = {
-                    gdal.CE_None:'None',
-                    gdal.CE_Debug:'Debug',
-                    gdal.CE_Warning:'Warning',
-                    gdal.CE_Failure:'Failure',
-                    gdal.CE_Fatal:'Fatal'
-            }
-            err_msg = err_msg.replace('\n',' ')
-            err_class = errtype.get(err_class, 'None')
-            print('Error Number: %s' % (err_num))
-            print('Error Type: %s' % (err_class))
-            print('Error Message: %s' % (err_msg))
-
-        gdal.PushErrorHandler(gdal_error_handler)
-        gdal.UseExceptions()
-
         self.test = 'test'
+
+    def gdal_error_handler(err_class, err_num, err_msg):
+        errtype = {
+                gdal.CE_None:'None',
+                gdal.CE_Debug:'Debug',
+                gdal.CE_Warning:'Warning',
+                gdal.CE_Failure:'Failure',
+                gdal.CE_Fatal:'Fatal'
+        }
+        err_msg = err_msg.replace('\n',' ')
+        err_class = errtype.get(err_class, 'None')
+        print('Error Number: %s' % (err_num))
+        print('Error Type: %s' % (err_class))
+        print('Error Message: %s' % (err_msg))
+
+    gdal.PushErrorHandler(gdal_error_handler)
+    gdal.UseExceptions()
 
         
     def file_list_from_dir(directory, extensions, accept_no_files = False):
@@ -39,20 +39,17 @@ class Utils(object):
         If given a list of extensions, the function will whatever yields any files firt
         under assumption that the folder will only contain one type of files.
         """
-        if isinstance(extensions, list):
-            for extension in extensions:
-                file_list = glob.glob(directory + extension)
-                if file_list: break
+        if not isinstance(extensions, list): extensions = [extensions]
 
-            assert file_list, (
-                '# No files in input directory!'
-            ) 
-        else:
-            file_list = glob.glob(directory + extensions)
+        for extension in extensions:
+            if not extension.startswith('*'): extension = '*' + extension
+
+            file_list = glob.glob(directory + extension)
+            if file_list: break
 
         if not accept_no_files: 
             assert len(file_list) != 0, (
-                f'## No {extensions} files in {directory}!'
+                f'## No {str(extensions)} files in {directory}!'
                 )
         return file_list
     
@@ -86,14 +83,15 @@ class Utils(object):
         return geojson
 
 
-    def extract_polarization_band(self, kwargs):
+    def extract_polarization_band(kwargs):
         """
         Splits a netcdf into constituent bands depending depending on polarization
-        Takes input_file, polarization and output_dir
+        Used for NetCDF
+        Takes input_file, output_dir and polarization 
         """
         input_file = kwargs.get('input_file')
-        polarization = kwargs.get('polarization')
         output_dir = kwargs.get('output_dir')
+        polarization = kwargs.get('polarization')
 
         extension = Path(input_file).suffix
         input_dataset = gdal.Open(input_file, gdal.GA_ReadOnly)
@@ -148,21 +146,20 @@ class Utils(object):
         return
 
 
-    # def crs_assign(input_raster, crs):
-    #     """
-    #     Assigns a CRS but does not warp. Only useful for datasets which are referenced but have no metadata
-    #     """
-    #     with rio.open(input_raster) as src:
-    #         data = src.read()
-    #         meta = src.meta.copy()
+    def remove_empty(kwargs):
+        """
+        Finds geotiffs with no data and deletes them. Outputs none
+        Used for geotiffs
+        Takes input_file
+        """
+        input_file = kwargs.get('input_file')
+        with rio.open(input_file) as src:
+            for i in range(1, src.count + 1):
+                data = src.read(i)
 
-    #     meta.update({'crs': CRS.from_string(crs)})
-
-    #     output_raster = str(uuid.uuid4()) + '.tif'
-    #     with rio.open(output_raster, 'w', **meta) as dst:
-    #         dst.write(data)
-
-    #     shutil.move(output_raster, input_raster)
+                if np.all(np.isnan(data)):
+                    os.remove(input_file)
+        return 
 
 
     def unzip_data_to_dir(kwargs):
@@ -185,7 +182,7 @@ class Utils(object):
         shutil.rmtree(folder)
     
     
-    def crs_warp(self, kwargs):
+    def crs_warp(kwargs):
         """
         Warps a raster to a new crs
         Takes input_file and crs 
@@ -227,7 +224,7 @@ class Utils(object):
         shutil.move(output_file, input_file)
 
 
-    def split_polarizations(self, kwargs):
+    def split_polarizations(kwargs):
         """
         Splits a multiband geotiff into seperate files with single bands
         MAY NOT BE NEEDED, DEPENDS ENTIRELY ON HOW SNAP EXECUTOR EVOLVES
@@ -253,7 +250,7 @@ class Utils(object):
                     dst.write(data, 1)
 
     
-    def find_empty_raster(self, kwargs):
+    def find_empty_raster(kwargs):
         """
         Finds geotiffs with no data
         Takes input_file

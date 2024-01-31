@@ -1,8 +1,9 @@
 import subprocess
 import os
-from glob import glob
 import xml.etree.ElementTree as ET
 import sys
+
+from utils import Utils
 
 class SNAP_preprocessor(object):
 
@@ -18,7 +19,7 @@ class SNAP_preprocessor(object):
     def graph_processing(self, input_path, output_dir, graph_xml, input_ext = '.zip'):
         print(f'## Applying SNAP processing stack to {input_ext} files...')
 
-        input_files = glob(input_path + f'*{input_ext}')
+        input_files = Utils.file_list_from_dir(input_path, input_ext, accept_no_files = False)
 
         output_ext = self.extract_output_ext(graph_xml)
 

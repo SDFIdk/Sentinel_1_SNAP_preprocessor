@@ -1,4 +1,6 @@
 import sys
+from osgeo import gdal  #for some reason it crashes if imported in other modules????
+
 from denoiser import Denoiser
 from clip_256 import Clipper
 from snap_converter import SNAP_preprocessor
@@ -7,20 +9,28 @@ from tool_manager import Tool_manager
 
 if __name__== '__main__':
 
-    # safe_dir = 'D:/s1_raw_data/holstebro_2015_12_07/'
-    # safe_dir = 'D:/s1_raw_data/holstebro_2022_12_31/'
-    safe_dir = 'D:/s1_raw_data/kolding_2020_02_17/'
-    # safe_dir = 'D:/s1_raw_data/stavis_odense_2022_02_21/'
+    safe_dir = 'input/ribe/'
+    shape = 'ribe_aoi/ribe_aoi.shp'
+
+    # safe_dir = 'input/skjern/'
+    # shape = "shapes/skjern/layers/POLYGON.shp"
+
+    # safe_dir = 'input/sneum_aa/'
+    # shape = "shapes/sneum_aa/layers/POLYGON.shp"
+    
+    # safe_dir = 'input/varde/'
+    # shape = "shapes/varde/layers/POLYGON.shp"
+
 
     netcdf_dir = 'D:/s1_netcdf_out/'
-    # geotiff_dir = 'D:/s1_geotiff_out/'
+    geotiff_dir = 'D:/s1_geotiff_out/'
 
     # safe_dir = 'D:/s1_test_safe/'
     # netcdf_dir = 'D:/s1_test_nc/'
-    geotiff_dir = 'D:/s1_test_geotiff/'
+    # geotiff_dir = 'D:/s1_test_geotiff/'
 
     # shape = 'D:/shapes/holstebro/POLYGON.shp'  # path to .shp file in unzipped shape dir
-    shape = 'D:/shapes/kolding/POLYGON.shp'
+    # shape = 'D:/shapes/kolding/POLYGON.shp'
     # shape = 'D:/shapes/stavis_odense/POLYGON.shp'
 
     pre_process_graph = 'snap_graphs/preprocessing_workflow_2023_no_cal.xml'
@@ -42,7 +52,6 @@ clipper = Clipper(geotiff_dir)
 denoiser = Denoiser(geotiff_dir, shape)
 snap_executor = SNAP_preprocessor(gpt_path=gpt_exe)
 
-
 # preprocessor.self_check(crs, polarization, denoise_mode)
 # TODO check for checkpoint folder (SAR2SAR) 
 # TODO check that gpt exe points to SNAP
@@ -52,11 +61,21 @@ import os
 dataset_name = os.path.basename(os.path.normpath(safe_dir))
 
 # snap_executor.graph_processing(safe_dir, netcdf_dir, pre_process_graph, input_ext='.zip')
-# preprocessor.netcdf_to_geotiff(geotiff_dir, netcdf_dir, polarization)
-# clipper.start_clipper(input_dir=geotiff_dir, shape=shape, crs=crs)
-# preprocessor.remove_empty(geotiff_dir)
+Tool_manager.util_starter('netcdf_to_geotiff', 1, {
+        'input_dir':netcdf_dir,
+        'output_dir':geotiff_dir,
+        'polarization':polarization
+        })
 
-# denoiser.select_denoiser(denoise_mode, to_intensity = False)
+clipper.start_clipper(input_dir=geotiff_dir, shape=shape, crs=crs)
+Tool_manager.util_starter('remove_empty', 1, {
+        'input_dir':geotiff_dir,
+        })
+
+sys.exit()
+#DO A SAVE OF THE GEOTIFFS
+
+denoiser.select_denoiser(denoise_mode, to_intensity = False)
 # TODO fix (and locate) warnings about TF deprecations
 # BUG enable GPU properly
 

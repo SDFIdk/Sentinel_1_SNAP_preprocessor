@@ -7,7 +7,7 @@ from rasterio.windows import Window
 import geopandas as gpd
 from pathlib import Path
 
-from old_utils import Utils
+from utils import Utils
 
 class Clipper(object):
 

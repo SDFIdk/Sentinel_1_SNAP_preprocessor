@@ -4,6 +4,11 @@ from multiprocessing.pool import Pool
 from utils import Utils
 
 class Tool_manager(object):
+    # def __init__(self, working_dir, tmp_dir):
+    #     self.working_dir = working_dir
+    #     self.tmp_dir = tmp_dir
+
+
     def self_check(crs, polarization, denoise_mode):
         
         #maybe this entire section shouldnt be here
@@ -81,7 +86,9 @@ tool_dict = {
     "change_resolution": Utils.change_raster_resolution,
     "sort_output": Utils.sort_output,
     "align_raster": Utils.align_raster,
-    "warp_crs": Utils.crs_warp    
+    "warp_crs": Utils.crs_warp,
+    "remove_empty": Utils.remove_empty,
+    "netcdf_to_geotiff": Utils.extract_polarization_band
 }   #TODO later add clipper, denoiser, snap executor and unit converter
 
 pre_init_dict = {
