@@ -10,6 +10,7 @@ import glob
 import shutil
 import uuid
 import pyproj
+import tempfile
 
 class Utils(object):
     def __init__(self):
@@ -202,6 +203,28 @@ class Utils(object):
         gdal.Warp(output_file, gdal_dataset, options = options)
         shutil.move(output_file, input_file)
 
+    def TEST_crs_warp(kwargs):
+        """
+        NEW THING USING tempfile AND GDAL CONTEXT MANAGER
+        Warps a raster to a new CRS.
+        Takes input_file and crs.
+        """
+        input_file = kwargs.get('input_file')
+        crs = kwargs.get('crs')
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_output_file = os.path.join(temp_dir, os.path.basename(input_file))
+
+            with gdal.Open(input_file) as gdal_dataset:
+                geotransform = gdal_dataset.GetGeoTransform()
+                x_res = geotransform[1]
+                y_res = -geotransform[5]
+
+                options = gdal.WarpOptions(format="GTiff", dstSRS=crs, xRes=x_res, yRes=y_res, resampleAlg=gdal.GRA_NearestNeighbour)
+                gdal.Warp(temp_output_file, gdal_dataset, options=options)
+
+            shutil.move(temp_output_file, input_file)
+
 
     def change_raster_resolution(kwargs):
         """
@@ -223,6 +246,21 @@ class Utils(object):
 
         shutil.move(output_file, input_file)
 
+    def NEW_change_raster_resolution(kwargs):
+        """
+        Resamples a raster to a new resolution
+        Takes input_file, x_size, y_size
+        """
+        input_file = kwargs.get('input_file')
+        x_size = kwargs.get('x_size')
+        y_size = kwargs.get('y_size')
+
+        with tempfile.TemporaryDirectory() as temp_file:
+            with gdal.Open(input_file) as gdal_dataset:
+
+                warp_options = gdal.WarpOptions(xRes=x_size, yRes=y_size, resampleAlg='near', format='GTiff')
+                input_file = gdal.Warp(temp_file, gdal_dataset, options=warp_options)
+
 
     def split_polarizations(kwargs):
         """
@@ -241,7 +279,7 @@ class Utils(object):
             for band in range(1, src.count + 1):
                 data = src.read(band)
 
-                output_filename = f"{geotiff_dir}/band________{band}.tif"
+                output_filename = f"{geotiff_dir}/band_{band}.tif"
 
                 meta = src.meta.copy()
                 meta.update({'count': 1})
@@ -360,6 +398,59 @@ class Utils(object):
                 )
         shutil.move(tmp_file, input_file)
         return
-                    
+    
+    def copy_dir(kwargs):
+        """
+        Creates a copy of the directory given to it to a given location
+        Takes file and copy_dir
+        """
+        input_file = kwargs.get('input_file')
+        copy_dir = kwargs.get('copy_dir')
+
+        Utils.check_create_folder(copy_dir)
+
+        copy_file = copy_dir + os.path.basename(input_file)
+        shutil.copyfile(input_file, copy_file)
+
+
+    def trimmer_256(kwargs):
+        """
+        Trims a dataset to a resolution divisible by 256
+        takes input_file
+        """
+        input_file = kwargs.get('input_file')
+
+        dataset =  gdal.Open(input_file)
+
+        original_width = dataset.RasterXSize
+        original_height = dataset.RasterYSize
+
+        new_width = (original_width // 256) * 256
+        new_height = (original_height // 256) * 256
+
+        if new_width == original_width and new_height == original_height:
+            return
+        else:
+            # with tempfile.NamedTemporaryFile(delete=False, suffix='.tif') as tmp:
+            #     temp_output_path = tmp.name
+            temp_output_path = 'tmp.tif'
+            driver = gdal.GetDriverByName('GTiff')
+            out_dataset = driver.Create(temp_output_path, new_width, new_height, dataset.RasterCount,
+                                        dataset.GetRasterBand(1).DataType)
+            out_dataset.SetGeoTransform(dataset.GetGeoTransform())
+            out_dataset.SetProjection(dataset.GetProjection())
+
+            for i in range(dataset.RasterCount):
+                in_band = dataset.GetRasterBand(i+1)
+                out_band = out_dataset.GetRasterBand(i+1)
+
+                data = in_band.ReadAsArray(0, 0, new_width, new_height)
+                out_band.WriteArray(data)
+        dataset = None
+        out_dataset = None
+        out_band = None
+
+        shutil.move(temp_output_path, input_file)
+
 
 gdal.UseExceptions()

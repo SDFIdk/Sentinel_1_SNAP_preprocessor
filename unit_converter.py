@@ -2,7 +2,8 @@ import rasterio as rio
 import numpy as np
 from glob import glob
 
-"""Converts units from raw backscatter to decibel or "power transform". 
+"""
+Converts units from raw backscatter to decibel or "power transform". 
 """
 
 def convert_unit(geotiff_dir, source_unit, destination_unit, zero_max = False):
@@ -22,9 +23,9 @@ def convert_unit(geotiff_dir, source_unit, destination_unit, zero_max = False):
         return
     
     zero_max_out = False
-    zero_max_in = False
     if zero_max and source_unit == 'linear':
         zero_max_out = True
+    zero_max_in = False
     if zero_max and destination_unit == 'linear':
         zero_max_in = True
 

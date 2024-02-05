@@ -2,8 +2,9 @@ import sys
 import os
 from multiprocessing.pool import Pool
 from utils import Utils
+from clip_256 import Clipper
 
-class Tool_manager(object):
+class Tool_manager():
     # def __init__(self, working_dir, tmp_dir):
     #     self.working_dir = working_dir
     #     self.tmp_dir = tmp_dir
@@ -47,7 +48,11 @@ class Tool_manager(object):
     
 
     def start_singleproc(tool, kwargs):
-        input_file_list = Utils.file_list_from_dir(kwargs.get('input_dir'), ['*.tif', '*.nc', '*.zip'])
+        input_dir = kwargs.get('input_dir')
+        if isinstance(input_dir, list): 
+            input_file_list = input_dir
+        else:
+            input_file_list = Utils.file_list_from_dir(input_dir, ['*.tif', '*.nc', '*.zip'])
 
         for i, input_file in enumerate(input_file_list):
             print('# ' + str(i+1) + ' / ' + str(len(input_file_list)), end = '\r')
@@ -88,10 +93,13 @@ tool_dict = {
     "align_raster": Utils.align_raster,
     "warp_crs": Utils.crs_warp,
     "remove_empty": Utils.remove_empty,
-    "netcdf_to_geotiff": Utils.extract_polarization_band
+    "netcdf_to_geotiff": Utils.extract_polarization_band,
+    "copy_dir": Utils.copy_dir,
+    "trimmer_256": Utils.trimmer_256,
+    # "clipper": Clipper.start_clipper
 }   #TODO later add clipper, denoiser, snap executor and unit converter
 
 pre_init_dict = {
     "align_raster": Utils.get_reference_geotransform,
-    "sort_output": Utils.create_sorted_outputs
+    "sort_output": Utils.create_sorted_outputs,
 }
