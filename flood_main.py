@@ -74,7 +74,7 @@ Tool_manager.util_starter('remove_empty', 1, {
 
 Tool_manager.util_starter('copy_dir', 1, {
         'input_dir':geotiff_dir,
-        'copy_dir':'D:/s1_geotiff_out_not_denoised/'
+        'copy_dir':'D:/s1_geotiff_out_not_denoised_/'
         })
 
 
