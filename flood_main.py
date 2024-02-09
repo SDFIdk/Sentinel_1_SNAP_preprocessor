@@ -10,7 +10,7 @@ from tool_manager_init_test import Tool_manager_init_test
 
 if __name__== '__main__':
 
-    # safe_dir = 'D:/s1_raw_data/ribe_2024_01_22/'
+    safe_dir = 'D:/s1_raw_data/ribe_2024_01_22/'
     shape = 'ribe_aoi/ribe_aoi.shp'
 
     # safe_dir = 'D:/s1_raw_data/skjern_2024_01_22/'
@@ -52,6 +52,19 @@ if __name__== '__main__':
     # denoise_mode = 'mean'
     # denoise_mode = 'SAR2SAR_mean_dict'
 
+
+# safe_utils = Tool_manager_init_test(safe_dir, '*.zip', 1) #TODO implement SAFE executor into Utils
+netcdf_utils = Tool_manager_init_test(netcdf_dir, '*.nc', threads = 1, polarization=polarization)
+geotiff_utils = Tool_manager_init_test(geotiff_dir, '*.tif', threads = 1, polarization=polarization)
+
+# -------------- init_test ----------------
+# test_tool_manager = Tool_manager_init_test('output/', '*.tif', 1)
+# test_tool_manager.util_starter('TEST_FUNK', a = '1', b = '2', c = '3')
+# test_tool_manager.util_starter('TEST_FUNK')
+# test_tool_manager.util_starter('align_raster')
+# test_tool_manager.util_starter('copy_dir', copy_dir = 'TEST_DIRECTORY/')
+# -------------- init_test ----------------
+
 clipper = Clipper(geotiff_dir)
 denoiser = Denoiser(geotiff_dir, shape)
 snap_executor = SnapPreprocessor(gpt_path=gpt_exe)
@@ -62,29 +75,79 @@ snap_executor = SnapPreprocessor(gpt_path=gpt_exe)
 # TODO check for files in netcdf and geotiff folders, ask for delete?
 
 
-# -------------- init_test ----------------
+import os # This needs to be removed somehow
+dataset_name = os.path.basename(os.path.normpath(safe_dir)) # This needs to be removed somehow
 
-netcdf_tool_manager = Tool_manager_init_test(netcdf_dir, 1, output_dir = geotiff_dir)
-geotiff_tool_manager = Tool_manager_init_test(geotiff_dir, 1)
+snap_executor.graph_processing(safe_dir, netcdf_dir, pre_process_graph, input_ext='.zip')
 
-# BUG why wont the test tool manager recognize the class?
+netcdf_utils.util_starter('netcdf_to_geotiff', output_dir = geotiff_dir)
+clipper.start_clipper(input_dir=geotiff_dir, shape=shape, crs=crs)
+geotiff_utils.util_starter('copy_dir', copy_dir = 'D:/s1_geotiff_out_not_denoised_/')
 
+# ---------------------------------- SAR2SAR_track ----------------------------------
+denoise_mode = 'SAR2SAR' # This needs to be removed somehow
+denoiser.select_denoiser(denoise_mode, to_intensity = False)
+# TODO fix (and locate) warnings about TF deprecations
+# BUG enable GPU properly
 
+geotiff_utils.util_starter('change_resolution', x_sixe = 10, y_sixe = 10)
+geotiff_utils.util_starter('convert_unit', source_unit = 'linear', desitnation_unit = 'decibel')
+geotiff_utils.util_starter('align_raster')
+geotiff_utils.util_starter('sort_output', output_path = f'{dataset_name}_{denoise_mode}_denoised_geotiffs_decibel_10m/')
 
-# -------------- init_test ----------------
+geotiff_utils.util_starter('convert_unit', source_unit = 'decibel', desitnation_unit = 'power')
+geotiff_utils.util_starter('align_raster')
+geotiff_utils.util_starter('sort_output', output_path = f'{dataset_name}_{denoise_mode}_denoised_geotiffs_power_transform_10m/')
 
-import os
-# dataset_name = os.path.basename(os.path.normpath(safe_dir))
+geotiff_utils.util_starter('convert_unit', source_unit = 'power', desitnation_unit = 'linear')
+geotiff_utils.util_starter('change_resolution', x_sixe = 20, y_sixe = 20)
 
-# snap_executor.graph_processing(safe_dir, netcdf_dir, pre_process_graph, input_ext='.zip')
+geotiff_utils.util_starter('convert_unit', source_unit = 'linear', desitnation_unit = 'decibel')
+geotiff_utils.util_starter('align_raster')
+geotiff_utils.util_starter('sort_output', output_path = f'{dataset_name}_{denoise_mode}_denoised_geotiffs_decibel_20m/')
+
+geotiff_utils.util_starter('convert_unit', source_unit = 'decibel', desitnation_unit = 'power')
+geotiff_utils.util_starter('align_raster')
+geotiff_utils.util_starter('sort_output', output_path = f'{dataset_name}_{denoise_mode}_denoised_geotiffs_power_transform_20m/')
+
+# ---------------------------------- mean_track ----------------------------------
+geotiff_dir = 'D:/s1_geotiff_out_not_denoised/'
+geotiff_utils = Tool_manager_init_test(geotiff_dir, '*.tif', threads = 1, polarization=polarization)
+denoise_mode = 'mean'
+denoiser.select_denoiser(denoise_mode, to_intensity = False)
+
+geotiff_utils.util_starter('change_resolution', x_sixe = 10, y_sixe = 10)
+geotiff_utils.util_starter('convert_unit', source_unit = 'linear', desitnation_unit = 'decibel')
+geotiff_utils.util_starter('align_raster')
+geotiff_utils.util_starter('sort_output', output_path = f'{dataset_name}_{denoise_mode}_denoised_geotiffs_decibel_10m/')
+
+geotiff_utils.util_starter('convert_unit', source_unit = 'decibel', desitnation_unit = 'power')
+geotiff_utils.util_starter('align_raster')
+geotiff_utils.util_starter('sort_output', output_path = f'{dataset_name}_{denoise_mode}_denoised_geotiffs_power_transform_10m/')
+
+geotiff_utils.util_starter('convert_unit', source_unit = 'power', desitnation_unit = 'linear')
+geotiff_utils.util_starter('change_resolution', x_sixe = 20, y_sixe = 20)
+
+geotiff_utils.util_starter('convert_unit', source_unit = 'linear', desitnation_unit = 'decibel')
+geotiff_utils.util_starter('align_raster')
+geotiff_utils.util_starter('sort_output', output_path = f'{dataset_name}_{denoise_mode}_denoised_geotiffs_decibel_20m/')
+
+geotiff_utils.util_starter('convert_unit', source_unit = 'decibel', desitnation_unit = 'power')
+geotiff_utils.util_starter('align_raster')
+geotiff_utils.util_starter('sort_output', output_path = f'{dataset_name}_{denoise_mode}_denoised_geotiffs_power_transform_20m/')
+
+import shutil
+# shutil.rmtree(geotiff_dir)
+
+# ----------------------------------- OLD TOOL MANAGER ---------------------------------------
+sys.exit()
+snap_executor.graph_processing(safe_dir, netcdf_dir, pre_process_graph, input_ext='.zip')
 
 ToolManager.util_starter('netcdf_to_geotiff', 1, {
         'input_dir':netcdf_dir,
         'output_dir':geotiff_dir,
         'polarization':polarization
         })
-
-sys.exit()
 
 clipper.start_clipper(input_dir=geotiff_dir, shape=shape, crs=crs)
 ToolManager.util_starter('remove_empty', 1, {
@@ -95,7 +158,6 @@ ToolManager.util_starter('copy_dir', 1, {
         'input_dir':geotiff_dir,
         'copy_dir':'D:/s1_geotiff_out_not_denoised_/'
         })
-
 
 # ---------------------------------- SAR2SAR_track ----------------------------------
 
@@ -246,5 +308,5 @@ ToolManager.util_starter('sort_output', 1, {
         'polarization':polarization
         })
 
-import shutil
-shutil.rmtree(geotiff_dir)
+# import shutil
+# shutil.rmtree(geotiff_dir)

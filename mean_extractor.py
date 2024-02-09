@@ -4,7 +4,7 @@ from pathlib import Path
 from osgeo import gdal
 import zipfile
 import shutil
-from snap_converter import SNAP_preprocessor
+from snap_converter import SnapPreprocessor
 
 from pprint import pprint
 import sys
@@ -63,7 +63,7 @@ class Correction_dict(object):
             )
             gdal.Translate(output_geotiff, gdal_safe, options=translate_options)
 
-            snap_executor = SNAP_preprocessor(gpt_path = self.gpt_path)
+            snap_executor = SnapPreprocessor(gpt_path = self.gpt_path)
             snap_executor.graph_processing(safe_dir, output_geotiff, 'land_sea_mask.xml', '.tif', '.tif')
 
             assert filename not in mean_dict, f"## {filename} already in dict! Check for duplicate input files"
