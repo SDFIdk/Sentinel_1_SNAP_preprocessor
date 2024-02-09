@@ -2,7 +2,7 @@ import sys
 from osgeo import gdal  # for some reason it crashes if imported in other modules????
 
 from clip_256 import Clipper
-from tool_manager import Tool_manager
+from tool_manager import ToolManager
 import unit_converter
 
 if __name__ == "__main__":
@@ -28,9 +28,12 @@ for geotiff in geotiff_files:
 #         'input_dir':geotiff_files,
 #         })
 
-unit_converter.convert_unit(power_files, "linear", "power")
-unit_converter.convert_unit(decibel_files, "linear", "decibel")
+geotiff_utils = ToolManager(geotiff_files, '*.tif', threads = 1)
+geotiff_utils.util_starter('remove_empty')
 
-Tool_manager.util_starter('remove_empty', 1, {
-        'input_dir':geotiff_files,
-        })
+power_utils = ToolManager(power_files, '*.tif', threads = 1)
+power_utils.util_starter('convert_unit', source_unit = 'linear', desitnation_unit = 'power')
+
+decibel_utils = ToolManager(decibel_files, '*.tif', threads = 1)
+decibel_utils.util_starter('convert_unit', source_unit = 'linear', desitnation_unit = 'decibel')
+

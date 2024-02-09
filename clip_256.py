@@ -24,35 +24,19 @@ class Clipper(object):
         gdal.UseExceptions()
 
 
-    def start_clipper(self, input_dir,  shape, crs):
+    def start_clipper(self, input_dir, shape, crs):
         print('## Clipping files to shape...')
 
         geotiff_list = Utils.file_list_from_dir(input_dir, '*.tif')
         os.makedirs(self.tmp, exist_ok = True)
 
-        shape = self.shape_to_crs(shape, input_dir)
+        shape = Utils.shape_to_crs(shape, input_dir, self.output_dir)
 
         for i, geotiff in enumerate(geotiff_list):
             print('# ' + str(i+1) + ' / ' + str(len(geotiff_list)), end = '\r')
 
             self.clip_to_256(geotiff, shape, crs)
         return 
-    
-
-    def shape_to_crs(self, shape, input_dir):
-        gdf = gpd.read_file(shape)
-
-        geotiff = Utils.file_list_from_dir(input_dir, '*.tif')[0]
-        geotiff_crs = rio.open(geotiff).crs
-        gdf_warp = gdf.to_crs(geotiff_crs)
-
-        new_shape_dir = self.output_dir + 'crs_corrected_shape/'
-        Path(new_shape_dir).mkdir(exist_ok = True)
-
-        output_shape = new_shape_dir + 'new_' + os.path.basename(shape)
-        gdf_warp.to_file(output_shape)
-
-        return output_shape
 
 
     def clip_to_256(self, geotiff_path, shape, crs):
