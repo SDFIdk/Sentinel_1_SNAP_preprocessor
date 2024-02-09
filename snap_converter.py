@@ -5,7 +5,7 @@ import sys
 
 from utils import Utils
 
-class SNAP_preprocessor(object):
+class SnapPreprocessor(object):
 
     """
     This script applies a SNAP graph onto a directorys worth of files

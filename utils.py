@@ -145,6 +145,116 @@ class Utils(object):
 
         input_dataset = None        
         return
+    
+
+    def extract_polarization_band_incidence(kwargs):
+
+        def get_orbital_direction(input_file, metadata):
+            orbit = metadata['/Metadata_Group/Abstracted_Metadata/NC_GLOBAL#PASS']
+
+            if orbit == 'ASCENDING': orbit_direction = 'ASC'
+            elif orbit == 'DESCENDING': orbit_direction = 'DSC'
+            else: 
+                raise Exception(f'# Orbital direction not found in {input_file} metadata')
+            return orbit_direction
+        
+        def get_band_polarization(input_file, polarization, subdataset_name):
+            for pol in polarization:
+                if '_' + pol in subdataset_name:
+                    band_type = pol
+                    break
+            assert band_type, (
+                f'# Polarization not found in {input_file} metadata'
+            )
+            return band_type
+
+        def get_srs(input_file, metadata):
+            for key, value in metadata.items():
+                if 'srsName' in key: 
+                    _, _, crs = value.partition('#')
+                    crs = f'EPSG:{crs}'
+                    break
+            assert crs, (
+                f'# CRS not found in {input_file} metadata'
+            )
+            srs = osr.SpatialReference()
+            srs.ImportFromEPSG(int(crs.split(':')[1]))
+            return srs
+
+        """
+        Splits a netcdf into constituent bands depending depending on polarization
+        Used for NetCDF
+        Takes input_file, output_dir and polarization 
+        """
+        input_file = kwargs.get('input_file')
+        output_dir = kwargs.get('output_dir')
+        polarization = kwargs.get('polarization')
+
+        gdal_dataset = gdal.Open(input_file, gdal.GA_ReadOnly)
+
+        data_bands = []
+        incidence_bands = []
+        for subdataset in gdal_dataset.GetSubDatasets():
+            if 'Intensity' in subdataset[1]:
+                data_bands.append(subdataset)
+            elif 'Angle' in subdataset[1]:
+                incidence_bands.append(subdataset)
+            else: raise Exception(f'# Band type not found in {gdal_dataset} metadata label')
+
+        for subdataset in data_bands:
+            band = gdal.Open(subdataset[0])
+            metadata = band.GetMetadata()
+
+            orbit_direction = get_orbital_direction(input_file, metadata)
+            band_type = get_band_polarization(input_file, polarization, subdataset[0])
+            srs = get_srs(input_file, metadata)
+
+            band_info = band_type + '_' + orbit_direction
+            filename = os.path.basename(input_file).replace(Path(input_file).suffix, '_') + band_info + "_band.tif"
+            output_geotiff = os.path.join(output_dir, filename)
+
+            vrt_options = gdal.BuildVRTOptions(resolution="highest", separate=True)
+            band_paths = [subdataset[0] for subdataset in [subdataset] + incidence_bands]
+            temp_vrt_path = os.path.join(output_dir, "temp_" + filename.replace(".tif", ".vrt"))
+
+            vrt = gdal.BuildVRT(temp_vrt_path, band_paths, options=vrt_options)
+
+            translate_options = gdal.TranslateOptions(
+                format="GTiff",
+                options=["TILED=YES", "COMPRESS=LZW"],
+                outputType=gdal.GDT_Float32,
+                outputSRS=srs.ExportToWkt()
+            )
+
+            gdal.Translate(output_geotiff, vrt, options=translate_options)
+            vrt = None
+            os.remove(temp_vrt_path)
+
+#_---------------------------------------------------------------------------------_
+        # for subdataset in gdal_dataset.GetSubDatasets():
+
+        #     subdataset_name, _ = subdataset
+        #     band = gdal.Open(subdataset_name)
+        #     metadata = band.GetMetadata()
+
+        #     orbit_direction = get_orbital_direction(input_file, metadata)
+        #     band_type = get_band_polarization(input_file, polarization, subdataset_name)
+        #     srs = get_srs(input_file, metadata)
+
+        #     band_info = band_type + '_' + orbit_direction
+        #     filename = os.path.basename(input_file).replace(Path(input_file).suffix, '_') + band_info + "_band.tif"
+        #     output_geotiff = os.path.join(output_dir, filename)
+            
+        #     translate_options = gdal.TranslateOptions(
+        #         format = "GTiff",
+        #         options = ["TILED=YES", "COMPRESS=LZW"],
+        #         outputType = gdal.GDT_Float32,
+        #         outputSRS=srs.ExportToWkt()
+        #     )
+
+        #     gdal.Translate(output_geotiff, band, options=translate_options)
+        # gdal_dataset = None        
+        return
 
 
     def remove_empty(kwargs):

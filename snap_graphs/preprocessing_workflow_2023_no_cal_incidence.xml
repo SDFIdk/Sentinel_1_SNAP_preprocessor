@@ -5,7 +5,7 @@
     <sources/>
     <parameters class="com.bc.ceres.binding.dom.XppDomElement">
       <useAdvancedOptions>false</useAdvancedOptions>
-      <file>D:\s1_raw_data\ribe_2024_01_22\S1A_IW_GRDH_1SDV_20240120T054113_20240120T054138_052186_064EEB_2CE5.zip</file>
+      <file>${inputSafeFile}</file>
       <copyMetadata>true</copyMetadata>
       <bandNames/>
       <pixelRegion>0,0,26561,16667</pixelRegion>
@@ -96,7 +96,7 @@
       <sourceProduct refid="Terrain-Correction"/>
     </sources>
     <parameters class="com.bc.ceres.binding.dom.XppDomElement">
-      <file>C:\Users\b307579\Documents\S1A_IW_GRDH_1SDV_20240120T054113_20240120T054138_052186_064EEB_2CE5_Orb_NR_TC.nc</file>
+      <file>${outputSafeFile}</file>
       <formatName>NetCDF4-CF</formatName>
     </parameters>
   </node>
