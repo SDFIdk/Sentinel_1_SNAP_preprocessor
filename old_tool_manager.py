@@ -1,8 +1,8 @@
 import sys
 import os
 from multiprocessing.pool import Pool
-from utils import Utils
-from clip_256 import Clipper
+from sentinel_1_utils import Utils
+from old_clip_256 import Clipper
 
 class OldToolManager():
     # def __init__(self, working_dir, tmp_dir):

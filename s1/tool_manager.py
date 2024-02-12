@@ -1,8 +1,7 @@
 import sys
 import os
 from multiprocessing.pool import Pool
-from utils import Utils
-from clip_256 import Clipper
+from s1.utils import Utils
 
 class ToolManager:
 
@@ -67,11 +66,11 @@ class ToolManager:
         print('Done!')
 
 
-    def start_multiproc(self, tool, threads, kwargs):
+    def start_multiproc(self, tool, threads, **kwargs):
 
         # items = []
         # for input_file in Utils.file_list_from_dir(self.input_dir, self.extension):
-        #     items.append((input_file, kwargs))
+        #     items.append((input_file, **kwargs))
         
         # for result in Pool.starmap(self.tool_dict[tool], items):
         #     print() #?

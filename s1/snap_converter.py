@@ -3,7 +3,7 @@ import os
 import xml.etree.ElementTree as ET
 import sys
 
-from utils import Utils
+from s1.utils import Utils
 
 class SnapPreprocessor(object):
 
@@ -16,8 +16,11 @@ class SnapPreprocessor(object):
         self.gpt = gpt_path
 
 
-    def graph_processing(self, input_path, output_dir, graph_xml, input_ext = '.zip'):
+    def graph_processing(self, input_path, output_dir, graph_xml = None, input_ext = '.zip'):
         print(f'## Applying SNAP processing stack to {input_ext} files...')
+
+        if not graph_xml: 
+            graph_xml = 'snap_graphs/preprocessing_workflow_2023_no_cal_incidence.xml'
 
         input_files = Utils.file_list_from_dir(input_path, input_ext, accept_no_files = False)
 
@@ -26,7 +29,7 @@ class SnapPreprocessor(object):
         for i, input_file in enumerate(input_files):
             print('# ' + str(i+1) + ' / ' + str(len(input_files)), end = '\r')
 
-            output_filename = os.path.basename(input_file).replace(f'{input_ext}', f'{output_ext}')
+            output_filename = os.path.basename(input_file).replace(input_ext, output_ext)
             output_path = os.path.join(output_dir, output_filename)
 
             self.run_gpt(graph_xml, self.gpt, input_file, output_path)

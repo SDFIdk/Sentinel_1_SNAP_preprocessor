@@ -9,9 +9,9 @@ import numpy as np
 import shutil
 import rasterio as rio
 
-from utils import Utils
-from sar2sar_model import sar2sar_denoiser
-from mean_extractor import Correction_dict
+from s1.utils import Utils
+from s1.sar2sar_model import sar2sar_denoiser
+from s1.mean_extractor import Correction_dict
 
 class Denoiser(object):
     def __init__(self, geotiff_dir, shapefile_path):

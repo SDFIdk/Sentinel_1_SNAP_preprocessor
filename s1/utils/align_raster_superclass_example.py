@@ -2,7 +2,7 @@ from osgeo import gdal
 import os
 import shutil
 import uuid
-from utils import Utils
+from s1.utils import Utils
 
 class AlignRaster(Tool):    #wont reconize Tool. Why?
     def run(self, input_file, **kwargs):

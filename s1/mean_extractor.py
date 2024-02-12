@@ -4,7 +4,7 @@ from pathlib import Path
 from osgeo import gdal
 import zipfile
 import shutil
-from snap_converter import SnapPreprocessor
+from s1.snap_converter import SnapPreprocessor
 
 from pprint import pprint
 import sys
@@ -106,6 +106,6 @@ if __name__ == "__main__":
     # shapefile_path = 'syddanmark_stormflod/POLYGON.shp'
     filename_example_dir = 'example/'
 
-    from mean_extractor import Mean_dict
+    from sentinel_1_preprocessor.mean_extractor import Mean_dict
     correction_finder = Mean_dict(safe_dir = safe_dir, shape = shapefile_path)
     mean_dict = correction_finder.populate_correction_dict(filename_example_dir)

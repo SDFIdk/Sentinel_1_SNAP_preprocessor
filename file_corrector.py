@@ -1,9 +1,9 @@
 import sys
 from osgeo import gdal  # for some reason it crashes if imported in other modules????
 
-from clip_256 import Clipper
-from tool_manager import ToolManager
-import unit_converter
+from old_clip_256 import Clipper
+from sentinel_1_tool_manager import ToolManager
+import old_unit_converter
 
 if __name__ == "__main__":
     import glob
