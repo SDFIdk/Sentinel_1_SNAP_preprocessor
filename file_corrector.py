@@ -28,12 +28,13 @@ for geotiff in geotiff_files:
 #         'input_dir':geotiff_files,
 #         })
 
-geotiff_utils = ToolManager(geotiff_files, '*.tif', threads = 1)
-geotiff_utils.util_starter('remove_empty')
+geotiff_utils = ToolManager(geotiff_files, "*.tif", threads=1)
+geotiff_utils.util_starter("remove_empty")
 
-power_utils = ToolManager(power_files, '*.tif', threads = 1)
-power_utils.util_starter('convert_unit', source_unit = 'linear', desitnation_unit = 'power')
+power_utils = ToolManager(power_files, "*.tif", threads=1)
+power_utils.util_starter("convert_unit", source_unit="linear", desitnation_unit="power")
 
-decibel_utils = ToolManager(decibel_files, '*.tif', threads = 1)
-decibel_utils.util_starter('convert_unit', source_unit = 'linear', desitnation_unit = 'decibel')
-
+decibel_utils = ToolManager(decibel_files, "*.tif", threads=1)
+decibel_utils.util_starter(
+    "convert_unit", source_unit="linear", desitnation_unit="decibel"
+)

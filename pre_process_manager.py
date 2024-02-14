@@ -1,30 +1,27 @@
 from cdse_downloader.downloader import Downloader
-from s1.s1_main import S1Preprocessor
+from sentinel_1.s1_main import S1Preprocessor
+from sentinel_2.s2_main import S2Preprocessor
+from pathlib import Path
 
-import os
+import sys
 
 class PreProcessor:
-
     def __init__(self, **kwargs):
 
-        working_dir = kwargs['working_dir']
-        kwargs['safe_dir'] = working_dir + 'safe/'
-        kwargs['netcdf_dir'] = working_dir + 'netcdf/'
-        kwargs['geotiff_dir'] = working_dir + 'geotiff/'
-        os.mkdir(kwargs['working_dir'])
-        os.mkdir(kwargs['safe_dir'])
-        os.mkdir(kwargs['netcdf'])
-        os.mkdir(kwargs['geotiff'])
-        
+        Path(kwargs["working_dir"]).mkdir(parents=True, exist_ok=True)
+
         self.downloader = Downloader(**kwargs)
         self.s1_preprocessor = S1Preprocessor(**kwargs)
-        #add other constants
+        self.s2_preprocessor = S2Preprocessor(**kwargs)
 
     def start_workflow(self):
+        # self.downloader.download_sentinel_1()
+        # self.s1_preprocessor.s1_workflow()
+        # TODO fix (and locate) warnings about TF deprecations
+        # BUG enable GPU properly
+        # TODO implement SAFE executor into Utils
 
         self.downloader.download_sentinel_2()
+        self.s2_preprocessor.s2_workflow()
 
-
-
-
-        
+        # finally move the shape to the working dir and zip the whole thing.

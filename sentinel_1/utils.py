@@ -44,6 +44,9 @@ class Utils(object):
         if not isinstance(extensions, list):
             extensions = [extensions]
 
+        if not directory.endswith('/'):
+            directory = directory + '/'
+
         for extension in extensions:
             if not extension.startswith("*"):
                 extension = "*" + extension
@@ -93,8 +96,8 @@ class Utils(object):
         Converts a shape to geoJSON
         Takes output_file and shape
         """
-        shape = kwargs["shape"]
-        output_file = kwargs["output_file"]
+        shape = kwargs.get("shape")
+        output_file = kwargs.get("output_file")
 
         shp_file = gpd.read_file(shape)
         geojson = output_file + str(uuid.uuid4()) + ".geojson"
@@ -107,8 +110,8 @@ class Utils(object):
     #     Used for NetCDF
     #     Takes input_file, output_dir and polarization
     #     """
-    #     output_dir = kwargs['output_dir']
-    #     polarization = kwargs['polarization']
+    #     output_dir = kwargs.get("output_dir")
+    #     polarization = kwargs.get("polarization")
 
     #     extension = Path(input_file).suffix
     #     input_dataset = gdal.Open(input_file, gdal.GA_ReadOnly)
@@ -202,8 +205,8 @@ class Utils(object):
             srs.ImportFromEPSG(int(crs.split(":")[1]))
             return srs
 
-        output_dir = kwargs["output_dir"]
-        polarization = kwargs["polarization"]
+        output_dir = kwargs.get("output_dir")
+        polarization = kwargs.get("polarization")
 
         gdal_dataset = gdal.Open(input_file, gdal.GA_ReadOnly)
 
@@ -256,30 +259,22 @@ class Utils(object):
             vrt = None
             os.remove(temp_vrt_path)
 
-        # for subdataset in gdal_dataset.GetSubDatasets():
+            #Band names must be manually set for now
+            #TODO read the xml file for names!
+            band_names = [
+                band_type, 
+                'IncidenceAngleFromEllipsoid', 
+                'LocalIncidenceAngle', 
+                'ProjectedLocalIncidenceAngle'
+                ]
+            translated_dataset = gdal.Open(output_geotiff, gdal.GA_Update)
+            for i, name in enumerate(band_names, start=1):
+                band = translated_dataset.GetRasterBand(i)
+                band.SetDescription(name)
+                band.SetMetadataItem('DESCRIPTION', name)
 
-        #     subdataset_name, _ = subdataset
-        #     band = gdal.Open(subdataset_name)
-        #     metadata = band.GetMetadata()
+            #band names are not recognized by qgis
 
-        #     orbit_direction = get_orbital_direction(input_file, metadata)
-        #     band_type = get_band_polarization(input_file, polarization, subdataset_name)
-        #     srs = get_srs(input_file, metadata)
-
-        #     band_info = band_type + '_' + orbit_direction
-        #     filename = os.path.basename(input_file).replace(Path(input_file).suffix, '_') + band_info + "_band.tif"
-        #     output_geotiff = os.path.join(output_dir, filename)
-
-        #     translate_options = gdal.TranslateOptions(
-        #         format = "GTiff",
-        #         options = ["TILED=YES", "COMPRESS=LZW"],
-        #         outputType = gdal.GDT_Float32,
-        #         outputSRS=srs.ExportToWkt()
-        #     )
-
-        #     gdal.Translate(output_geotiff, band, options=translate_options)
-        # gdal_dataset = None
-        # return
 
     def remove_empty(input_file, **kwargs):
         """
@@ -312,7 +307,7 @@ class Utils(object):
         Warps a raster to a new crs
         Takes crs
         """
-        crs = kwargs["crs"]
+        crs = kwargs.get("crs")
         gdal_dataset = gdal.Open(input_file)
 
         geotransform = gdal_dataset.GetGeoTransform()
@@ -331,40 +326,40 @@ class Utils(object):
         gdal.Warp(output_file, gdal_dataset, options=options)
         shutil.move(output_file, input_file)
 
-    def TEST_crs_warp(input_file, **kwargs):
-        """
-        NEW THING USING tempfile AND GDAL CONTEXT MANAGER
-        Warps a raster to a new CRS.
-        Takes crs.
-        """
-        crs = kwargs["crs"]
+    # def TEST_crs_warp(input_file, **kwargs):
+    #     """
+    #     NEW THING USING tempfile AND GDAL CONTEXT MANAGER
+    #     Warps a raster to a new CRS.
+    #     Takes crs.
+    #     """
+    #     crs = kwargs.get("crs")
 
-        with tempfile.TemporaryDirectory() as temp_dir:
-            temp_output_file = os.path.join(temp_dir, os.path.basename(input_file))
+    #     with tempfile.TemporaryDirectory() as temp_dir:
+    #         temp_output_file = os.path.join(temp_dir, os.path.basename(input_file))
 
-            with gdal.Open(input_file) as gdal_dataset:
-                geotransform = gdal_dataset.GetGeoTransform()
-                x_res = geotransform[1]
-                y_res = -geotransform[5]
+    #         with gdal.Open(input_file) as gdal_dataset:
+    #             geotransform = gdal_dataset.GetGeoTransform()
+    #             x_res = geotransform[1]
+    #             y_res = -geotransform[5]
 
-                options = gdal.WarpOptions(
-                    format="GTiff",
-                    dstSRS=crs,
-                    xRes=x_res,
-                    yRes=y_res,
-                    resampleAlg=gdal.GRA_NearestNeighbour,
-                )
-                gdal.Warp(temp_output_file, gdal_dataset, options=options)
+    #             options = gdal.WarpOptions(
+    #                 format="GTiff",
+    #                 dstSRS=crs,
+    #                 xRes=x_res,
+    #                 yRes=y_res,
+    #                 resampleAlg=gdal.GRA_NearestNeighbour,
+    #             )
+    #             gdal.Warp(temp_output_file, gdal_dataset, options=options)
 
-            shutil.move(temp_output_file, input_file)
+    #         shutil.move(temp_output_file, input_file)
 
     def change_raster_resolution(input_file, **kwargs):
         """
         Resamples a raster to a new resolution
         Takes x_size and y_size
         """
-        x_size = kwargs["x_size"]
-        y_size = kwargs["y_size"]
+        x_size = kwargs.get("x_size")
+        y_size = kwargs.get("y_size")
 
         gdal_dataset = gdal.Open(input_file)
 
@@ -379,68 +374,63 @@ class Utils(object):
 
         shutil.move(output_file, input_file)
 
-    # GDAL CONTEXT MANAGER EXPERIMENT
-    # def NEW_change_raster_resolution(input_file, **kwargs):
+    # def split_polarizations(input_file, **kwargs):
     #     """
-    #     Resamples a raster to a new resolution
-    #     Takes input_file, x_size and y_size
+    #     Splits a multiband geotiff into seperate files with single bands
+    #     MAY NOT BE NEEDED, DEPENDS ENTIRELY ON HOW SNAP EXECUTOR EVOLVES
+    #     Takes input_file and polarization
     #     """
-    #     x_size = kwargs['x_size']
-    #     y_size = kwargs['y_size']
+    #     polarization = kwargs.get("polarization")
+    #     input_dir = kwargs.get("input_dir")
 
-    #     with tempfile.TemporaryDirectory() as temp_file:
-    #         with gdal.Open(input_file) as gdal_dataset:
+    #     with rio.open(input_file) as src:
+    #         meta = src.meta.copy()
 
-    #             warp_options = gdal.WarpOptions(xRes=x_size, yRes=y_size, resampleAlg='near', format='GTiff')
-    #             input_file = gdal.Warp(temp_file, gdal_dataset, options=warp_options)
+    #         for band in range(1, src.count + 1):
+    #             data = src.read(band)
 
-    def split_polarizations(input_file, **kwargs):
-        """
-        Splits a multiband geotiff into seperate files with single bands
-        MAY NOT BE NEEDED, DEPENDS ENTIRELY ON HOW SNAP EXECUTOR EVOLVES
-        Takes input_file and polarization
-        """
-        polarization = kwargs["polarization"]
-        input_dir = kwargs["input_dir"]
+    #             output_filename = f"{input_dir}/band_{band}.tif"
 
-        with rio.open(input_file) as src:
-            meta = src.meta.copy()
+    #             meta = src.meta.copy()
+    #             meta.update({"count": 1})
 
-            for band in range(1, src.count + 1):
-                data = src.read(band)
+    #             with rio.open(output_filename, "w", **meta) as dst:
+    #                 dst.write(data, 1)
 
-                output_filename = f"{input_dir}/band_{band}.tif"
-
-                meta = src.meta.copy()
-                meta.update({"count": 1})
-
-                with rio.open(output_filename, "w", **meta) as dst:
-                    dst.write(data, 1)
-
-    def create_sorted_outputs(input_file, **kwargs):
+    def create_sorted_outputs(**kwargs):
         """
         Function is prequisite for "sort outputs" folder.
         Function creates ASC and DSC folders for each polarization given.
         Takes output_path and polarization
         """
-        output_path = kwargs["output_path"]
-        polarization = kwargs["polarization"]
+        
+        dataset_name = kwargs.get("dataset_name")
+        denoise_mode = kwargs.get("denoise_mode")
+        unit = kwargs.get("unit")
+        resolution = kwargs.get("resolution")
+        polarization = kwargs.get("polarization")
 
-        Path(output_path).mkdir(exist_ok=True)
+        result_path=os.path.join(dataset_name, "results", f"{denoise_mode}_denoised_geotiffs_{unit}_{resolution}")
+
+        Path(result_path).mkdir(exist_ok=True, parents=True)
 
         for pol in polarization:
-            Path(output_path + pol + "_ASC/").mkdir(exist_ok=True)
-            Path(output_path + pol + "_DSC/").mkdir(exist_ok=True)
+            Path(os.path.join(result_path, pol + "_ASC/")).mkdir(exist_ok=True, parents=True)
+            Path(os.path.join(result_path, pol + "_DSC/")).mkdir(exist_ok=True, parents=True)
+
+        arg_name = "result_path"
+        kwargs[arg_name] = result_path
+
         return kwargs
 
     def sort_output(input_file, **kwargs):
         """
         Sorts geotiffs into folder based on polarizaton and orbital direction
         Requires "create_sorted_outputs" function to be run beforehand
-        Takes output_path and polarization
+        Takes result_path and polarization
         """
-        output_path = kwargs["output_path"]
-        polarization = kwargs["polarization"]
+        result_path = kwargs.get("result_path")
+        polarization = kwargs.get("polarization")
 
         if not isinstance(polarization, list):
             polarization = [polarization]
@@ -461,21 +451,21 @@ class Utils(object):
             print(f"# ERROR: No orbital direction information in {input_file}!")
 
         if None in (file_polarization, orbit_dir):
-            Path(output_path + "unsorted/").mkdir(exist_ok=True)
-            shutil.copyfile(input_file, output_path + "unsorted/")
+            Path(os.path.join(result_path, "unsorted/")).mkdir(exist_ok=True)
+            shutil.copyfile(input_file, result_path + "unsorted/")
             return
 
-        sort_dir = output_path + file_polarization + "_" + orbit_dir + "/"
-        sort_filename = sort_dir + os.path.basename(input_file)
+        sort_dir = os.path.join(result_path, file_polarization + "_" + orbit_dir)
+        sort_filename = os.path.join(sort_dir, os.path.basename(input_file))
         shutil.copyfile(input_file, sort_filename)
         return
 
-    def get_reference_geotransform(input_file, **kwargs):
+    def get_reference_geotransform(**kwargs):
         """
         Function prequisite for using align_raster
         Function returns the geotransform from the largest file in dir
         """
-        input_dir = kwargs["input_dir"]
+        input_dir = kwargs.get("input_dir")
 
         input_file_list = Utils.file_list_from_dir(input_dir, "*.tif")
         reference_file = max(input_file_list, key=os.path.getsize)
@@ -495,7 +485,7 @@ class Utils(object):
         Requires "get_reference_geotransform" function to be run beforehand
         Takes reference_geotransform
         """
-        reference_geotransform = kwargs["reference_geotransform"]
+        reference_geotransform = kwargs.get("reference_geotransform")
 
         with tempfile.NamedTemporaryFile(delete=False, suffix=".tif") as tmp_file:
             tmp_file_path = tmp_file.name
@@ -517,13 +507,12 @@ class Utils(object):
         Creates a copy of the directory given to it to a given location
         Takes file and copy_dir
         """
-        copy_dir = kwargs["copy_dir"]
+        copy_dir = kwargs.get("copy_dir")
 
         Utils.check_create_folder(copy_dir)
 
         copy_file = copy_dir + os.path.basename(input_file)
         shutil.copyfile(input_file, copy_file)
-        print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 
     def trimmer_256(input_file, **kwargs):
         """
@@ -573,10 +562,10 @@ class Utils(object):
         True zero_max will cap values of non linear at zero.
         Takes source_unit, desitnation_unit and zero_max
         """
-        source_unit = kwargs["source_unit"]
-        destination_unit = kwargs["destination_unit"]
+        source_unit = kwargs.get("source_unit")
+        destination_unit = kwargs.get("destination_unit")
         try:
-            zero_max = kwargs["destination_unit"]
+            zero_max = kwargs.get("zero_max")
         except:
             zero_max = False
 
@@ -640,9 +629,9 @@ class Utils(object):
         Clips a geotiff to a rasters extent, padded to output a resolution divisible by 256
         Takes shape, crs and input_dir
         """
-        shape = kwargs["shape"]
-        crs = kwargs["crs"]
-        input_dir = kwargs["input_dir"]
+        shape = kwargs.get("shape")
+        crs = kwargs.get("crs")
+        input_dir = kwargs.get("input_dir")
 
         shape = Utils.shape_to_crs(shape, input_file, input_dir)
 
@@ -676,7 +665,7 @@ class Utils(object):
         ds = None
         src = None
 
-        with rio.open(tmp_file_path + "clipped_raster.tif") as src:
+        with rio.open(tmp_file_path) as src:
             new_width = (src.width // 256) * 256
             new_height = (src.height // 256) * 256
 
@@ -702,6 +691,8 @@ class Utils(object):
                 dst.write(clipped_data)
 
         shutil.move(tmp_file_path_2, input_file)
+        tmp_file.close()
+
         os.remove(tmp_file_path)
 
     # def TEST_FUNK(input_file, **kwargs):

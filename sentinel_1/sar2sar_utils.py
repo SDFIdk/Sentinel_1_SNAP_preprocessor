@@ -13,39 +13,40 @@ L = 1
 c = (1 / 2) * (special.psi(L) - np.log(L))
 cn = c / (M - m)  # normalized (0,1) mean of log speckle
 
+
 def normalize_sar(im):
-    return ((np.log(np.clip(im,0.24,np.max(im))) - m) * 255 / (M - m)).astype('float32')
+    return ((np.log(np.clip(im, 0.24, np.max(im))) - m) * 255 / (M - m)).astype(
+        "float32"
+    )
 
     # EXPERIMENTAL
     # return ((np.log(np.clip(im,0.24,np.max(im))) - m) * (M - m)).astype('float32')
 
 
 def denormalize_sar(im):
-    return np.exp((M - m) * (np.squeeze(im)).astype('float32') + m)
+    return np.exp((M - m) * (np.squeeze(im)).astype("float32") + m)
 
-def load_sar_images(filelist):
-    if not isinstance(filelist, list):
-        im = np.load(filelist)
-        im = normalize_sar(im)
-        return np.array(im).reshape(1, np.size(im, 0), np.size(im, 1), 1)
-    
-    data = []
-    for file in filelist:
-        im = np.load(file)
-        im = normalize_sar(im)
-        data.append(np.array(im).reshape(1, np.size(im, 0), np.size(im, 1), 1))
-    return data
+
+def load_sar_images(file):
+
+    numpy_raster = np.load(file)
+    numpy_raster = normalize_sar(numpy_raster[0,:,:]) #hardcoded to assume data band is first
+    return np.array(numpy_raster).reshape(1, np.size(numpy_raster, 0), np.size(numpy_raster, 1), 1)
+
 
 def store_data_and_plot(im, threshold, filename):
     im = np.clip(im, 0, threshold)
     im = im / threshold * 255
-    im = Image.fromarray(im.astype('float64')).convert('L')
-    im.save(filename.replace('npy','png'))
+    im = Image.fromarray(im.astype("float64")).convert("L")
+    im.save(filename.replace("npy", "png"))
+
 
 def save_sar_images(denoised, noisy, imagename, save_dir):
     # threshold = np.mean(noisy)+3*np.std(noisy)
 
-    denoisedfilename = save_dir + imagename.replace('\\', '/')       #BUG had to insert that .replace for windows compatibility
+    denoisedfilename = save_dir + imagename.replace(
+        "\\", "/"
+    )  # BUG had to insert that .replace for windows compatibility
     np.save(denoisedfilename, denoised)
     # store_data_and_plot(denoised, threshold, denoisedfilename)  #saves .pngs
 

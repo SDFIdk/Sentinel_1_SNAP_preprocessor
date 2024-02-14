@@ -8,7 +8,7 @@ Converts units from raw backscatter to decibel or "power transform".
 
 
 def convert_unit(geotiff_dir, source_unit, destination_unit, zero_max=False):
-    np.seterr(divide = 'ignore')
+    np.seterr(divide="ignore")
     if isinstance(geotiff_dir, list):
         input_file_list = geotiff_dir
     else:

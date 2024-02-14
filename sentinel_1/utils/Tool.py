@@ -1,6 +1,6 @@
 class Tool:
     # def __init__(self, input_dir, extension, threads = 1, polarization = None):
-    #     self.input_dir = input_dir   
+    #     self.input_dir = input_dir
     #     self.extension = extension
     #     self.threads = threads
     #     self.polarization = polarization
@@ -24,8 +24,6 @@ class Tool:
     #         "align_raster": Utils.get_reference_geotransform,
     #         "sort_output": Utils.create_sorted_outputs,
     #     }
-        
-    
-    
+
     def run(self, input_file, **kwargs):
         raise NotImplementedError("## Tool not recognized!")
