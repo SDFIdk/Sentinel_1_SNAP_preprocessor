@@ -60,6 +60,7 @@ class S1Preprocessor:
         self.crs = kwargs["crs"]
         self.shape = kwargs["shape"]
         self.pre_process_graph = kwargs["pre_process_graph"]
+        self.result_dir = kwargs["result_dir"]
         self.gpt_exe = kwargs.get("gpt_exe", 'C:/Users/b307579/AppData/Local/Programs/snap/bin/gpt.exe') 
         self.threads = kwargs.get("threads", 1)
         self.denoise_modes = kwargs.get("denoise_mode", ["SAR2SAR"])
@@ -86,7 +87,6 @@ class S1Preprocessor:
         snap_executor = SnapPreprocessor(gpt_path=self.gpt_exe)
         denoiser = Denoiser(self.geotiff_dir, self.shape)
 
-        dataset_name = os.path.basename(os.path.normpath(self.working_dir))
         #RESTART THESE
         # snap_executor.graph_processing(
             # self.safe_dir, self.netcdf_dir, self.pre_process_graph, input_ext=".zip"
@@ -108,14 +108,15 @@ class S1Preprocessor:
 
             # denoiser.select_denoiser(denoise_mode, to_intensity=False)
 
-            geotiff_utils.util_starter("change_resolution", x_sixe=10, y_sixe=10)
+            geotiff_utils.util_starter("change_resolution", x_size=resolution)
             geotiff_utils.util_starter(
                 "convert_unit", source_unit="linear", destination_unit="decibel"
             )
             geotiff_utils.util_starter("align_raster")
             geotiff_utils.util_starter(
                 "sort_output",
-                dataset_name = dataset_name,
+                result_dir = self.result_dir,
+                working_dir = self.working_dir,
                 denoise_mode = denoise_mode,
                 unit = "decibel",
                 resolution = resolution
@@ -127,7 +128,8 @@ class S1Preprocessor:
             geotiff_utils.util_starter("align_raster")
             geotiff_utils.util_starter(
                 "sort_output",
-                dataset_name = dataset_name,
+                result_dir = self.result_dir,
+                working_dir = self.working_dir,
                 denoise_mode = denoise_mode,
                 unit = "power",
                 resolution = resolution
@@ -138,7 +140,7 @@ class S1Preprocessor:
             geotiff_utils.util_starter(
                 "convert_unit", source_unit="power", destination_unit="linear"
             )
-            geotiff_utils.util_starter("change_resolution", x_sixe=resolution, y_sixe=resolution)
+            geotiff_utils.util_starter("change_resolution", x_size=resolution)
 
             geotiff_utils.util_starter(
                 "convert_unit", source_unit="linear", destination_unit="decibel"
@@ -146,7 +148,8 @@ class S1Preprocessor:
             geotiff_utils.util_starter("align_raster")
             geotiff_utils.util_starter(
                 "sort_output",
-                dataset_name = dataset_name,
+                result_dir = self.result_dir,
+                working_dir = self.working_dir,
                 denoise_mode = denoise_mode,
                 unit = "decibel",
                 resolution = resolution
@@ -158,7 +161,8 @@ class S1Preprocessor:
             geotiff_utils.util_starter("align_raster")
             geotiff_utils.util_starter(
                 "sort_output",
-                dataset_name = dataset_name,
+                result_dir = self.result_dir,
+                working_dir = self.working_dir,
                 denoise_mode = denoise_mode,
                 unit = "power",
                 resolution = resolution

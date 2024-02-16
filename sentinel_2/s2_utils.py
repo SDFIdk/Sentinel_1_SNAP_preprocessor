@@ -9,7 +9,7 @@ import rasterio as rio
 from rasterio.mask import mask
 from rasterio.windows import Window
 from pathlib import Path
-from glob import glob
+import glob
 import shutil
 import uuid
 import pyproj
@@ -30,9 +30,33 @@ class Utils(object):
         print("Error Type: %s" % (err_class))
         print("Error Message: %s" % (err_msg))
 
-    def file_list_from_dir(directory, extension):
-        file_list = glob(directory + extension)
-        assert len(file_list) != 0, f"## No {extension} files in {directory}!"
+    # def file_list_from_dir(directory, extension):
+    #     file_list = glob.glob(directory + extension)
+    #     assert len(file_list) != 0, f"## No {extension} files in {directory}!"
+    #     return file_list
+        
+    def file_list_from_dir(directory, extensions, accept_no_files=False):
+        """
+        Returns file content of dir with given extension.
+        If given a list of extensions, the function will whatever yields any files firt
+        under assumption that the folder will only contain one type of files.
+        """
+        if not isinstance(extensions, list):
+            extensions = [extensions]
+
+        if not directory.endswith('/'):
+            directory = directory + '/'
+
+        for extension in extensions:
+            if not extension.startswith("*"):
+                extension = "*" + extension
+
+            file_list = glob.glob(directory + extension)
+            if file_list:
+                break
+
+        if not accept_no_files:
+            assert len(file_list) != 0, f"## No {str(extensions)} files in {directory}!"
         return file_list
 
     def is_valid_epsg(epsg_code):

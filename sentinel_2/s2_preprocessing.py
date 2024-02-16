@@ -40,8 +40,8 @@ class Preprocessor(object):
 
             cloud_clover_in_aoi = Utils.aoi_cloud_cover(safe_file, shape)
 
-            if cloud_clover_in_aoi > max_cloud or None:
-                print("# skipping clouds...")
+            if cloud_clover_in_aoi >= max_cloud or None:
+                print("# Skipping clouds...")
                 continue
 
             Tiff_generator.generate_geotiffs(safe_file, self.output_dir)

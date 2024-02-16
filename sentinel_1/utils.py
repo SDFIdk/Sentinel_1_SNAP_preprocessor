@@ -213,9 +213,9 @@ class Utils(object):
         data_bands = []
         incidence_bands = []
         for subdataset in gdal_dataset.GetSubDatasets():
-            if "Intensity" in subdataset[1]:
+            if "Intensity" or "VH" or "VV" in subdataset[1]:
                 data_bands.append(subdataset)
-            elif "Angle" in subdataset[1]:
+            elif "Angle" or "Incidence" in subdataset[1]:
                 incidence_bands.append(subdataset)
             else:
                 raise Exception(
@@ -356,10 +356,10 @@ class Utils(object):
     def change_raster_resolution(input_file, **kwargs):
         """
         Resamples a raster to a new resolution
-        Takes x_size and y_size
+        Takes x_size and y_size (defaults to square resolution if no y)
         """
         x_size = kwargs.get("x_size")
-        y_size = kwargs.get("y_size")
+        y_size = kwargs.get("y_size", x_size)
 
         gdal_dataset = gdal.Open(input_file)
 
@@ -401,25 +401,27 @@ class Utils(object):
         """
         Function is prequisite for "sort outputs" folder.
         Function creates ASC and DSC folders for each polarization given.
-        Takes output_path and polarization
+        Takes working_dir, denoise_mode, unit, resolution and polarization
         """
-        
-        dataset_name = kwargs.get("dataset_name")
+        result_dir = kwargs.get("result_dir")
+        working_dir = kwargs.get("working_dir")
         denoise_mode = kwargs.get("denoise_mode")
         unit = kwargs.get("unit")
         resolution = kwargs.get("resolution")
         polarization = kwargs.get("polarization")
 
-        result_path=os.path.join(dataset_name, "results", f"{denoise_mode}_denoised_geotiffs_{unit}_{resolution}")
+        working_subdir = os.path.normpath(working_dir)
+        processing_parameters = f"{denoise_mode}_denoised_{unit}_{resolution}m"
 
-        Path(result_path).mkdir(exist_ok=True, parents=True)
+        output_path=os.path.join(result_dir, working_subdir, processing_parameters)
+        Path(output_path).mkdir(exist_ok=True, parents=True)
 
         for pol in polarization:
-            Path(os.path.join(result_path, pol + "_ASC/")).mkdir(exist_ok=True, parents=True)
-            Path(os.path.join(result_path, pol + "_DSC/")).mkdir(exist_ok=True, parents=True)
+            Path(os.path.join(output_path, pol + "_ASC/")).mkdir(exist_ok=True, parents=True)
+            Path(os.path.join(output_path, pol + "_DSC/")).mkdir(exist_ok=True, parents=True)
 
         arg_name = "result_path"
-        kwargs[arg_name] = result_path
+        kwargs[arg_name] = output_path
 
         return kwargs
 

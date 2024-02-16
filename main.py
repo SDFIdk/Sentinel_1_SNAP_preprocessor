@@ -21,7 +21,7 @@ shape = "shapes/stavis_odense/POLYGON.shp"
 start_date = '2024-02-09'
 end_date = '2024-02-13'
 pre_process_graph = 'sentinel_1/snap_graphs/preprocessing_workflow_2023_no_cal_incidence.xml'
-
+result_dir = "results/"
 
 # for multiple tasks, loop over a list of lists and unpack working dir, crs, shape and date
 pre_processor = PreProcessor(
@@ -31,7 +31,9 @@ pre_processor = PreProcessor(
     start_date = start_date,
     end_date = end_date,
     pre_process_graph = pre_process_graph,
-    denoise_mode = 'mean'
+    denoise_mode = 'mean',
+    max_cloud_pct = 100,
+    result_dir = result_dir
 )
 
 pre_processor.start_workflow()

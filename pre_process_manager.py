@@ -21,7 +21,7 @@ class PreProcessor:
         # BUG enable GPU properly
         # TODO implement SAFE executor into Utils
 
-        self.downloader.download_sentinel_2()
+        # self.downloader.download_sentinel_2()
         self.s2_preprocessor.s2_workflow()
 
         # finally move the shape to the working dir and zip the whole thing.

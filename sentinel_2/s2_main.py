@@ -38,8 +38,8 @@ class S2Preprocessor:
         self.working_dir = kwargs["working_dir"]
         self.crs = kwargs["crs"]
         self.shape = kwargs["shape"]
-        self.max_cloud_pct = kwargs.get("max_cloud_pct", "40")
-        self.max_empty = kwargs.get("max_empty", "80")
+        self.max_cloud_pct = kwargs.get("max_cloud_pct", 40)
+        self.max_empty = kwargs.get("max_empty", 80)
 
         Path(self.safe_dir).mkdir(parents=True, exist_ok=True)
         Path(self.geotiff_dir).mkdir(parents=True, exist_ok=True)
