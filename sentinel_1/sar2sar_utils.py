@@ -28,10 +28,13 @@ def denormalize_sar(im):
 
 
 def load_sar_images(file):
-
     numpy_raster = np.load(file)
-    numpy_raster = normalize_sar(numpy_raster[0,:,:]) #hardcoded to assume data band is first
-    return np.array(numpy_raster).reshape(1, np.size(numpy_raster, 0), np.size(numpy_raster, 1), 1)
+    numpy_raster = normalize_sar(
+        numpy_raster[0, :, :]
+    )  # hardcoded to assume data band is first
+    return np.array(numpy_raster).reshape(
+        1, np.size(numpy_raster, 0), np.size(numpy_raster, 1), 1
+    )
 
 
 def store_data_and_plot(im, threshold, filename):

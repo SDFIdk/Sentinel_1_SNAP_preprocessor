@@ -16,10 +16,7 @@ class SnapPreprocessor(object):
     def __init__(self, gpt_path):
         self.gpt = gpt_path
 
-    def graph_processing(
-        self, input_path, output_dir, graph_xml, input_ext=".zip"
-        ):
-        
+    def graph_processing(self, input_path, output_dir, graph_xml, input_ext=".zip"):
         print(f"## Applying SNAP processing stack to {input_ext} files...")
 
         input_files = Utils.file_list_from_dir(

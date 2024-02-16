@@ -8,8 +8,8 @@ from pathlib import Path
 import sys
 import os
 
-class Downloader:
 
+class Downloader:
     @property
     def sentinel_1_safe_dir(self):
         return os.path.join(self.working_dir, "sentinel_1", "safe")
@@ -29,7 +29,6 @@ class Downloader:
         Path(self.sentinel_1_safe_dir).mkdir(parents=True, exist_ok=True)
         Path(self.sentinel_2_safe_dir).mkdir(parents=True, exist_ok=True)
 
-
     def download_sentinel_1(self):
         features = query_features(
             "Sentinel1",
@@ -42,12 +41,11 @@ class Downloader:
                 "geometry": shape_to_wkt(self.shape),
             },
         )
-        assert len(features) != 0, (
-            f'## No Sentinel-1 data available between {self.start_date} and {self.end_date}!'
-        )
-        print(f'## {len(features)} Sentinel-1 products will be acquired')
+        assert (
+            len(features) != 0
+        ), f"## No Sentinel-1 data available between {self.start_date} and {self.end_date}!"
+        print(f"## {len(features)} Sentinel-1 products will be acquired")
         self.download_features(features, self.sentinel_1_safe_dir)
-        
 
     def download_sentinel_2(self):
         features = query_features(
@@ -61,11 +59,13 @@ class Downloader:
             },
         )
         if len(features) == 0:
-            print(f'## No Sentinel-2 data available between {self.start_date} and {self.end_date}!')
-            print('## Consider adjusting max cloud cover parameteres if possible.')
+            print(
+                f"## No Sentinel-2 data available between {self.start_date} and {self.end_date}!"
+            )
+            print("## Consider adjusting max cloud cover parameteres if possible.")
             return
         else:
-            print(f'## {len(features)} Sentinel-2 products will be acquired')
+            print(f"## {len(features)} Sentinel-2 products will be acquired")
             self.download_features(features, self.sentinel_2_safe_dir)
 
     def download_features(self, features, output):

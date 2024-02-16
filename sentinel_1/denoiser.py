@@ -1,4 +1,6 @@
-from osgeo import gdal #BUG #CURSED has to be on top, otherwise "No module named _gdal" ??? 
+from osgeo import (
+    gdal,
+)  # BUG #CURSED has to be on top, otherwise "No module named _gdal" ???
 import tensorflow as tf
 from glob import glob
 import os
@@ -113,7 +115,9 @@ class Denoiser(object):
             print("# " + str(i + 1) + " / " + str(len(input_file_list)), end="\r")
 
             xds = xr.open_dataset(data, engine="rasterio").to_array().squeeze()
-            xds = xrs_mean(xds[0,:,:]) #Hardcoded to take first band which is assumed to be data band.
+            xds = xrs_mean(
+                xds[0, :, :]
+            )  # Hardcoded to take first band which is assumed to be data band.
 
             savename = output_folder + os.path.basename(data).replace(".tif", ".npy")
             np.save(savename, xds.to_numpy())
@@ -152,7 +156,6 @@ class Denoiser(object):
                 model = sar2sar_denoiser(sess)
                 denoiser_starter(model, noisy_npy_folder)
         return
-
 
     # def recreate_geotiff(self, denoised_npy_dir, mean_dict=False, to_amplitude=False):
     #     gdal.UseExceptions()
@@ -205,7 +208,6 @@ class Denoiser(object):
     #         shutil.move(tmp_densoised_geotiff, original_geotiff_path)
     #     return
 
-
     def recreate_geotiff(self, denoised_npy_dir, mean_dict=False, to_amplitude=False):
         gdal.UseExceptions()
         print("## Recreating geotiffs from .npy...")
@@ -228,7 +230,9 @@ class Denoiser(object):
             if to_amplitude:
                 denoised_nds = np.sqrt(denoised_nds)
             if mean_dict:
-                rescale_factor = mean_dict.get(os.path.basename(original_geotiff_path), 1)
+                rescale_factor = mean_dict.get(
+                    os.path.basename(original_geotiff_path), 1
+                )
                 denoised_nds = denoised_nds / rescale_factor
 
             original_dataset.GetRasterBand(1).WriteArray(denoised_nds)

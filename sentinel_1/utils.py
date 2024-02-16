@@ -44,8 +44,8 @@ class Utils(object):
         if not isinstance(extensions, list):
             extensions = [extensions]
 
-        if not directory.endswith('/'):
-            directory = directory + '/'
+        if not directory.endswith("/"):
+            directory = directory + "/"
 
         for extension in extensions:
             if not extension.startswith("*"):
@@ -259,22 +259,21 @@ class Utils(object):
             vrt = None
             os.remove(temp_vrt_path)
 
-            #Band names must be manually set for now
-            #TODO read the xml file for names!
+            # Band names must be manually set for now
+            # TODO read the xml file for names!
             band_names = [
-                band_type, 
-                'IncidenceAngleFromEllipsoid', 
-                'LocalIncidenceAngle', 
-                'ProjectedLocalIncidenceAngle'
-                ]
+                band_type,
+                "IncidenceAngleFromEllipsoid",
+                "LocalIncidenceAngle",
+                "ProjectedLocalIncidenceAngle",
+            ]
             translated_dataset = gdal.Open(output_geotiff, gdal.GA_Update)
             for i, name in enumerate(band_names, start=1):
                 band = translated_dataset.GetRasterBand(i)
                 band.SetDescription(name)
-                band.SetMetadataItem('DESCRIPTION', name)
+                band.SetMetadataItem("DESCRIPTION", name)
 
-            #band names are not recognized by qgis
-
+            # band names are not recognized by qgis
 
     def remove_empty(input_file, **kwargs):
         """
@@ -401,9 +400,9 @@ class Utils(object):
         """
         Function is prequisite for "sort outputs" folder.
         Function creates ASC and DSC folders for each polarization given.
-        Takes working_dir, denoise_mode, unit, resolution and polarization
+        Takes output_dir, working_dir, denoise_mode, unit, resolution and polarization
         """
-        result_dir = kwargs.get("result_dir")
+        output_dir = kwargs.get("output_dir")
         working_dir = kwargs.get("working_dir")
         denoise_mode = kwargs.get("denoise_mode")
         unit = kwargs.get("unit")
@@ -413,15 +412,19 @@ class Utils(object):
         working_subdir = os.path.normpath(working_dir)
         processing_parameters = f"{denoise_mode}_denoised_{unit}_{resolution}m"
 
-        output_path=os.path.join(result_dir, working_subdir, processing_parameters)
-        Path(output_path).mkdir(exist_ok=True, parents=True)
+        output_sub_dir = os.path.join(output_dir, working_subdir, processing_parameters)
+        Path(output_sub_dir).mkdir(exist_ok=True, parents=True)
 
         for pol in polarization:
-            Path(os.path.join(output_path, pol + "_ASC/")).mkdir(exist_ok=True, parents=True)
-            Path(os.path.join(output_path, pol + "_DSC/")).mkdir(exist_ok=True, parents=True)
+            Path(os.path.join(output_sub_dir, pol + "_ASC/")).mkdir(
+                exist_ok=True, parents=True
+            )
+            Path(os.path.join(output_sub_dir, pol + "_DSC/")).mkdir(
+                exist_ok=True, parents=True
+            )
 
-        arg_name = "result_path"
-        kwargs[arg_name] = output_path
+        arg_name = "output_sub_dir"
+        kwargs[arg_name] = output_sub_dir
 
         return kwargs
 
@@ -429,9 +432,9 @@ class Utils(object):
         """
         Sorts geotiffs into folder based on polarizaton and orbital direction
         Requires "create_sorted_outputs" function to be run beforehand
-        Takes result_path and polarization
+        Takes output_sub_dir and polarization
         """
-        result_path = kwargs.get("result_path")
+        output_dir = kwargs.get("output_dir")
         polarization = kwargs.get("polarization")
 
         if not isinstance(polarization, list):
@@ -453,11 +456,11 @@ class Utils(object):
             print(f"# ERROR: No orbital direction information in {input_file}!")
 
         if None in (file_polarization, orbit_dir):
-            Path(os.path.join(result_path, "unsorted/")).mkdir(exist_ok=True)
-            shutil.copyfile(input_file, result_path + "unsorted/")
+            Path(os.path.join(output_dir, "unsorted/")).mkdir(exist_ok=True)
+            shutil.copyfile(input_file, output_dir + "unsorted/")
             return
 
-        sort_dir = os.path.join(result_path, file_polarization + "_" + orbit_dir)
+        sort_dir = os.path.join(output_dir, file_polarization + "_" + orbit_dir)
         sort_filename = os.path.join(sort_dir, os.path.basename(input_file))
         shutil.copyfile(input_file, sort_filename)
         return

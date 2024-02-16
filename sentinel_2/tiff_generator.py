@@ -35,10 +35,14 @@ class Tiff_generator(object):
         output_subdirectory = os.path.join(output_path, product_name + "_PROCESSED")
         Path(output_subdirectory).mkdir(exist_ok=True)
 
-        sub_directories = Tiff_generator.get_immediate_subdirectories(safe_dir + "/GRANULE")
+        sub_directories = Tiff_generator.get_immediate_subdirectories(
+            safe_dir + "/GRANULE"
+        )
 
         for granule in sub_directories:
-            unprocessed_band = os.path.join(output_path, product_name + ".SAFE", "GRANULE", granule, "IMG_DATA")
+            unprocessed_band = os.path.join(
+                output_path, product_name + ".SAFE", "GRANULE", granule, "IMG_DATA"
+            )
             Tiff_generator.generate_all_bands(
                 unprocessed_band, granule, output_subdirectory, output_path
             )
@@ -46,10 +50,7 @@ class Tiff_generator(object):
         shutil.rmtree(safe_dir)
         shutil.rmtree(output_subdirectory)
 
-    def generate_all_bands(
-        unprocessed_band, granule, output_subdirectory, newout
-    ):
-        # granule_band_template = granule[:-6]
+    def generate_all_bands(unprocessed_band, granule, output_subdirectory, newout):
         granule_part_1 = unprocessed_band.split(".SAFE")[0][-22:-16]
         granule_part_2 = unprocessed_band.split(".SAFE")[0][-49:-34]
         granule_band_template = granule_part_1 + "_" + granule_part_2 + "_"

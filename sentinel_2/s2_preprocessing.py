@@ -9,10 +9,10 @@ from sentinel_2.tiff_generator import Tiff_generator
 
 class Preprocessor(object):
     def __init__(self, input_dir, output_dir):
-        if input_dir == None:
+        if not input_dir:
             input_dir = "input/"
         self.input_dir = input_dir
-        if output_dir == None:
+        if not output_dir:
             output_dir = "output/"
         self.output_dir = output_dir
         # self.output_dir = output_dir + 'unprocessed_geotiffs/'
@@ -40,11 +40,10 @@ class Preprocessor(object):
 
             cloud_clover_in_aoi = Utils.aoi_cloud_cover(safe_file, shape)
 
-            if cloud_clover_in_aoi >= max_cloud or None:
-                print("# Skipping clouds...")
-                continue
-
-            Tiff_generator.generate_geotiffs(safe_file, self.output_dir)
+            if cloud_clover_in_aoi >= max_cloud:
+                print(f"# Cloud cover in {safe_file} exceeded max, skipping...")
+            else:
+                Tiff_generator.generate_geotiffs(safe_file, self.output_dir)
         return
 
     def warp_files_to_crs(self, crs):
@@ -64,7 +63,7 @@ class Preprocessor(object):
     def clip_to_shape(self, shape, crs):
         print("## Clipping geotiff to shape...")
 
-        if shape == None:
+        if not shape:
             return
 
         output_tif = self.tmp + "tmp.tif"
@@ -81,8 +80,6 @@ class Preprocessor(object):
             )
             Utils.open_option_warp_move(data, options, output_tif)
 
-        del output_tif
-
     def remove_empty_files(self, max_empty_percent=50):
         print("## Removing images with too little data...")
         input_data_list = Utils.file_list_from_dir(self.output_dir, "*.tif")
@@ -90,3 +87,15 @@ class Preprocessor(object):
             print("# " + str(i + 1) + " / " + str(len(input_data_list)), end="\r")
 
             Utils.remove_empty_files(data, max_empty_percent)
+
+    def result_mover(self, geotiff_dir, sentinel_2_output):
+        print("## Moving results to output dir...")
+
+        input_data_list = Utils.file_list_from_dir(geotiff_dir, "*.tif")
+        os.makedirs(sentinel_2_output, exist_ok=True)
+
+        for i, data in enumerate(input_data_list):
+            print("# " + str(i + 1) + " / " + str(len(input_data_list)), end="\r")
+
+            destination = os.path.join(sentinel_2_output, os.path.basename(data))
+            Utils.move_data(data, destination)
