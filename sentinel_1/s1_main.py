@@ -63,9 +63,9 @@ class S1Preprocessor:
         copy_dir = os.path.join(self.working_dir, "geotiff_copy")
         # geotiff_utils.util_starter("copy_dir", copy_dir=copy_dir)
 
-        geotiff_utils.util_starter("split_polarizations", output_dir=self.geotiff_dir)
-
-        geotiff_utils.util_starter("clip_256", shape=self.shape, crs=self.crs)
+        geotiff_utils.util_starter("split_polarizations", output_dir=self.geotiff_dir, shape=self.shape, crs=self.crs)
+        sys.exit()
+        # geotiff_utils.util_starter("clip_256", shape=self.shape, crs=self.crs)
 
         copy_dir_utils = ToolManager(
             copy_dir, "*.tif", threads=1, polarization=self.polarization

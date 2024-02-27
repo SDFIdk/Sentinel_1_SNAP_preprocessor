@@ -235,24 +235,26 @@ class Utils(object):
                     else: 
                         incidence_bands.append((i+1, band_name))
 
-            return data_bands, incidence_bands
+            return data_bands, incidence_bands, root
 
         output_dir = kwargs.get("output_dir")
         polarization = kwargs.get("polarization")
+        shape = kwargs.get("shape")
 
-        data_bands, incidence_bands = band_names_from_snap_geotiff(input_file)
+        data_bands, incidence_bands, metadata_xml = band_names_from_snap_geotiff(input_file)
         orbit_direction = get_orbital_direction(input_file)
+
+        from sentinel_1.utils import Utils
+        Utils.clip_256(input_file, **kwargs)
 
         with rio.open(input_file) as src:
             meta = src.meta.copy()
-
             meta.update(count=src.count - (len(polarization)-1), compress=Compression.lzw.name)
             
             selected_data_bands = [item for pol in polarization for item in get_band_polarization(pol, data_bands)]
             
             for i, (data_index, data_band) in enumerate(selected_data_bands, start = 1):
-                # meta['count'] = 1 + len(incidence_bands)
-                
+
                 band_info = data_band + "_" + orbit_direction
                 filename = (
                     os.path.basename(input_file).replace(Path(input_file).suffix, "_")
@@ -263,10 +265,9 @@ class Utils(object):
                 
                 with rio.open(output_geotiff, 'w', **meta) as dst:
                     dst.write(src.read(data_index), 1)
-                    dst.set_band_description(i, data_band)
-
-                    print(incidence_bands)
-                    # sys.exit()
+                    dst.set_band_description(1, data_band)
+                    dst.update_tags(ns='xml', **{'TIFFTAG_XMLPACKET': metadata_xml})
+                    dst.nodata = -9999
 
                     for i, (incidence_index, incidence_band) in enumerate(incidence_bands, start=2):
                         dst.write(src.read(incidence_index), i)
@@ -414,8 +415,6 @@ class Utils(object):
         if new_width == original_width and new_height == original_height:
             return
         else:
-            # with tempfile.NamedTemporaryFile(delete=False, suffix='.tif') as tmp:
-            #     temp_output_path = tmp.name
             temp_output_path = "tmp.tif"
             driver = gdal.GetDriverByName("GTiff")
             out_dataset = driver.Create(
@@ -539,7 +538,6 @@ class Utils(object):
             srcSRS=src_srs,
             dstSRS=crs,
             resampleAlg=gdal.GRA_NearestNeighbour,
-            creationOptions=["COPY_METADATA=YES"]
         )
 
         with tempfile.NamedTemporaryFile(delete=False, suffix=".tif") as tmp_file:

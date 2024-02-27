@@ -22,7 +22,6 @@ class ToolManager:
             "clip_256": Utils.clip_256,
             "trimmer_256": Utils.trimmer_256,
             "convert_unit": Utils.convert_unit,
-            "netcdf_to_geotiff": Utils.extract_polarization_band_incidence,
             "split_polarizations": Utils.split_polarizations,
             # "TEST_FUNK": Utils.TEST_FUNK,
         }  # TODO later add denoiser and snap executor

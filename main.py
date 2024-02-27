@@ -22,12 +22,6 @@ from osgeo import gdal  # for some reason it crashes if imported in other module
 #TODO New land-sea-mask module
 #TODO quality checker in wrapper. Dont bother with dynamic range.
 #TODO implement multiprocessing
-#TODO implement cutting in band_extractor
-#TODO re-add original metadata to tag 65000 in splitter
-    #extract metadata, cut, then fix the bands
-#TODO explicitly set -9999 as nodata in splitter
-#TODO ensure clipper retains metadata
-
 
 # User inputs
 working_dir = "TEST_DATA_FULL_SEND/"
