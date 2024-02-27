@@ -56,7 +56,7 @@ class SnapPreprocessor(object):
         Function looks for the field formatName in the Write node.
         This is specific to SNAP generated processing graphs
         """
-        format_dict = {"Geotiff": ".tif", "NetCDF": ".nc"}
+        format_dict = {"GeoTIFF": ".tif", "NetCDF": ".nc"}
 
         root = ET.parse(graph_xml).getroot()
 

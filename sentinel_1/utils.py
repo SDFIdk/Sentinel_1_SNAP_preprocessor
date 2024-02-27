@@ -4,15 +4,17 @@ import os
 import sys
 import geopandas as gpd
 import numpy as np
-import rasterio as rio
 from pathlib import Path
 import glob
 import shutil
 import uuid
 import pyproj
 import tempfile
+import rasterio as rio
 from rasterio.windows import Window
-
+from rasterio.enums import Compression
+import xml.etree.ElementTree as ET
+import tifffile
 
 class Utils(object):
     def __init__(self):
@@ -79,9 +81,10 @@ class Utils(object):
         gdf = gpd.read_file(shape)
 
         geotiff_crs = rio.open(input_file).crs
+
         gdf_warp = gdf.to_crs(geotiff_crs)
 
-        new_shape_dir = output_dir + "crs_corrected_shape/"
+        new_shape_dir = os.path.join(output_dir, "crs_corrected_shape/")
         Path(new_shape_dir).mkdir(exist_ok=True)
 
         output_shape = new_shape_dir + "new_" + os.path.basename(shape)
@@ -104,188 +107,17 @@ class Utils(object):
         shp_file.to_file(geojson, driver="GeoJSON")
         return geojson
 
-    # def extract_polarization_band(input_file, **kwargs):
-    #     """
-    #     Splits a netcdf into constituent bands depending depending on polarization
-    #     Used for NetCDF
-    #     Takes input_file, output_dir and polarization
-    #     """
-    #     output_dir = kwargs.get("output_dir")
-    #     polarization = kwargs.get("polarization")
-
-    #     extension = Path(input_file).suffix
-    #     input_dataset = gdal.Open(input_file, gdal.GA_ReadOnly)
-
-    #     for subdataset in input_dataset.GetSubDatasets():
-
-    #         subdataset_name, _ = subdataset
-    #         band = gdal.Open(subdataset_name)
-    #         metadata = band.GetMetadata()
-
-    #         orbit = metadata['/Metadata_Group/Abstracted_Metadata/NC_GLOBAL#PASS']
-
-    #         if orbit == 'ASCENDING': orbit_direction = 'ASC'
-    #         elif orbit == 'DESCENDING': orbit_direction = 'DSC'
-    #         else:
-    #             raise Exception('# Orbital direction not found in NetCDF metadata')
-
-    #         for pol in polarization:
-    #             if '_' + pol in subdataset_name:
-    #                 band_type = pol
-    #                 break
-    #         assert band_type, (
-    #             '# Polarization not found in NetCDF metadata'
-    #         )
-
-    #         for key, value in metadata.items():
-    #             if 'srsName' in key:
-    #                 _, _, crs = value.partition('#')
-    #                 crs = f'EPSG:{crs}'
-    #                 break
-    #         assert crs, (
-    #             '# CRS not found in NetCDF metadata'
-    #         )
-    #         srs = osr.SpatialReference()
-    #         srs.ImportFromEPSG(int(crs.split(':')[1]))
-
-    #         translate_options = gdal.TranslateOptions(
-    #             format = "GTiff",
-    #             options = ["TILED=YES", "COMPRESS=LZW"],
-    #             outputType = gdal.GDT_Float32,
-    #             outputSRS=srs.ExportToWkt()
-    #         )
-
-    #         band_info = band_type + '_' + orbit_direction
-
-    #         filename = os.path.basename(input_file).replace(extension, '_') + band_info + "_band.tif"
-    #         output_geotiff = os.path.join(output_dir, filename)
-
-    #         gdal.Translate(output_geotiff, band, options=translate_options)
-
-    #     input_dataset = None
-    #     return
-
-    def extract_polarization_band_incidence(input_file, **kwargs):
-        """
-        Splits a netcdf into constituent bands depending depending on polarization and
-        adds incidence angle bands to each polarization
-        Used for NetCDF
-        Takes output_dir and polarization
-        """
-
-        def get_orbital_direction(input_file, metadata):
-            orbit = metadata["/Metadata_Group/Abstracted_Metadata/NC_GLOBAL#PASS"]
-
-            if orbit == "ASCENDING":
-                orbit_direction = "ASC"
-            elif orbit == "DESCENDING":
-                orbit_direction = "DSC"
-            else:
-                raise Exception(
-                    f"# Orbital direction not found in {input_file} metadata"
-                )
-            return orbit_direction
-
-        def get_band_polarization(input_file, polarization, subdataset_name):
-            for pol in polarization:
-                if "_" + pol in subdataset_name:
-                    band_type = pol
-                    break
-            assert band_type, f"# Polarization not found in {input_file} metadata"
-            return band_type
-
-        def get_srs(input_file, metadata):
-            for key, value in metadata.items():
-                if "srsName" in key:
-                    _, _, crs = value.partition("#")
-                    crs = f"EPSG:{crs}"
-                    break
-            assert crs, f"# CRS not found in {input_file} metadata"
-            srs = osr.SpatialReference()
-            srs.ImportFromEPSG(int(crs.split(":")[1]))
-            return srs
-
-        output_dir = kwargs.get("output_dir")
-        polarization = kwargs.get("polarization")
-
-        gdal_dataset = gdal.Open(input_file, gdal.GA_ReadOnly)
-
-        data_bands = []
-        incidence_bands = []
-        for subdataset in gdal_dataset.GetSubDatasets():
-            if "Intensity" or "VH" or "VV" in subdataset[1]:
-                data_bands.append(subdataset)
-            elif "Angle" or "Incidence" in subdataset[1]:
-                incidence_bands.append(subdataset)
-            else:
-                raise Exception(
-                    f"# Band type not found in {gdal_dataset} metadata label"
-                )
-
-        for subdataset in data_bands:
-            band = gdal.Open(subdataset[0])
-            metadata = band.GetMetadata()
-
-            orbit_direction = get_orbital_direction(input_file, metadata)
-            band_type = get_band_polarization(input_file, polarization, subdataset[0])
-            srs = get_srs(input_file, metadata)
-
-            band_info = band_type + "_" + orbit_direction
-            filename = (
-                os.path.basename(input_file).replace(Path(input_file).suffix, "_")
-                + band_info
-                + "_band.tif"
-            )
-            output_geotiff = os.path.join(output_dir, filename)
-
-            vrt_options = gdal.BuildVRTOptions(resolution="highest", separate=True)
-            band_paths = [
-                subdataset[0] for subdataset in [subdataset] + incidence_bands
-            ]
-            temp_vrt_path = os.path.join(
-                output_dir, "temp_" + filename.replace(".tif", ".vrt")
-            )
-
-            vrt = gdal.BuildVRT(temp_vrt_path, band_paths, options=vrt_options)
-
-            translate_options = gdal.TranslateOptions(
-                format="GTiff",
-                options=["TILED=YES", "COMPRESS=LZW"],
-                outputType=gdal.GDT_Float32,
-                outputSRS=srs.ExportToWkt(),
-            )
-
-            gdal.Translate(output_geotiff, vrt, options=translate_options)
-            vrt = None
-            os.remove(temp_vrt_path)
-
-            # Band names must be manually set for now
-            # TODO read the xml file for names!
-            band_names = [
-                band_type,
-                "IncidenceAngleFromEllipsoid",
-                "LocalIncidenceAngle",
-                "ProjectedLocalIncidenceAngle",
-            ]
-            translated_dataset = gdal.Open(output_geotiff, gdal.GA_Update)
-            for i, name in enumerate(band_names, start=1):
-                band = translated_dataset.GetRasterBand(i)
-                band.SetDescription(name)
-                band.SetMetadataItem("DESCRIPTION", name)
-
-            # band names are not recognized by qgis
-
     def remove_empty(input_file, **kwargs):
         """
         Finds geotiffs with no data and deletes them. Outputs none
         Used for geotiffs
         """
         with rio.open(input_file) as src:
-            for i in range(1, src.count + 1):
-                data = src.read(i)
+            data = src.read(1)
 
-                if np.all(np.isnan(data)):
-                    os.remove(input_file)
+            if not np.all(np.isnan(data)): return
+
+            os.remove(input_file)
         return
 
     def unzip_data_to_dir(input_file, **kwargs):
@@ -325,32 +157,6 @@ class Utils(object):
         gdal.Warp(output_file, gdal_dataset, options=options)
         shutil.move(output_file, input_file)
 
-    # def TEST_crs_warp(input_file, **kwargs):
-    #     """
-    #     NEW THING USING tempfile AND GDAL CONTEXT MANAGER
-    #     Warps a raster to a new CRS.
-    #     Takes crs.
-    #     """
-    #     crs = kwargs.get("crs")
-
-    #     with tempfile.TemporaryDirectory() as temp_dir:
-    #         temp_output_file = os.path.join(temp_dir, os.path.basename(input_file))
-
-    #         with gdal.Open(input_file) as gdal_dataset:
-    #             geotransform = gdal_dataset.GetGeoTransform()
-    #             x_res = geotransform[1]
-    #             y_res = -geotransform[5]
-
-    #             options = gdal.WarpOptions(
-    #                 format="GTiff",
-    #                 dstSRS=crs,
-    #                 xRes=x_res,
-    #                 yRes=y_res,
-    #                 resampleAlg=gdal.GRA_NearestNeighbour,
-    #             )
-    #             gdal.Warp(temp_output_file, gdal_dataset, options=options)
-
-    #         shutil.move(temp_output_file, input_file)
 
     def change_raster_resolution(input_file, **kwargs):
         """
@@ -373,30 +179,103 @@ class Utils(object):
 
         shutil.move(output_file, input_file)
 
-    # def split_polarizations(input_file, **kwargs):
-    #     """
-    #     Splits a multiband geotiff into seperate files with single bands
-    #     MAY NOT BE NEEDED, DEPENDS ENTIRELY ON HOW SNAP EXECUTOR EVOLVES
-    #     Takes input_file and polarization
-    #     """
-    #     polarization = kwargs.get("polarization")
-    #     input_dir = kwargs.get("input_dir")
+    def split_polarizations(input_file, **kwargs):
+        """
+        Splits a file with multiple polarization bands into one file per
+        band with copies of auxiliary bands.
+        Takes output_dir, polarization and crs
+        """
+        def get_orbital_direction(input_file, tag=65000):
+            #65000 is standard geotiff tag for metadata xml
+            with tifffile.TiffFile(input_file) as tif:
+                tree = tif.pages[0].tags[tag].value
+                assert tree, (
+                    f"# {input_file} does not contain SNAP assocaited metadata!"
+                )
 
-    #     with rio.open(input_file) as src:
-    #         meta = src.meta.copy()
+                root = ET.fromstring(tree)
+                metadata = root.findall('Dataset_Sources')[0][0][0]
 
-    #         for band in range(1, src.count + 1):
-    #             data = src.read(band)
+                for mdattr in metadata.findall('MDATTR'):
+                    if not mdattr.get('name') == 'PASS': continue
 
-    #             output_filename = f"{input_dir}/band_{band}.tif"
+                    orbital_direction = mdattr.text
+                    if orbital_direction == 'ASCENDING':
+                        return 'ASC'
+                    elif orbital_direction == 'DESCENDING':
+                        return 'DSC'
 
-    #             meta = src.meta.copy()
-    #             meta.update({"count": 1})
+        def get_band_polarization(pol, data_bands):
+            data_matches = []
+            for i, band in enumerate(data_bands):
+                if pol in band[1]:
+                    data_matches.append((i+1, pol))
+            return data_matches
+        
+        def band_names_from_snap_geotiff(input_file, tag=65000):
+            #65000 is standard geotiff tag for metadata xml
+            with tifffile.TiffFile(input_file) as tif:
+                tree = tif.pages[0].tags[tag].value
+                assert tree, (
+                    f"# {input_file} does not contain SNAP assocaited metadata!"
+                )
 
-    #             with rio.open(output_filename, "w", **meta) as dst:
-    #                 dst.write(data, 1)
+                root = ET.fromstring(tree)
+                data_access = root.findall('Data_Access')[0]
 
-    def create_sorted_outputs(**kwargs):
+                data_bands = []
+                incidence_bands = []
+                for i, data_file in enumerate(data_access.findall('Data_File')):
+
+                    band_name = data_file.find('DATA_FILE_PATH').get('href')
+                    band_name = os.path.splitext(os.path.basename(band_name))[0]
+
+                    if 'VV' in  band_name or 'VH' in band_name:
+                        data_bands.append((i+1, band_name))
+                    else: 
+                        incidence_bands.append((i+1, band_name))
+
+            return data_bands, incidence_bands
+
+        output_dir = kwargs.get("output_dir")
+        polarization = kwargs.get("polarization")
+
+        data_bands, incidence_bands = band_names_from_snap_geotiff(input_file)
+        orbit_direction = get_orbital_direction(input_file)
+
+        with rio.open(input_file) as src:
+            meta = src.meta.copy()
+
+            meta.update(count=src.count - (len(polarization)-1), compress=Compression.lzw.name)
+            
+            selected_data_bands = [item for pol in polarization for item in get_band_polarization(pol, data_bands)]
+            
+            for i, (data_index, data_band) in enumerate(selected_data_bands, start = 1):
+                # meta['count'] = 1 + len(incidence_bands)
+                
+                band_info = data_band + "_" + orbit_direction
+                filename = (
+                    os.path.basename(input_file).replace(Path(input_file).suffix, "_")
+                    + band_info
+                    + "_band.tif"
+                )
+                output_geotiff = os.path.join(output_dir, filename)
+                
+                with rio.open(output_geotiff, 'w', **meta) as dst:
+                    dst.write(src.read(data_index), 1)
+                    dst.set_band_description(i, data_band)
+
+                    print(incidence_bands)
+                    # sys.exit()
+
+                    for i, (incidence_index, incidence_band) in enumerate(incidence_bands, start=2):
+                        dst.write(src.read(incidence_index), i)
+                        dst.set_band_description(i, incidence_band)
+                        
+        os.remove(input_file)
+
+
+    def create_sorted_outputs(**kwargs):        
         """
         Function is prequisite for "sort outputs" folder.
         Function creates ASC and DSC folders for each polarization given.
@@ -660,6 +539,7 @@ class Utils(object):
             srcSRS=src_srs,
             dstSRS=crs,
             resampleAlg=gdal.GRA_NearestNeighbour,
+            creationOptions=["COPY_METADATA=YES"]
         )
 
         with tempfile.NamedTemporaryFile(delete=False, suffix=".tif") as tmp_file:
@@ -696,9 +576,7 @@ class Utils(object):
                 dst.write(clipped_data)
 
         shutil.move(tmp_file_path_2, input_file)
-        tmp_file.close()
 
-        os.remove(tmp_file_path)
 
     # def TEST_FUNK(input_file, **kwargs):
     #     """

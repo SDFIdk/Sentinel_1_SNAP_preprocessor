@@ -23,12 +23,14 @@ class ToolManager:
             "trimmer_256": Utils.trimmer_256,
             "convert_unit": Utils.convert_unit,
             "netcdf_to_geotiff": Utils.extract_polarization_band_incidence,
+            "split_polarizations": Utils.split_polarizations,
             # "TEST_FUNK": Utils.TEST_FUNK,
         }  # TODO later add denoiser and snap executor
 
         self.pre_init_dict = {
             "align_raster": Utils.get_reference_geotransform,
             "sort_output": Utils.create_sorted_outputs,
+            # "netcdf_to_geotiff": Utils.extract_band_names_from_graph,
         }
 
     def util_starter(self, tool, **kwargs):

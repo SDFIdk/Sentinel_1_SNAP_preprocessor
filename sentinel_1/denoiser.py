@@ -15,7 +15,6 @@ from sentinel_1.utils import Utils
 from sentinel_1.sar2sar_model import sar2sar_denoiser
 from sentinel_1.mean_extractor import Correction_dict
 
-
 class Denoiser(object):
     def __init__(self, geotiff_dir, shapefile_path):
         self.geotiff_dir = geotiff_dir
