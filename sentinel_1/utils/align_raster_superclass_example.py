@@ -6,13 +6,13 @@ import tempfile
 from sentinel_1.utils.Tool import Tool
 from sentinel_1.utils import Utils
 
+
 class AlignRaster(Tool):
     def __init__(self, input_dir=None):
         self.input_dir = input_dir
         self.reference_geotransform = None
 
     def setup(self, input_file, **kwargs):
-
         """
         Function prequisite for using align_raster
         Function returns the geotransform from the largest file in dir

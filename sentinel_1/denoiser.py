@@ -15,6 +15,7 @@ from sentinel_1.utils import Utils
 from sentinel_1.sar2sar_model import sar2sar_denoiser
 from sentinel_1.mean_extractor import Correction_dict
 
+
 class Denoiser(object):
     def __init__(self, geotiff_dir, shapefile_path):
         self.geotiff_dir = geotiff_dir
@@ -155,57 +156,6 @@ class Denoiser(object):
                 model = sar2sar_denoiser(sess)
                 denoiser_starter(model, noisy_npy_folder)
         return
-
-    # def recreate_geotiff(self, denoised_npy_dir, mean_dict=False, to_amplitude=False):
-    #     gdal.UseExceptions()
-    #     print("## Recreating geotiffs from .npy...")
-
-    #     denoised_npy_files = Utils.file_list_from_dir(denoised_npy_dir, "*.npy")
-    #     Path(self.tmp + "denoised_geotiffs").mkdir(exist_ok=True, parents=True)
-
-    #     for i, denoised_npy_file in enumerate(denoised_npy_files):
-    #         print("# " + str(i + 1) + " / " + str(len(denoised_npy_files)), end="\r")
-
-    #         original_geotiff_path = denoised_npy_file.replace(".npy", ".tif").replace(
-    #             "tmp/denoised_numpys", ""
-    #         )
-    #         tmp_densoised_geotiff = self.tmp + "tmp.tif"
-
-    #         original_dataset = gdal.Open(original_geotiff_path)
-    #         assert original_dataset, (
-    #             "## Failed to open original GeoTIFF")
-
-    #         denoised_nds = np.load(denoised_npy_file)
-
-    #         if to_amplitude:
-    #             denoised_nds = np.sqrt(
-    #                 denoised_nds
-    #             )
-    #         if mean_dict:
-    #             rescale_factor = mean_dict[os.path.basename(original_geotiff_path)]
-    #             denoised_nds = denoised_nds / rescale_factor
-
-    #         driver = gdal.GetDriverByName("GTiff")
-    #         reconverted_dataset = driver.Create(
-    #             tmp_densoised_geotiff,
-    #             denoised_nds.shape[1],
-    #             denoised_nds.shape[0],
-    #             original_dataset.RasterCount,
-    #             original_dataset.GetRasterBand(1).DataType,
-    #         )
-
-    #         reconverted_dataset.SetProjection(original_dataset.GetProjection())
-    #         reconverted_dataset.SetGeoTransform(original_dataset.GetGeoTransform())
-
-    #         for band_index in range(original_dataset.RasterCount):
-    #             reconverted_band = reconverted_dataset.GetRasterBand(band_index + 1)
-    #             reconverted_band.WriteArray(denoised_nds)
-
-    #         original_dataset = None
-    #         reconverted_dataset = None
-
-    #         shutil.move(tmp_densoised_geotiff, original_geotiff_path)
-    #     return
 
     def recreate_geotiff(self, denoised_npy_dir, mean_dict=False, to_amplitude=False):
         gdal.UseExceptions()

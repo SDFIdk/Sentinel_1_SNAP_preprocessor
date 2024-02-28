@@ -20,19 +20,20 @@ class ResultWrapper:
         self.result_dir = kwargs["result_dir"]
 
     def wrap_results(self):
-        all_results = [].append(
-            glob(self.sentinel_1_files + "/"),
-            glob(self.sentinel_2_files + "/"),
+        all_results = [
+            glob(self.sentinel_1_files + "/")[0],
+            glob(self.sentinel_2_files + "/")[0],
             self.shape,
-        )
+        ]
 
-        print(all_results)
+        zip_name = self.working_dir
+        if zip_name.endswith('/'): 
+            zip_name = zip_name[:-1]
+        zip_name = zip_name.split("/").pop() + ".7z"
 
         output_name = os.path.join(
-            self.result_dir, os.path.basename(self.working_dir) + ".7z"
+            self.result_dir, zip_name
         )
-
-        print(output_name)
 
         with py7zr.SevenZipFile(output_name, "w") as archive:
             for data in all_results:

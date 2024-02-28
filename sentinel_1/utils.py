@@ -16,6 +16,7 @@ from rasterio.enums import Compression
 import xml.etree.ElementTree as ET
 import tifffile
 
+
 class Utils(object):
     def __init__(self):
         self.test = "test"
@@ -72,7 +73,7 @@ class Utils(object):
             return False
 
     def check_create_folder(directory):
-        Path(directory).mkdir(exist_ok=True)
+        Path(directory).mkdir(exist_ok=True, parents=True)
 
     def remove_folder(folder):
         shutil.rmtree(folder)
@@ -115,7 +116,8 @@ class Utils(object):
         with rio.open(input_file) as src:
             data = src.read(1)
 
-            if not np.all(np.isnan(data)): return
+            if not np.all(np.isnan(data)):
+                return
 
             os.remove(input_file)
         return
@@ -157,7 +159,6 @@ class Utils(object):
         gdal.Warp(output_file, gdal_dataset, options=options)
         shutil.move(output_file, input_file)
 
-
     def change_raster_resolution(input_file, **kwargs):
         """
         Resamples a raster to a new resolution
@@ -185,55 +186,56 @@ class Utils(object):
         band with copies of auxiliary bands.
         Takes output_dir, polarization and crs
         """
+
         def get_orbital_direction(input_file, tag=65000):
-            #65000 is standard geotiff tag for metadata xml
+            # 65000 is standard geotiff tag for metadata xml
             with tifffile.TiffFile(input_file) as tif:
                 tree = tif.pages[0].tags[tag].value
-                assert tree, (
-                    f"# {input_file} does not contain SNAP assocaited metadata!"
-                )
+                assert (
+                    tree
+                ), f"# {input_file} does not contain SNAP assocaited metadata!"
 
                 root = ET.fromstring(tree)
-                metadata = root.findall('Dataset_Sources')[0][0][0]
+                metadata = root.findall("Dataset_Sources")[0][0][0]
 
-                for mdattr in metadata.findall('MDATTR'):
-                    if not mdattr.get('name') == 'PASS': continue
+                for mdattr in metadata.findall("MDATTR"):
+                    if not mdattr.get("name") == "PASS":
+                        continue
 
                     orbital_direction = mdattr.text
-                    if orbital_direction == 'ASCENDING':
-                        return 'ASC'
-                    elif orbital_direction == 'DESCENDING':
-                        return 'DSC'
+                    if orbital_direction == "ASCENDING":
+                        return "ASC"
+                    elif orbital_direction == "DESCENDING":
+                        return "DSC"
 
         def get_band_polarization(pol, data_bands):
             data_matches = []
             for i, band in enumerate(data_bands):
                 if pol in band[1]:
-                    data_matches.append((i+1, pol))
+                    data_matches.append((i + 1, pol))
             return data_matches
-        
+
         def band_names_from_snap_geotiff(input_file, tag=65000):
-            #65000 is standard geotiff tag for metadata xml
+            # 65000 is standard geotiff tag for metadata xml
             with tifffile.TiffFile(input_file) as tif:
                 tree = tif.pages[0].tags[tag].value
-                assert tree, (
-                    f"# {input_file} does not contain SNAP assocaited metadata!"
-                )
+                assert (
+                    tree
+                ), f"# {input_file} does not contain SNAP assocaited metadata!"
 
                 root = ET.fromstring(tree)
-                data_access = root.findall('Data_Access')[0]
+                data_access = root.findall("Data_Access")[0]
 
                 data_bands = []
                 incidence_bands = []
-                for i, data_file in enumerate(data_access.findall('Data_File')):
-
-                    band_name = data_file.find('DATA_FILE_PATH').get('href')
+                for i, data_file in enumerate(data_access.findall("Data_File")):
+                    band_name = data_file.find("DATA_FILE_PATH").get("href")
                     band_name = os.path.splitext(os.path.basename(band_name))[0]
 
-                    if 'VV' in  band_name or 'VH' in band_name:
-                        data_bands.append((i+1, band_name))
-                    else: 
-                        incidence_bands.append((i+1, band_name))
+                    if "VV" in band_name or "VH" in band_name:
+                        data_bands.append((i + 1, band_name))
+                    else:
+                        incidence_bands.append((i + 1, band_name))
 
             return data_bands, incidence_bands, root
 
@@ -241,20 +243,28 @@ class Utils(object):
         polarization = kwargs.get("polarization")
         shape = kwargs.get("shape")
 
-        data_bands, incidence_bands, metadata_xml = band_names_from_snap_geotiff(input_file)
+        data_bands, incidence_bands, metadata_xml = band_names_from_snap_geotiff(
+            input_file
+        )
         orbit_direction = get_orbital_direction(input_file)
 
         from sentinel_1.utils import Utils
+
         Utils.clip_256(input_file, **kwargs)
 
         with rio.open(input_file) as src:
             meta = src.meta.copy()
-            meta.update(count=src.count - (len(polarization)-1), compress=Compression.lzw.name)
-            
-            selected_data_bands = [item for pol in polarization for item in get_band_polarization(pol, data_bands)]
-            
-            for i, (data_index, data_band) in enumerate(selected_data_bands, start = 1):
+            meta.update(
+                count=src.count - (len(polarization) - 1), compress=Compression.lzw.name
+            )
 
+            selected_data_bands = [
+                item
+                for pol in polarization
+                for item in get_band_polarization(pol, data_bands)
+            ]
+
+            for i, (data_index, data_band) in enumerate(selected_data_bands, start=1):
                 band_info = data_band + "_" + orbit_direction
                 filename = (
                     os.path.basename(input_file).replace(Path(input_file).suffix, "_")
@@ -262,51 +272,20 @@ class Utils(object):
                     + "_band.tif"
                 )
                 output_geotiff = os.path.join(output_dir, filename)
-                
-                with rio.open(output_geotiff, 'w', **meta) as dst:
+
+                with rio.open(output_geotiff, "w", **meta) as dst:
                     dst.write(src.read(data_index), 1)
                     dst.set_band_description(1, data_band)
-                    dst.update_tags(ns='xml', **{'TIFFTAG_XMLPACKET': metadata_xml})
+                    dst.update_tags(ns="xml", **{"TIFFTAG_XMLPACKET": metadata_xml})
                     dst.nodata = -9999
 
-                    for i, (incidence_index, incidence_band) in enumerate(incidence_bands, start=2):
+                    for i, (incidence_index, incidence_band) in enumerate(
+                        incidence_bands, start=2
+                    ):
                         dst.write(src.read(incidence_index), i)
                         dst.set_band_description(i, incidence_band)
-                        
+
         os.remove(input_file)
-
-
-    def create_sorted_outputs(**kwargs):        
-        """
-        Function is prequisite for "sort outputs" folder.
-        Function creates ASC and DSC folders for each polarization given.
-        Takes output_dir, working_dir, denoise_mode, unit, resolution and polarization
-        """
-        output_dir = kwargs.get("output_dir")
-        working_dir = kwargs.get("working_dir")
-        denoise_mode = kwargs.get("denoise_mode")
-        unit = kwargs.get("unit")
-        resolution = kwargs.get("resolution")
-        polarization = kwargs.get("polarization")
-
-        working_subdir = os.path.normpath(working_dir)
-        processing_parameters = f"{denoise_mode}_denoised_{unit}_{resolution}m"
-
-        output_sub_dir = os.path.join(output_dir, working_subdir, processing_parameters)
-        Path(output_sub_dir).mkdir(exist_ok=True, parents=True)
-
-        for pol in polarization:
-            Path(os.path.join(output_sub_dir, pol + "_ASC/")).mkdir(
-                exist_ok=True, parents=True
-            )
-            Path(os.path.join(output_sub_dir, pol + "_DSC/")).mkdir(
-                exist_ok=True, parents=True
-            )
-
-        arg_name = "output_sub_dir"
-        kwargs[arg_name] = output_sub_dir
-
-        return kwargs
 
     def sort_output(input_file, **kwargs):
         """
@@ -314,8 +293,11 @@ class Utils(object):
         Requires "create_sorted_outputs" function to be run beforehand
         Takes output_sub_dir and polarization
         """
-        output_dir = kwargs.get("output_dir")
+        result_dir = kwargs.get("result_dir")
         polarization = kwargs.get("polarization")
+        denoise_mode = kwargs.get("denoise_mode")
+        unit = kwargs.get("unit")
+        resolution = kwargs.get("resolution")
 
         if not isinstance(polarization, list):
             polarization = [polarization]
@@ -324,23 +306,11 @@ class Utils(object):
         for pol in polarization:
             if pol in input_file:
                 file_polarization = pol
-        if not file_polarization:
-            print(f"# ERROR: No polarization information in {input_file}!")
 
-        orbit_dir = None
-        if "_ASC_" in input_file:
-            orbit_dir = "ASC"
-        elif "_DSC_" in input_file:
-            orbit_dir = "DSC"
-        if not orbit_dir:
-            print(f"# ERROR: No orbital direction information in {input_file}!")
+        product_dir = denoise_mode + "_" + str(resolution) + "m_" + unit
 
-        if None in (file_polarization, orbit_dir):
-            Path(os.path.join(output_dir, "unsorted/")).mkdir(exist_ok=True)
-            shutil.copyfile(input_file, output_dir + "unsorted/")
-            return
-
-        sort_dir = os.path.join(output_dir, file_polarization + "_" + orbit_dir)
+        sort_dir = os.path.join(result_dir, product_dir, file_polarization)
+        Utils.check_create_folder(sort_dir)
         sort_filename = os.path.join(sort_dir, os.path.basename(input_file))
         shutil.copyfile(input_file, sort_filename)
         return
@@ -574,7 +544,6 @@ class Utils(object):
                 dst.write(clipped_data)
 
         shutil.move(tmp_file_path_2, input_file)
-
 
     # def TEST_FUNK(input_file, **kwargs):
     #     """

@@ -49,26 +49,27 @@ class S1Preprocessor:
             self.denoise_modes = [self.denoise_modes]
 
     def s1_workflow(self):
-
         geotiff_utils = ToolManager(
             self.geotiff_dir, "*.tif", threads=1, polarization=self.polarization
         )
         snap_executor = SnapPreprocessor(gpt_path=self.gpt_exe)
         denoiser = Denoiser(self.geotiff_dir, self.shape)
 
-        # snap_executor.graph_processing(
-        #     self.safe_dir, self.geotiff_dir, self.pre_process_graph, input_ext=".zip"
-        # )
+        snap_executor.graph_processing(
+            self.safe_dir, self.geotiff_dir, self.pre_process_graph, input_ext=".zip"
+        )
 
         copy_dir = os.path.join(self.working_dir, "geotiff_copy")
-        # geotiff_utils.util_starter("copy_dir", copy_dir=copy_dir)
-
-        geotiff_utils.util_starter("split_polarizations", output_dir=self.geotiff_dir, shape=self.shape, crs=self.crs)
-        sys.exit()
-        # geotiff_utils.util_starter("clip_256", shape=self.shape, crs=self.crs)
-
+        geotiff_utils.util_starter("copy_dir", copy_dir=copy_dir)
         copy_dir_utils = ToolManager(
             copy_dir, "*.tif", threads=1, polarization=self.polarization
+        )
+
+        geotiff_utils.util_starter(
+            "split_polarizations",
+            output_dir=self.geotiff_dir,
+            shape=self.shape,
+            crs=self.crs,
         )
 
         for i, denoise_mode in enumerate(self.denoise_modes):
@@ -85,7 +86,7 @@ class S1Preprocessor:
             geotiff_utils.util_starter("align_raster")
             geotiff_utils.util_starter(
                 "sort_output",
-                output=self.sentinel_1_output,
+                result_dir=self.sentinel_1_output,
                 working_dir=self.working_dir,
                 denoise_mode=denoise_mode,
                 unit="decibel",
@@ -98,40 +99,7 @@ class S1Preprocessor:
             geotiff_utils.util_starter("align_raster")
             geotiff_utils.util_starter(
                 "sort_output",
-                output=self.sentinel_1_output,
-                working_dir=self.working_dir,
-                denoise_mode=denoise_mode,
-                unit="power",
-                resolution=resolution,
-            )
-
-            resolution = 20
-
-            geotiff_utils.util_starter(
-                "convert_unit", source_unit="power", destination_unit="linear"
-            )
-            geotiff_utils.util_starter("change_resolution", x_size=resolution)
-
-            geotiff_utils.util_starter(
-                "convert_unit", source_unit="linear", destination_unit="decibel"
-            )
-            geotiff_utils.util_starter("align_raster")
-            geotiff_utils.util_starter(
-                "sort_output",
-                output=self.sentinel_1_output,
-                working_dir=self.working_dir,
-                denoise_mode=denoise_mode,
-                unit="decibel",
-                resolution=resolution,
-            )
-
-            geotiff_utils.util_starter(
-                "convert_unit", source_unit="decibel", destination_unit="power"
-            )
-            geotiff_utils.util_starter("align_raster")
-            geotiff_utils.util_starter(
-                "sort_output",
-                output=self.sentinel_1_output,
+                result_dir=self.sentinel_1_output,
                 working_dir=self.working_dir,
                 denoise_mode=denoise_mode,
                 unit="power",

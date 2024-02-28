@@ -28,8 +28,7 @@ class ToolManager:
 
         self.pre_init_dict = {
             "align_raster": Utils.get_reference_geotransform,
-            "sort_output": Utils.create_sorted_outputs,
-            # "netcdf_to_geotiff": Utils.extract_band_names_from_graph,
+            # "sort_output": Utils.create_sorted_outputs,
         }
 
     def util_starter(self, tool, **kwargs):

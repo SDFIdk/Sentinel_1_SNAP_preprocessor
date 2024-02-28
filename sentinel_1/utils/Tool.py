@@ -3,6 +3,7 @@ from sentinel_1.utils import Utils
 
 from concurrent.futures import ProcessPoolExecutor, wait
 
+
 class Tool:
     threads = 1
 
@@ -11,7 +12,7 @@ class Tool:
         self.ext = extension
 
     def setup(self):
-        #this part should call the setup function somehow
+        # this part should call the setup function somehow
         pass
 
     def loop(self, input_file):
@@ -44,22 +45,6 @@ class Tool:
         files = self.files()
         for input_file in files:
             self.loop(input_file)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     # def __init__(self, input_dir, extension, threads = 1, polarization = None):
     #     self.input_dir = input_dir
