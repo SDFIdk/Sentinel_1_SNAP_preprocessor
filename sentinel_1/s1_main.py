@@ -12,10 +12,6 @@ class S1Preprocessor:
     def safe_dir(self):
         return os.path.join(self.working_dir, "sentinel_1", "safe")
 
-    # @property
-    # def netcdf_dir(self):
-    #     return os.path.join(self.working_dir, "sentinel_1", "netcdf")
-
     @property
     def geotiff_dir(self):
         return os.path.join(self.working_dir, "sentinel_1", "geotiff")
@@ -38,8 +34,8 @@ class S1Preprocessor:
         if not isinstance(self.denoise_modes, list):
             self.denoise_modes = [self.denoise_modes]
         self.polarization = kwargs.get("polarization", ["VV", "VH"])
+        self.land_polygon = kwargs.get("land_polygon", "shapes/landpolygon_1000.zip")
 
-        # Path(self.netcdf_dir).mkdir(parents=True, exist_ok=True)
         Path(self.geotiff_dir).mkdir(parents=True, exist_ok=True)
         Path(self.sentinel_1_output).mkdir(parents=True, exist_ok=True)
 
@@ -50,32 +46,34 @@ class S1Preprocessor:
 
     def s1_workflow(self):
         geotiff_utils = ToolManager(
-            self.geotiff_dir, "*.tif", threads=1, polarization=self.polarization
+            self.geotiff_dir, "*.tif", threads=self.threads, polarization=self.polarization
         )
         snap_executor = SnapPreprocessor(gpt_path=self.gpt_exe)
         denoiser = Denoiser(self.geotiff_dir, self.shape)
 
-        snap_executor.graph_processing(
-            self.safe_dir, self.geotiff_dir, self.pre_process_graph, input_ext=".zip"
-        )
+        # snap_executor.graph_processing(
+        #     self.safe_dir, self.geotiff_dir, self.pre_process_graph, input_ext=".zip"
+        # )
 
-        copy_dir = os.path.join(self.working_dir, "geotiff_copy")
-        geotiff_utils.util_starter("copy_dir", copy_dir=copy_dir)
-        copy_dir_utils = ToolManager(
-            copy_dir, "*.tif", threads=1, polarization=self.polarization
-        )
+        # copy_dir = os.path.join(self.working_dir, "geotiff_copy")
+        # geotiff_utils.util_starter("copy_dir", copy_dir=copy_dir)
+        # copy_dir_utils = ToolManager(
+        #     copy_dir, "*.tif", threads=1, polarization=self.polarization
+        # )
 
-        geotiff_utils.util_starter(
-            "split_polarizations",
-            output_dir=self.geotiff_dir,
-            shape=self.shape,
-            crs=self.crs,
-        )
+        # geotiff_utils.util_starter(
+        #     "split_polarizations",
+        #     output_dir=self.geotiff_dir,
+        #     shape=self.shape,
+        #     crs=self.crs,
+        # )
+
+        geotiff_utils.util_starter("land_sea_mask", land_sea_mask = self.land_polygon)
+        geotiff_utils.util_starter("remove_empty")
 
         for i, denoise_mode in enumerate(self.denoise_modes):
             resolution = 10
-            if not i == 0:
-                copy_dir_utils.util_starter("copy_dir", copy_dir=self.geotiff_dir)
+            # if not i == 0: copy_dir_utils.util_starter("copy_dir", copy_dir=self.geotiff_dir)
 
             denoiser.select_denoiser(denoise_mode, to_intensity=False)
 
@@ -84,6 +82,7 @@ class S1Preprocessor:
                 "convert_unit", source_unit="linear", destination_unit="decibel"
             )
             geotiff_utils.util_starter("align_raster")
+            geotiff_utils.util_starter("trimmer_256")
             geotiff_utils.util_starter(
                 "sort_output",
                 result_dir=self.sentinel_1_output,
@@ -97,6 +96,7 @@ class S1Preprocessor:
                 "convert_unit", source_unit="decibel", destination_unit="power"
             )
             geotiff_utils.util_starter("align_raster")
+            geotiff_utils.util_starter("trimmer_256")
             geotiff_utils.util_starter(
                 "sort_output",
                 result_dir=self.sentinel_1_output,

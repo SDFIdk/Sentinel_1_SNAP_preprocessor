@@ -13,6 +13,7 @@ import tempfile
 import rasterio as rio
 from rasterio.windows import Window
 from rasterio.enums import Compression
+from rasterio.features import geometry_mask
 import xml.etree.ElementTree as ET
 import tifffile
 
@@ -94,19 +95,6 @@ class Utils(object):
         return output_shape
 
     # -----------------------------BELOW: MOVE TO SEPERATE FILES-----------------------------
-
-    def shape_to_geojson(input_file, **kwargs):
-        """
-        Converts a shape to geoJSON
-        Takes output_file and shape
-        """
-        shape = kwargs.get("shape")
-        output_file = kwargs.get("output_file")
-
-        shp_file = gpd.read_file(shape)
-        geojson = output_file + str(uuid.uuid4()) + ".geojson"
-        shp_file.to_file(geojson, driver="GeoJSON")
-        return geojson
 
     def remove_empty(input_file, **kwargs):
         """
@@ -248,8 +236,8 @@ class Utils(object):
         )
         orbit_direction = get_orbital_direction(input_file)
 
+        #Clipping file down here saves a lot of compute
         from sentinel_1.utils import Utils
-
         Utils.clip_256(input_file, **kwargs)
 
         with rio.open(input_file) as src:
@@ -544,6 +532,35 @@ class Utils(object):
                 dst.write(clipped_data)
 
         shutil.move(tmp_file_path_2, input_file)
+
+    def land_sea_mask(input_file, **kwargs):
+        """
+        Sets all values in a raster outside a polygon to noData
+        Default set to the Danish Landpolygon
+        Takes land_sea_mask, input_dir
+        """
+        land_sea_mask = kwargs.get("land_sea_mask")
+        input_dir = kwargs.get("input_dir")
+
+        shape = gpd.read_file(land_sea_mask)
+        
+        with rio.open(input_file) as src:
+            mask = geometry_mask([geometry for geometry in shape.geometry], 
+                                transform=src.transform, 
+                                invert=True, 
+                                out_shape=(src.height, src.width))
+            
+            raster_data = src.read(1)  #only necessary to read the data band which is always first
+            
+            raster_data[~mask] = -9999
+            
+            new_meta = src.meta.copy()
+            new_meta['nodata'] = -9999
+            
+            tmp_geotiff = os.path.join(input_dir, "tmp.tif")
+            with rio.open(tmp_geotiff, 'w', **new_meta) as dst:
+                dst.write(raster_data, 1)
+        shutil.move(tmp_geotiff, input_file)
 
     # def TEST_FUNK(input_file, **kwargs):
     #     """

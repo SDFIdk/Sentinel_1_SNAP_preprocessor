@@ -8,6 +8,7 @@ from osgeo import gdal  # for some reason it crashes if imported in other module
 # threads = 1
 # gpt_exe = 'C:/Users/b025527/AppData/Local/snap/bin/gpt.exe' #remote pc
 # polarization = ['VV', 'VH']     # list of strings or single string. For most sentinel-1 products, only VV, VH are valid
+# land_polygon = "shapes/landpolygon_1000.zip"
 
 # #Sentinel-2 constants
 # max_cloud_pct = 40 #Fraction agreed upon with GEUS
@@ -16,19 +17,16 @@ from osgeo import gdal  # for some reason it crashes if imported in other module
 # TODO suppport for mosaicing within same orbital strip
 # metadata now follow all the way to output, see splitter for xml tag.
 # TODO Use Vandportalen.dk to determine flood timing going forward
-# TODO New land-sea-mask module
 # TODO quality checker in wrapper. Dont bother with dynamic range.
-# TODO implement multiprocessing
 # TODO file cleanup after successful job
 # TODO Support for both sigma0 and gamma0 in same dataset
 # TODO Trimmer module called on sentinel 1 and 2 in wrapper
-# TODO isolate all processes related to SAR2SAR in SAR2SAR including imports and inits
 # TODO toolprinter
 # TODO split all these tasks up as issues in git?
 # TODO update readme
 
 # User inputs
-working_dir = "/"
+working_dir = "TEST_DATA_FULL_SEND"
 crs = "EPSG:25832"
 shape = "shapes/stavis_odense/POLYGON.shp"
 start_date = "2024-02-05"
@@ -40,6 +38,7 @@ result_dir = "results/"
 
 # for multiple tasks, loop over a list of lists and unpack working dir, crs, shape and date
 pre_processor = PreProcessor(
+    threads = 1,
     working_dir=working_dir,
     crs=crs,
     shape=shape,

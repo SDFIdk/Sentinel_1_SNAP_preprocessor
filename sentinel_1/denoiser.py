@@ -1,20 +1,13 @@
 from osgeo import (
     gdal,
 )  # BUG #CURSED has to be on top, otherwise "No module named _gdal" ???
-import tensorflow as tf
 from glob import glob
 import os
-import argparse
-import sys
 from pathlib import Path
 import numpy as np
-import shutil
 import rasterio as rio
 
 from sentinel_1.utils import Utils
-from sentinel_1.sar2sar_model import sar2sar_denoiser
-from sentinel_1.mean_extractor import Correction_dict
-
 
 class Denoiser(object):
     def __init__(self, geotiff_dir, shapefile_path):
@@ -47,6 +40,7 @@ class Denoiser(object):
             Utils.remove_folder(noisy_npy_folder)
         elif denoise_mode == "SAR2SAR_mean_dict":
             print("## SAR2SAR mean dict mode selected (experimental)")
+            from sentinel_1.mean_extractor import Correction_dict
 
             correction_finder = Correction_dict(
                 safe_dir=self.safe_dir,
@@ -125,6 +119,9 @@ class Denoiser(object):
         return output_folder
 
     def SAR2SAR_main(self, noisy_npy_folder, denoised_npy):
+        import tensorflow as tf
+        from sentinel_1.sar2sar_model import sar2sar_denoiser
+
         print("## Starting SAR2SAR...")
 
         use_gpu = True
