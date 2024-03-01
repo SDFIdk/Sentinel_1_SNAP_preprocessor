@@ -6,6 +6,7 @@ tmp
 tmp*
 
 *.zip
+!shapes/landpolygon_1000.zip
 *.npy
 *.tif
 *.png
