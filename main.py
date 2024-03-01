@@ -19,9 +19,16 @@ from osgeo import gdal  # for some reason it crashes if imported in other module
 # TODO New land-sea-mask module
 # TODO quality checker in wrapper. Dont bother with dynamic range.
 # TODO implement multiprocessing
+# TODO file cleanup after successful job
+# TODO Support for both sigma0 and gamma0 in same dataset
+# TODO Trimmer module called on sentinel 1 and 2 in wrapper
+# TODO isolate all processes related to SAR2SAR in SAR2SAR including imports and inits
+# TODO toolprinter
+# TODO split all these tasks up as issues in git?
+# TODO update readme
 
 # User inputs
-working_dir = "TEST_DATA_FULL_SEND/"
+working_dir = "/"
 crs = "EPSG:25832"
 shape = "shapes/stavis_odense/POLYGON.shp"
 start_date = "2024-02-05"

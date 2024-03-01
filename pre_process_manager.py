@@ -20,12 +20,10 @@ class PreProcessor:
         # self.downloader.download_sentinel_1()
         # self.s1_preprocessor.s1_workflow()
         # TODO fix (and locate) warnings about TF deprecations
-        # BUG enable GPU properly
         # TODO implement SAFE executor into Utils
         # TODO If metadata fixes can be made before "split polarizations", cut can be made before that.
 
         # self.downloader.download_sentinel_2()
         # self.s2_preprocessor.s2_workflow()
-        # BUG DOES NOT REMOVE CLOUDS IN AOI!
 
         self.wrapper.wrap_results()
