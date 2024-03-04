@@ -3,11 +3,11 @@ import os
 import shutil
 import uuid
 import tempfile
-from sentinel_1.utils.Tool import Tool
+# from sentinel_1.tool_manager_inheritance import ToolManager
 from sentinel_1.utils import Utils
 
 
-class AlignRaster(Tool):
+class AlignRaster(ToolManager):
     def __init__(self, input_dir=None):
         self.input_dir = input_dir
         self.reference_geotransform = None
@@ -52,3 +52,6 @@ class AlignRaster(Tool):
         )
 
         shutil.move(tmp_file_path, input_file)
+
+    def print(self):
+        print_statement = '# Aligning rasters'

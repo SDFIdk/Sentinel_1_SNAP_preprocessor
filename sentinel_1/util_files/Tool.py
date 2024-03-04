@@ -1,4 +1,4 @@
-from sentinel_1.utils.align_raster_superclass_example import AlignRaster
+from sentinel_1.utils.align_raster import AlignRaster
 from sentinel_1.utils import Utils
 
 from concurrent.futures import ProcessPoolExecutor, wait

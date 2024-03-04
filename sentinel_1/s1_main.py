@@ -6,6 +6,7 @@ from sentinel_1.denoiser import Denoiser
 from sentinel_1.snap_converter import SnapPreprocessor
 from sentinel_1.tool_manager import ToolManager
 
+from sentinel_1.tool_manager_inheritance import ToolManager as TESTMANAGER
 
 class S1Preprocessor:
     @property
@@ -48,8 +49,8 @@ class S1Preprocessor:
         geotiff_utils = ToolManager(
             self.geotiff_dir, "*.tif", threads=self.threads, polarization=self.polarization
         )
-        snap_executor = SnapPreprocessor(gpt_path=self.gpt_exe)
-        denoiser = Denoiser(self.geotiff_dir, self.shape)
+        # snap_executor = SnapPreprocessor(gpt_path=self.gpt_exe)
+        # denoiser = Denoiser(self.geotiff_dir, self.shape)
 
         # snap_executor.graph_processing(
         #     self.safe_dir, self.geotiff_dir, self.pre_process_graph, input_ext=".zip"
@@ -68,12 +69,18 @@ class S1Preprocessor:
         #     crs=self.crs,
         # )
 
+        TEST_utils = TESTMANAGER(
+            self.geotiff_dir, "*.tif", threads=self.threads, polarization=self.polarization
+        )
+        geotiff_utils.util_starter("align_raster")
+        sys.exit()
+
         geotiff_utils.util_starter("land_sea_mask", land_sea_mask = self.land_polygon)
         geotiff_utils.util_starter("remove_empty")
 
         for i, denoise_mode in enumerate(self.denoise_modes):
             resolution = 10
-            # if not i == 0: copy_dir_utils.util_starter("copy_dir", copy_dir=self.geotiff_dir)
+            if not i == 0: copy_dir_utils.util_starter("copy_dir", copy_dir=self.geotiff_dir)
 
             denoiser.select_denoiser(denoise_mode, to_intensity=False)
 

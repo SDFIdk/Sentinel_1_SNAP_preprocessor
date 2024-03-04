@@ -9,7 +9,6 @@ import shutil
 # check list in order of check:
 # empty files
 # resolution
-# dynamic range
 #
 
 
@@ -72,41 +71,41 @@ class FileQA:
         shutil.move(temp_output_path, input_file)
         self.log.append((input_file, "Bad resolution"))
 
-    def check_range(self, input_file):
-        """
-        Adjust the first band of a GeoTIFF if its dynamic range exceeds a given interval.
+    # def check_range(self, input_file):
+    #     """
+    #     Adjust the first band of a GeoTIFF if its dynamic range exceeds a given interval.
 
-        Parameters:
-        input_tif_path (str): Path to the input GeoTIFF file.
-        max_interval (int or float): The maximum allowed interval for the dynamic range.
-        """
+    #     Parameters:
+    #     input_tif_path (str): Path to the input GeoTIFF file.
+    #     max_interval (int or float): The maximum allowed interval for the dynamic range.
+    #     """
 
-        if "decibel" in input_file:
-            unit = "decibel"
-            min_val = -10000
-            max_val = 1000
-        elif "power" in input_file:
-            unit = "power"
-            min_val = -10000
-            max_val = 1000
-        elif "linear" in input_file:
-            unit = "linear"
-            min_val = -10000
-            max_val = 1000000
+    #     if "decibel" in input_file:
+    #         unit = "decibel"
+    #         min_val = -10000
+    #         max_val = 1000
+    #     elif "power" in input_file:
+    #         unit = "power"
+    #         min_val = -10000
+    #         max_val = 1000
+    #     elif "linear" in input_file:
+    #         unit = "linear"
+    #         min_val = -10000
+    #         max_val = 1000000
 
-        with rio.open(input_file, "r+") as dataset:
-            band = dataset.read(1)
+    #     with rio.open(input_file, "r+") as dataset:
+    #         band = dataset.read(1)
 
-            values_within_thresholds = np.all((band >= min_val) & (band <= max_val))
-            if not values_within_thresholds:
-                band = band.clip(min_val, max_val)
-                dataset.write(band, 1)
-                self.log.append(
-                    (
-                        input_file,
-                        f"Unit type {unit} contained values exceeding {min_val} - {max_val}",
-                    )
-                )
+    #         values_within_thresholds = np.all((band >= min_val) & (band <= max_val))
+    #         if not values_within_thresholds:
+    #             band = band.clip(min_val, max_val)
+    #             dataset.write(band, 1)
+    #             self.log.append(
+    #                 (
+    #                     input_file,
+    #                     f"Unit type {unit} contained values exceeding {min_val} - {max_val}",
+    #                 )
+    #             )
 
     def assure_files(self):
         check_files = Utils.file_list_from_dir(self.result_dir, "**/*.tif")

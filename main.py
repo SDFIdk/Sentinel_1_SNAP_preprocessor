@@ -19,11 +19,14 @@ from osgeo import gdal  # for some reason it crashes if imported in other module
 # TODO Use Vandportalen.dk to determine flood timing going forward
 # TODO quality checker in wrapper. Dont bother with dynamic range.
 # TODO file cleanup after successful job
+#   subsequentlý a working dir doesnt need to be specified maybe?
 # TODO Support for both sigma0 and gamma0 in same dataset
 # TODO Trimmer module called on sentinel 1 and 2 in wrapper
 # TODO toolprinter
 # TODO split all these tasks up as issues in git?
 # TODO update readme
+# TODO rename pre_process_graph to snap_graph
+# TODO double check max cloud in download vs aoi. Seperate vars?
 
 # User inputs
 working_dir = "TEST_DATA_FULL_SEND"
@@ -46,7 +49,6 @@ pre_processor = PreProcessor(
     end_date=end_date,
     pre_process_graph=pre_process_graph,
     denoise_mode="mean",
-    max_cloud_pct=100,
     result_dir=result_dir,
 )
 

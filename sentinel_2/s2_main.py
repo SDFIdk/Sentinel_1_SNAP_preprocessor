@@ -2,27 +2,7 @@ import os
 import sys
 from pathlib import Path
 
-if __name__ == "__main__":
-    from sentinel_2.s2_main import S2Preprocessor
-
-    working_dir = "input/"
-
-    shape = "shapes/sneum_aa/layers/POLYGON.shp"
-    crs = "EPSG:25832"
-    max_cloud_pct = 40  # max allowed cloud pct in aoi
-    max_empty = 80  # Removes files with too much noData
-
-    s2_preprocessor = S2Preprocessor(
-        working_dir=working_dir,
-        crs=crs,
-        shape=shape,
-        max_cloud_pct=max_cloud_pct,
-        max_empty=max_empty,
-    )
-
-    s2_preprocessor.s2_workflow()
-else:
-    from sentinel_2.s2_preprocessing import Preprocessor
+from sentinel_2.s2_preprocessing import Preprocessor
 
 
 class S2Preprocessor:
