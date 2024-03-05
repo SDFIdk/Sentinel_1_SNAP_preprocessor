@@ -24,9 +24,11 @@ from osgeo import gdal  # for some reason it crashes if imported in other module
 # TODO Trimmer module called on sentinel 1 and 2 in wrapper
 # TODO toolprinter
 # TODO split all these tasks up as issues in git?
-# TODO update readme
 # TODO rename pre_process_graph to snap_graph
 # TODO double check max cloud in download vs aoi. Seperate vars?
+# TODO write resolution, denoise_mode and unit to metadata to simplify "sort_unit" inputs.
+# TODO ensure functions preserve metadata 65000. Possibly create a setup and teardown for that? If that goes for individual files.
+# TODO harden the acquisistion against bad data until CDSETool is patched
 
 # User inputs
 working_dir = "TEST_DATA_FULL_SEND"

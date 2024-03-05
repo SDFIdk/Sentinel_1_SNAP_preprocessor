@@ -3,7 +3,7 @@ import os
 from sentinel_1.utils import Utils
 from concurrent.futures import ThreadPoolExecutor
 
-from sentinel_1.util_files.align_raster import AlignRaster
+# from sentinel_1.util_files.align_raster import AlignRaster
 
 class ToolManager:
     def __init__(self, input_dir, extension, threads=1, polarization=None):
@@ -12,21 +12,21 @@ class ToolManager:
         self.threads = threads
         self.polarization = polarization
 
-        self.tool_dict = {
-            # "split_geotiff": Utils.split_polarizations,
-            "change_resolution": Utils.change_raster_resolution,
-            "sort_output": Utils.sort_output,
-            "align_raster": AlignRaster,
-            "warp_crs": Utils.crs_warp,
-            "remove_empty": Utils.remove_empty,
-            "copy_dir": Utils.copy_dir,
-            "clip_256": Utils.clip_256,
-            "trimmer_256": Utils.trimmer_256,
-            "convert_unit": Utils.convert_unit,
-            "split_polarizations": Utils.split_polarizations,
-            "land_sea_mask": Utils.land_sea_mask,
-            # "TEST_FUNK": Utils.TEST_FUNK,
-        }  # TODO later add denoiser and snap executor
+        # self.tool_dict = {
+        #     # "split_geotiff": Utils.split_polarizations,
+        #     "change_resolution": Utils.change_raster_resolution,
+        #     "sort_output": Utils.sort_output,
+        #     "align_raster": AlignRaster,
+        #     "warp_crs": Utils.crs_warp,
+        #     "remove_empty": Utils.remove_empty,
+        #     "copy_dir": Utils.copy_dir,
+        #     "clip_256": Utils.clip_256,
+        #     "trimmer_256": Utils.trimmer_256,
+        #     "convert_unit": Utils.convert_unit,
+        #     "split_polarizations": Utils.split_polarizations,
+        #     "land_sea_mask": Utils.land_sea_mask,
+        #     # "TEST_FUNK": Utils.TEST_FUNK,
+        # }  # TODO later add denoiser and snap executor
 
         self.pre_init_dict = {
             "align_raster": Utils.get_reference_geotransform,
