@@ -6,12 +6,13 @@ from sentinel_1.utils import Utils
 
 
 class SortOutput(Tool):
-    def __init__(self, input_dir, result_dir, denoise_mode, unit, resolution):
+    def __init__(self, input_dir, result_dir, denoise_mode, unit, resolution, polarization):
         self.input_dir = input_dir
         self.result_dir = result_dir
         self.denoise_mode = denoise_mode
         self.unit = unit
         self.resolution = resolution
+        self.polarization = polarization
 
     def setup(self):
         pass
@@ -22,10 +23,9 @@ class SortOutput(Tool):
         Requires "create_sorted_outputs" function to be run beforehand
         Takes output_sub_dir and polarization
         """
-
+        polarization = self.polarization
         if not isinstance(polarization, list):
             polarization = [polarization]
-
         file_polarization = None
         for pol in polarization:
             if pol in input_file:

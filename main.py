@@ -22,10 +22,9 @@ from osgeo import gdal  # for some reason it crashes if imported in other module
 #   subsequentlý a working dir doesnt need to be specified maybe?
 # TODO Support for both sigma0 and gamma0 in same dataset
 # TODO Trimmer module called on sentinel 1 and 2 in wrapper
-# TODO toolprinter
+# TODO logger
 # TODO split all these tasks up as issues in git?
 # TODO rename pre_process_graph to snap_graph
-# TODO double check max cloud in download vs aoi. Seperate vars?
 # TODO write resolution, denoise_mode and unit to metadata to simplify "sort_unit" inputs.
 # TODO ensure functions preserve metadata 65000. Possibly create a setup and teardown for that? If that goes for individual files.
 # TODO harden the acquisistion against bad data until CDSETool is patched
@@ -43,7 +42,7 @@ result_dir = "results/"
 
 # for multiple tasks, loop over a list of lists and unpack working dir, crs, shape and date
 pre_processor = PreProcessor(
-    threads = 1,
+    threads = 4,
     working_dir=working_dir,
     crs=crs,
     shape=shape,

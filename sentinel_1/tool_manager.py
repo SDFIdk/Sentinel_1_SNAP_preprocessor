@@ -11,18 +11,17 @@ class ToolManager:
         self.polarization = polarization
 
         self.tool_dict = {
-            # "split_geotiff": Utils.split_polarizations,
-            "change_resolution": Utils.change_raster_resolution,
-            "sort_output": Utils.sort_output,
-            "align_raster": Utils.align_raster,
-            "warp_crs": Utils.crs_warp,
-            "remove_empty": Utils.remove_empty,
-            "copy_dir": Utils.copy_dir,
-            "clip_256": Utils.clip_256,
-            "trimmer_256": Utils.trimmer_256,
-            "convert_unit": Utils.convert_unit,
             "split_polarizations": Utils.split_polarizations,
-            "land_sea_mask": Utils.land_sea_mask,
+            # "change_resolution": Utils.change_raster_resolution,
+            # "sort_output": Utils.sort_output,
+            # "align_raster": Utils.align_raster,
+            # "warp_crs": Utils.crs_warp,
+            # "remove_empty": Utils.remove_empty,
+            # "copy_dir": Utils.copy_dir,
+            # "clip_256": Utils.clip_256,
+            # "trimmer_256": Utils.trimmer_256,
+            # "convert_unit": Utils.convert_unit,
+            # "land_sea_mask": Utils.land_sea_mask,
             # "TEST_FUNK": Utils.TEST_FUNK,
         }  # TODO later add denoiser and snap executor
 
@@ -54,6 +53,8 @@ class ToolManager:
         for i, input_file in enumerate(input_file_list):
             print("# " + str(i + 1) + " / " + str(len(input_file_list)), end="\r")
 
+            print(self.tool_dict)
+            print(tool)
             self.tool_dict[tool](input_file, **kwargs)
 
     def start_multiproc(self, tool, **kwargs):

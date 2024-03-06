@@ -168,112 +168,112 @@ class Utils(object):
 
     #     shutil.move(output_file, input_file)
 
-    # def split_polarizations(input_file, **kwargs):
-    #     """
-    #     Splits a file with multiple polarization bands into one file per
-    #     band with copies of auxiliary bands.
-    #     Takes output_dir, polarization and crs
-    #     """
+    def split_polarizations(input_file, **kwargs):
+        """
+        Splits a file with multiple polarization bands into one file per
+        band with copies of auxiliary bands.
+        Takes output_dir, polarization and crs
+        """
 
-    #     def get_orbital_direction(input_file, tag=65000):
-    #         # 65000 is standard geotiff tag for metadata xml
-    #         with tifffile.TiffFile(input_file) as tif:
-    #             tree = tif.pages[0].tags[tag].value
-    #             assert (
-    #                 tree
-    #             ), f"# {input_file} does not contain SNAP assocaited metadata!"
+        def get_orbital_direction(input_file, tag=65000):
+            # 65000 is standard geotiff tag for metadata xml
+            with tifffile.TiffFile(input_file) as tif:
+                tree = tif.pages[0].tags[tag].value
+                assert (
+                    tree
+                ), f"# {input_file} does not contain SNAP assocaited metadata!"
 
-    #             root = ET.fromstring(tree)
-    #             metadata = root.findall("Dataset_Sources")[0][0][0]
+                root = ET.fromstring(tree)
+                metadata = root.findall("Dataset_Sources")[0][0][0]
 
-    #             for mdattr in metadata.findall("MDATTR"):
-    #                 if not mdattr.get("name") == "PASS":
-    #                     continue
+                for mdattr in metadata.findall("MDATTR"):
+                    if not mdattr.get("name") == "PASS":
+                        continue
 
-    #                 orbital_direction = mdattr.text
-    #                 if orbital_direction == "ASCENDING":
-    #                     return "ASC"
-    #                 elif orbital_direction == "DESCENDING":
-    #                     return "DSC"
+                    orbital_direction = mdattr.text
+                    if orbital_direction == "ASCENDING":
+                        return "ASC"
+                    elif orbital_direction == "DESCENDING":
+                        return "DSC"
 
-    #     def get_band_polarization(pol, data_bands):
-    #         data_matches = []
-    #         for i, band in enumerate(data_bands):
-    #             if pol in band[1]:
-    #                 data_matches.append((i + 1, pol))
-    #         return data_matches
+        def get_band_polarization(pol, data_bands):
+            data_matches = []
+            for i, band in enumerate(data_bands):
+                if pol in band[1]:
+                    data_matches.append((i + 1, pol))
+            return data_matches
 
-    #     def band_names_from_snap_geotiff(input_file, tag=65000):
-    #         # 65000 is standard geotiff tag for metadata xml
-    #         with tifffile.TiffFile(input_file) as tif:
-    #             tree = tif.pages[0].tags[tag].value
-    #             assert (
-    #                 tree
-    #             ), f"# {input_file} does not contain SNAP assocaited metadata!"
+        def band_names_from_snap_geotiff(input_file, tag=65000):
+            # 65000 is standard geotiff tag for metadata xml
+            with tifffile.TiffFile(input_file) as tif:
+                tree = tif.pages[0].tags[tag].value
+                assert (
+                    tree
+                ), f"# {input_file} does not contain SNAP assocaited metadata!"
 
-    #             root = ET.fromstring(tree)
-    #             data_access = root.findall("Data_Access")[0]
+                root = ET.fromstring(tree)
+                data_access = root.findall("Data_Access")[0]
 
-    #             data_bands = []
-    #             incidence_bands = []
-    #             for i, data_file in enumerate(data_access.findall("Data_File")):
-    #                 band_name = data_file.find("DATA_FILE_PATH").get("href")
-    #                 band_name = os.path.splitext(os.path.basename(band_name))[0]
+                data_bands = []
+                incidence_bands = []
+                for i, data_file in enumerate(data_access.findall("Data_File")):
+                    band_name = data_file.find("DATA_FILE_PATH").get("href")
+                    band_name = os.path.splitext(os.path.basename(band_name))[0]
 
-    #                 if "VV" in band_name or "VH" in band_name:
-    #                     data_bands.append((i + 1, band_name))
-    #                 else:
-    #                     incidence_bands.append((i + 1, band_name))
+                    if "VV" in band_name or "VH" in band_name:
+                        data_bands.append((i + 1, band_name))
+                    else:
+                        incidence_bands.append((i + 1, band_name))
 
-    #         return data_bands, incidence_bands, root
+            return data_bands, incidence_bands, root
 
-    #     output_dir = kwargs.get("output_dir")
-    #     polarization = kwargs.get("polarization")
-    #     shape = kwargs.get("shape")
+        output_dir = kwargs.get("output_dir")
+        polarization = kwargs.get("polarization")
+        shape = kwargs.get("shape")
 
-    #     data_bands, incidence_bands, metadata_xml = band_names_from_snap_geotiff(
-    #         input_file
-    #     )
-    #     orbit_direction = get_orbital_direction(input_file)
+        data_bands, incidence_bands, metadata_xml = band_names_from_snap_geotiff(
+            input_file
+        )
+        orbit_direction = get_orbital_direction(input_file)
 
-    #     #Clipping file down here saves a lot of compute
-    #     from sentinel_1.utils import Utils
-    #     Utils.clip_256(input_file, **kwargs)
+        #Clipping file down here saves a lot of compute
+        from sentinel_1.utils import Utils
+        Utils.clip_256(input_file, **kwargs)
 
-    #     with rio.open(input_file) as src:
-    #         meta = src.meta.copy()
-    #         meta.update(
-    #             count=src.count - (len(polarization) - 1), compress=Compression.lzw.name
-    #         )
+        with rio.open(input_file) as src:
+            meta = src.meta.copy()
+            meta.update(
+                count=src.count - (len(polarization) - 1), compress=Compression.lzw.name
+            )
 
-    #         selected_data_bands = [
-    #             item
-    #             for pol in polarization
-    #             for item in get_band_polarization(pol, data_bands)
-    #         ]
+            selected_data_bands = [
+                item
+                for pol in polarization
+                for item in get_band_polarization(pol, data_bands)
+            ]
 
-    #         for i, (data_index, data_band) in enumerate(selected_data_bands, start=1):
-    #             band_info = data_band + "_" + orbit_direction
-    #             filename = (
-    #                 os.path.basename(input_file).replace(Path(input_file).suffix, "_")
-    #                 + band_info
-    #                 + "_band.tif"
-    #             )
-    #             output_geotiff = os.path.join(output_dir, filename)
+            for i, (data_index, data_band) in enumerate(selected_data_bands, start=1):
+                band_info = data_band + "_" + orbit_direction
+                filename = (
+                    os.path.basename(input_file).replace(Path(input_file).suffix, "_")
+                    + band_info
+                    + "_band.tif"
+                )
+                output_geotiff = os.path.join(output_dir, filename)
 
-    #             with rio.open(output_geotiff, "w", **meta) as dst:
-    #                 dst.write(src.read(data_index), 1)
-    #                 dst.set_band_description(1, data_band)
-    #                 dst.update_tags(ns="xml", **{"TIFFTAG_XMLPACKET": metadata_xml})
-    #                 dst.nodata = -9999
+                with rio.open(output_geotiff, "w", **meta) as dst:
+                    dst.write(src.read(data_index), 1)
+                    dst.set_band_description(1, data_band)
+                    dst.update_tags(ns="xml", **{"TIFFTAG_XMLPACKET": metadata_xml})
+                    dst.nodata = -9999
 
-    #                 for i, (incidence_index, incidence_band) in enumerate(
-    #                     incidence_bands, start=2
-    #                 ):
-    #                     dst.write(src.read(incidence_index), i)
-    #                     dst.set_band_description(i, incidence_band)
+                    for i, (incidence_index, incidence_band) in enumerate(
+                        incidence_bands, start=2
+                    ):
+                        dst.write(src.read(incidence_index), i)
+                        dst.set_band_description(i, incidence_band)
 
-    #     os.remove(input_file)
+        os.remove(input_file)
 
     # def sort_output(input_file, **kwargs):
     #     """
@@ -303,24 +303,24 @@ class Utils(object):
     #     shutil.copyfile(input_file, sort_filename)
     #     return
 
-    # def get_reference_geotransform(**kwargs):
-    #     """
-    #     Function prequisite for using align_raster
-    #     Function returns the geotransform from the largest file in dir
-    #     """
-    #     input_dir = kwargs.get("input_dir")
+    def get_reference_geotransform(**kwargs):
+        """
+        Function prequisite for using align_raster
+        Function returns the geotransform from the largest file in dir
+        """
+        input_dir = kwargs.get("input_dir")
 
-    #     input_file_list = Utils.file_list_from_dir(input_dir, "*.tif")
-    #     reference_file = max(input_file_list, key=os.path.getsize)
+        input_file_list = Utils.file_list_from_dir(input_dir, "*.tif")
+        reference_file = max(input_file_list, key=os.path.getsize)
 
-    #     reference = gdal.Open(reference_file)
-    #     reference_geotransform = reference.GetGeoTransform()
-    #     reference = None
+        reference = gdal.Open(reference_file)
+        reference_geotransform = reference.GetGeoTransform()
+        reference = None
 
-    #     arg_name = "reference_geotransform"
-    #     kwargs[arg_name] = reference_geotransform
+        arg_name = "reference_geotransform"
+        kwargs[arg_name] = reference_geotransform
 
-    #     return kwargs
+        return kwargs
 
     # def align_raster(input_file, **kwargs):
     #     """
@@ -465,73 +465,73 @@ class Utils(object):
     #         )
     #         src.write(dataset, 1)
 
-    # def clip_256(input_file, **kwargs):
-    #     """
-    #     Clips a geotiff to a rasters extent, padded to output a resolution divisible by 256
-    #     Takes shape, crs and input_dir
-    #     """
-    #     shape = kwargs.get("shape")
-    #     crs = kwargs.get("crs")
-    #     input_dir = kwargs.get("input_dir")
+    def clip_256(input_file, **kwargs):
+        """
+        Clips a geotiff to a rasters extent, padded to output a resolution divisible by 256
+        Takes shape, crs and input_dir
+        """
+        shape = kwargs.get("shape")
+        crs = kwargs.get("crs")
+        input_dir = kwargs.get("input_dir")
 
-    #     shape = Utils.shape_to_crs(shape, input_file, input_dir)
+        shape = Utils.shape_to_crs(shape, input_file, input_dir)
 
-    #     ds = ogr.Open(shape)
-    #     layer = ds.GetLayer()
-    #     extent = layer.GetExtent()
-    #     minX, maxX, minY, maxY = extent
+        ds = ogr.Open(shape)
+        layer = ds.GetLayer()
+        extent = layer.GetExtent()
+        minX, maxX, minY, maxY = extent
 
-    #     maxX = maxX + 2560
-    #     maxY = maxY + 2560
-    #     nodata_value = -9999
+        maxX = maxX + 2560
+        maxY = maxY + 2560
+        nodata_value = -9999
 
-    #     src = gdal.Open(input_file, gdal.GA_ReadOnly)
-    #     src_srs = src.GetProjection()
+        src = gdal.Open(input_file, gdal.GA_ReadOnly)
+        src_srs = src.GetProjection()
 
-    #     warp_options = gdal.WarpOptions(
-    #         outputBounds=[minX, minY, maxX, maxY],
-    #         cutlineDSName=shape,
-    #         cropToCutline=True,
-    #         dstNodata=nodata_value,
-    #         srcSRS=src_srs,
-    #         dstSRS=crs,
-    #         resampleAlg=gdal.GRA_NearestNeighbour,
-    #     )
+        warp_options = gdal.WarpOptions(
+            outputBounds=[minX, minY, maxX, maxY],
+            cutlineDSName=shape,
+            cropToCutline=True,
+            dstNodata=nodata_value,
+            srcSRS=src_srs,
+            dstSRS=crs,
+            resampleAlg=gdal.GRA_NearestNeighbour,
+        )
 
-    #     with tempfile.NamedTemporaryFile(delete=False, suffix=".tif") as tmp_file:
-    #         tmp_file_path = tmp_file.name
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".tif") as tmp_file:
+            tmp_file_path = tmp_file.name
 
-    #     _ = gdal.Warp(tmp_file_path, src, options=warp_options)
+        _ = gdal.Warp(tmp_file_path, src, options=warp_options)
 
-    #     ds = None
-    #     src = None
+        ds = None
+        src = None
 
-    #     with rio.open(tmp_file_path) as src:
-    #         new_width = (src.width // 256) * 256
-    #         new_height = (src.height // 256) * 256
+        with rio.open(tmp_file_path) as src:
+            new_width = (src.width // 256) * 256
+            new_height = (src.height // 256) * 256
 
-    #         window = Window(0, 0, new_width, new_height)
-    #         clipped_data = src.read(window=window)
-    #         new_transform = src.window_transform(window)
+            window = Window(0, 0, new_width, new_height)
+            clipped_data = src.read(window=window)
+            new_transform = src.window_transform(window)
 
-    #         with tempfile.NamedTemporaryFile(delete=False, suffix=".tif") as tmp_file:
-    #             tmp_file_path_2 = tmp_file.name
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".tif") as tmp_file:
+                tmp_file_path_2 = tmp_file.name
 
-    #         with rio.open(
-    #             tmp_file_path_2,
-    #             "w",
-    #             driver="GTiff",
-    #             height=new_height,
-    #             width=new_width,
-    #             count=src.count,
-    #             dtype=str(clipped_data.dtype),
-    #             crs=crs,
-    #             nodata=-9999,
-    #             transform=new_transform,
-    #         ) as dst:
-    #             dst.write(clipped_data)
+            with rio.open(
+                tmp_file_path_2,
+                "w",
+                driver="GTiff",
+                height=new_height,
+                width=new_width,
+                count=src.count,
+                dtype=str(clipped_data.dtype),
+                crs=crs,
+                nodata=-9999,
+                transform=new_transform,
+            ) as dst:
+                dst.write(clipped_data)
 
-    #     shutil.move(tmp_file_path_2, input_file)
+        shutil.move(tmp_file_path_2, input_file)
 
     # def land_sea_mask(input_file, **kwargs):
     #     """

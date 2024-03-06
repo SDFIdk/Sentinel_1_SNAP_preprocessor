@@ -58,18 +58,17 @@ class S1Preprocessor:
             self.denoise_modes = [self.denoise_modes]
 
     def s1_workflow(self):
-        # geotiff_utils = ToolManager(
-        #     self.geotiff_dir, "*.tif", threads=self.threads, polarization=self.polarization
-        # )
+        geotiff_utils = ToolManager(
+            self.geotiff_dir, "*.tif", threads=self.threads, polarization=self.polarization
+        )
         snap_executor = SnapPreprocessor(gpt_path=self.gpt_exe)
         denoiser = Denoiser(self.geotiff_dir, self.shape)
 
-        snap_executor.graph_processing(
-            self.safe_dir, self.geotiff_dir, self.pre_process_graph, input_ext=".zip"
-        )
-        sys.exit()
+        # snap_executor.graph_processing(
+        #     self.safe_dir, self.geotiff_dir, self.pre_process_graph, input_ext=".zip"
+        # )
 
-        copy_dir = os.path.join(self.working_dir, "geotiff_copy")
+        # copy_dir = os.path.join(self.working_dir, "geotiff_copy")
 
         # geotiff_utils.util_starter("copy_dir", copy_dir=copy_dir)
         # copy_dir_utils = ToolManager(
@@ -84,62 +83,25 @@ class S1Preprocessor:
         #     crs=self.crs,
         # )
 
-        # geotiff_utils.util_starter("align_raster")
         AlignRaster(input_dir = self.geotiff_dir).run()
 
-        # geotiff_utils.util_starter("land_sea_mask", land_sea_mask = self.land_polygon)
         LandSeaMask(self.geotiff_dir, self.land_polygon).run()
 
-        # geotiff_utils.util_starter("remove_empty")
         RemoveEmpty(self.geotiff_dir)
 
         for i, denoise_mode in enumerate(self.denoise_modes):
             resolution = 10
             # if not i == 0: copy_dir_utils.util_starter("copy_dir", copy_dir=self.geotiff_dir)
 
-            # denoiser.select_denoiser(denoise_mode, to_intensity=False)
+            denoiser.select_denoiser(denoise_mode, to_intensity=False)
 
-            # geotiff_utils.util_starter("change_resolution", x_size=resolution)
             ChangeResolution(self.geotiff_dir, resolution).run()
-
-            # geotiff_utils.util_starter(
-            #     "convert_unit", source_unit="linear", destination_unit="decibel"
-            # )
             ConvertUnit(self.geotiff_dir, "linear", "decibel").run()
-
-            # geotiff_utils.util_starter("align_raster")
             AlignRaster(input_dir = self.geotiff_dir).run()
-
-            # geotiff_utils.util_starter("trimmer_256")
             Trim256(self.geotiff_dir).run()
+            SortOutput(self.geotiff_dir, self.sentinel_1_output, denoise_mode, "decibel", resolution, self.polarization).run()
 
-            # geotiff_utils.util_starter(
-            #     "sort_output",
-            #     result_dir=self.sentinel_1_output,
-            #     working_dir=self.working_dir,
-            #     denoise_mode=denoise_mode,
-            #     unit="decibel",
-            #     resolution=resolution,
-            # )
-            SortOutput(self.geotiff_dir, self.sentinel_1_output, self.working_dir, denoise_mode, "decibel", resolution).run()
-
-            # geotiff_utils.util_starter(
-            #     "convert_unit", source_unit="decibel", destination_unit="power"
-            # )
             ConvertUnit(self.geotiff_dir, "decibel", "power").run()
-
-            # geotiff_utils.util_starter("align_raster")
             AlignRaster(input_dir = self.geotiff_dir).run()
-
-            # geotiff_utils.util_starter("trimmer_256")
             Trim256(self.geotiff_dir).run()
-
-            # geotiff_utils.util_starter(
-            #     "sort_output",
-            #     result_dir=self.sentinel_1_output,
-            #     working_dir=self.working_dir,
-            #     denoise_mode=denoise_mode,
-            #     unit="power",
-            #     resolution=resolution,
-            # )
-            SortOutput(self.geotiff_dir, self.sentinel_1_output, self.working_dir, denoise_mode, "power", resolution).run()
+            SortOutput(self.geotiff_dir, self.sentinel_1_output, denoise_mode, "power", resolution, self.polarization).run()
