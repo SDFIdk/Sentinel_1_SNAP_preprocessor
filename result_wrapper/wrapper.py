@@ -1,9 +1,9 @@
 import os
-import zipfile
 import py7zr
 import sys
+import shutil
 from glob import glob
-
+import pathlib
 
 class ResultWrapper:
     @property
@@ -20,21 +20,26 @@ class ResultWrapper:
         self.result_dir = kwargs["result_dir"]
 
     def wrap_results(self):
-        all_results = [
-            glob(self.sentinel_1_files + "/")[0],
-            glob(self.sentinel_2_files + "/")[0],
-            self.shape,
-        ]
 
-        zip_name = self.working_dir
-        if zip_name.endswith('/'): 
-            zip_name = zip_name[:-1]
-        zip_name = zip_name.split("/").pop() + ".7z"
+        if os.path.splitext(self.shape)[1] == '.zip':
+            shape_data = self.shape
+        else: 
+            shape_data = pathlib.PurePath(self.shape).parent.name
+            shutil.make_archive(os.path.join(self.result_dir, shape_data), 'zip', pathlib.PurePath(self.shape).parent)
 
-        output_name = os.path.join(
-            self.result_dir, zip_name
-        )
+        all_results = glob(self.result_dir + '/*/')
+        all_results.append(os.path.join(self.result_dir, shape_data+'.zip'))
 
-        with py7zr.SevenZipFile(output_name, "w") as archive:
-            for data in all_results:
-                archive.write(data)
+        result_zip = os.path.join(self.result_dir, os.path.basename(self.working_dir) + '.7z')
+        with py7zr.SevenZipFile(result_zip, 'w') as archive:
+            for item in all_results:
+                if os.path.isdir(item):
+                    base_dir_name = os.path.basename(os.path.normpath(item))
+                    for root, dirs, files in os.walk(item):
+                        for file in files:
+                            file_path = os.path.join(root, file)
+                            arcname = os.path.join(base_dir_name, os.path.relpath(file_path, start=item))
+                            archive.write(file_path, arcname)
+                            print(file)
+                else:
+                    archive.write(item, os.path.basename(item))
