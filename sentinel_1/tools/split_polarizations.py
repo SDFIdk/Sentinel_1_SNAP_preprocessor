@@ -7,7 +7,6 @@ from rasterio.enums import Compression
 from pathlib import Path
 
 from sentinel_1.tools.tool import Tool
-from sentinel_1.utils import Utils
 from sentinel_1.tools.clip_256 import Clip256
 
 class SplitPolarizations(Tool):
@@ -88,7 +87,11 @@ class SplitPolarizations(Tool):
         orbit_direction = get_orbital_direction(input_file)
 
         #Clipping file down here saves a lot of compute
-        Clip256(input_file, self.shape, self.crs)
+        print('A')
+        Clip256(input_file, self.shape, self.crs).run
+        # Clip256(self.input_dir, input_file, self.shape, self.crs).run
+        print('A')
+        sys.exit()
 
         with rio.open(input_file) as src:
             meta = src.meta.copy()

@@ -14,20 +14,18 @@ from osgeo import gdal  # for some reason it crashes if imported in other module
 # max_cloud_pct = 40 #Fraction agreed upon with GEUS
 # max_empty = 80
 
-# TODO suppport for mosaicing within same orbital strip
+# BUG INHERTANCE BASED POLARIZATION_SPLITTER KILLS FILES. CLIPPER DOES NOT START
 # metadata now follow all the way to output, see splitter for xml tag.
+# TODO threads not passed to tools
 # TODO Use Vandportalen.dk to determine flood timing going forward
-# TODO quality checker in wrapper. Dont bother with dynamic range.
-# TODO file cleanup after successful job
-#   subsequentlý a working dir doesnt need to be specified maybe?
+# TODO quality checker in wrapper.
 # TODO Support for both sigma0 and gamma0 in same dataset
 # TODO Trimmer module called on sentinel 1 and 2 in wrapper
 # TODO logger
-# TODO split all these tasks up as issues in git?
-# TODO rename pre_process_graph to snap_graph
 # TODO write resolution, denoise_mode and unit to metadata to simplify "sort_unit" inputs.
 # TODO ensure functions preserve metadata 65000. Possibly create a setup and teardown for that? If that goes for individual files.
 # TODO harden the acquisistion against bad data until CDSETool is patched
+# TODO import folder of tools instead of every tool individually
 
 # User inputs
 working_dir = "TEST_DATA_FULL_SEND"
@@ -40,9 +38,8 @@ pre_process_graph = (
 )
 result_dir = "results/"
 
-# for multiple tasks, loop over a list of lists and unpack working dir, crs, shape and date
 pre_processor = PreProcessor(
-    threads = 4,
+    threads = 2,
     working_dir=working_dir,
     crs=crs,
     shape=shape,

@@ -13,8 +13,11 @@ class Clip256(Tool):
         self.input_dir = input_dir
         self.shape = shape
         self.crs = crs
+        print('CLIP INIT')
+        print(self.input_dir)
 
     def setup(self):
+        print('CLIP SETUP')
         pass
 
     def loop(self, input_file):
@@ -22,7 +25,10 @@ class Clip256(Tool):
         Clips a geotiff to a rasters extent, padded to output a resolution divisible by 256
         Takes shape, crs and input_dir
         """
+        print('CLIP LOOP!!!')
 
+
+        sys.exit()
         shape = Utils.shape_to_crs(shape, input_file, self.input_dir)
 
         ds = ogr.Open(shape)
@@ -80,4 +86,5 @@ class Clip256(Tool):
             ) as dst:
                 dst.write(clipped_data)
 
+        print(tmp_file_path_2)
         shutil.move(tmp_file_path_2, input_file)

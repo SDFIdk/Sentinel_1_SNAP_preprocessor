@@ -43,3 +43,11 @@ class ResultWrapper:
                             print(file)
                 else:
                     archive.write(item, os.path.basename(item))
+
+        for item in all_results:
+            try:
+                shutil.rmtree(item)
+            except:
+                os.remove(item)
+            finally:
+                raise Exception(f"## Cannot remove {item}!")

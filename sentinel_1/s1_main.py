@@ -1,4 +1,3 @@
-from osgeo import gdal
 import sys
 import os
 from pathlib import Path
@@ -16,9 +15,6 @@ from sentinel_1.tools.remove_empty import RemoveEmpty
 from sentinel_1.tools.sort_output import SortOutput
 from sentinel_1.tools.split_polarizations import SplitPolarizations
 from sentinel_1.tools.trim_256 import Trim256
-from sentinel_1.tools.warp_crs import WarpCrs
-
-
 
 class S1Preprocessor:
     @property
@@ -64,24 +60,24 @@ class S1Preprocessor:
         snap_executor = SnapPreprocessor(gpt_path=self.gpt_exe)
         denoiser = Denoiser(self.geotiff_dir, self.shape)
 
-        # snap_executor.graph_processing(
-        #     self.safe_dir, self.geotiff_dir, self.pre_process_graph, input_ext=".zip"
-        # )
+        snap_executor.graph_processing(
+            self.safe_dir, self.geotiff_dir, self.pre_process_graph, input_ext=".zip"
+        )
 
-        # copy_dir = os.path.join(self.working_dir, "geotiff_copy")
+        copy_dir = os.path.join(self.working_dir, "geotiff_copy")
 
-        # geotiff_utils.util_starter("copy_dir", copy_dir=copy_dir)
+        geotiff_utils.util_starter("copy_dir", copy_dir=copy_dir)
         # copy_dir_utils = ToolManager(
         #     copy_dir, "*.tif", threads=1, polarization=self.polarization
         # )
 
         SplitPolarizations(self.geotiff_dir, self.shape, self.polarization, self.crs).run()
-        # geotiff_utils.util_starter(
-        #     "split_polarizations",
-        #     output_dir=self.geotiff_dir,
-        #     shape=self.shape,
-        #     crs=self.crs,
-        # )
+        geotiff_utils.util_starter(
+            "split_polarizations",
+            output_dir=self.geotiff_dir,
+            shape=self.shape,
+            crs=self.crs,
+        )
 
         AlignRaster(input_dir = self.geotiff_dir).run()
 
