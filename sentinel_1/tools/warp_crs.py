@@ -11,9 +11,6 @@ class WarpCrs(Tool):
         self.input_dir = input_dir
         self.crs = crs
 
-    def setup(self):
-        pass
-
     def loop(self, input_file):
         """
         Warps a raster to a new crs

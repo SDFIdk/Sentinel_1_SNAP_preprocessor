@@ -19,9 +19,6 @@ class SplitPolarizations(Tool):
         self.polarization = polarization
         self.crs = crs
 
-    def setup(self):
-        pass
-
     def loop(self, input_file):
         """
         Splits a file with multiple polarization bands into one file per
@@ -87,11 +84,7 @@ class SplitPolarizations(Tool):
         orbit_direction = get_orbital_direction(input_file)
 
         #Clipping file down here saves a lot of compute
-        print('A')
-        Clip256(input_file, self.shape, self.crs).run
-        # Clip256(self.input_dir, input_file, self.shape, self.crs).run
-        print('A')
-        sys.exit()
+        Clip256(input_file, self.shape, self.crs, single_file=True).run()
 
         with rio.open(input_file) as src:
             meta = src.meta.copy()

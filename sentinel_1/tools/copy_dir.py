@@ -10,9 +10,6 @@ class CopyDir(Tool):
         self.input_dir = input_dir
         self.copy_dir = copy_dir
 
-    def setup(self):
-        pass
-
     def loop(self, input_file):
         """
         Creates a copy of the directory given to it to a given location

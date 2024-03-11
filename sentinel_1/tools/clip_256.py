@@ -2,6 +2,8 @@ from osgeo import gdal, ogr
 import shutil
 import sys
 import tempfile
+import os
+from pathlib import Path
 from sentinel_1.tools.tool import Tool
 from sentinel_1.utils import Utils
 import rasterio as rio
@@ -9,29 +11,21 @@ from rasterio.windows import Window
 
 
 class Clip256(Tool):
-    def __init__(self, input_dir, shape, crs):
-        self.input_dir = input_dir
+    def __init__(self, input_data, shape, crs, single_file = False):
+        if os.path.isfile(input_data):
+            self.input_dir = os.path.dirname(input_data)
+        else:
+            self.input_dir = input_data
         self.shape = shape
         self.crs = crs
-        print('CLIP INIT')
-        print(self.input_dir)
-
-    def setup(self):
-        print('CLIP SETUP')
-        pass
 
     def loop(self, input_file):
         """
         Clips a geotiff to a rasters extent, padded to output a resolution divisible by 256
         Takes shape, crs and input_dir
         """
-        print('CLIP LOOP!!!')
-
-
-        sys.exit()
-        shape = Utils.shape_to_crs(shape, input_file, self.input_dir)
-
-        ds = ogr.Open(shape)
+        self.shape = Utils.shape_to_crs(shape=self.shape, input_file=input_file, output_dir=self.input_dir)
+        ds = ogr.Open(self.shape)
         layer = ds.GetLayer()
         extent = layer.GetExtent()
         minX, maxX, minY, maxY = extent
@@ -45,7 +39,7 @@ class Clip256(Tool):
 
         warp_options = gdal.WarpOptions(
             outputBounds=[minX, minY, maxX, maxY],
-            cutlineDSName=shape,
+            cutlineDSName=self.shape,
             cropToCutline=True,
             dstNodata=nodata_value,
             srcSRS=src_srs,
@@ -86,5 +80,4 @@ class Clip256(Tool):
             ) as dst:
                 dst.write(clipped_data)
 
-        print(tmp_file_path_2)
         shutil.move(tmp_file_path_2, input_file)

@@ -21,7 +21,6 @@ class Tool:
         return Utils.file_list_from_dir(self.input_dir, '*.tif')
 
     def run(self):
-        print('RUN STARTED')
         self.setup()
         if self.threads > 1:
             self._run_parallel()

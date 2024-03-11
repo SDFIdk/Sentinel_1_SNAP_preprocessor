@@ -12,9 +12,6 @@ class LandSeaMask(Tool):
         self.input_dir = input_dir
         self.land_sea_mask = land_sea_mask
 
-    def setup(self):
-        pass
-
     def loop(self, input_file):
         """
         Sets all values in a raster outside a polygon to noData

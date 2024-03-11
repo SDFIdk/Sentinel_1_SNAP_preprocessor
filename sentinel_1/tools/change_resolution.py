@@ -10,9 +10,6 @@ class ChangeResolution(Tool):
         self.input_dir = input_dir
         self.resolution = resolution
 
-    def setup(self):
-        pass
-
     def loop(self, input_file):
         """
         Resamples a raster to a new resolution

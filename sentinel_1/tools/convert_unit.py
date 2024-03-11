@@ -11,9 +11,6 @@ class ConvertUnit(Tool):
         self.destination_unit = destination_unit
         self.zero_max = zero_max
 
-    def setup(self):
-        pass
-
     def loop(self, input_file):
         """
         Converts units from raw backscatter to decibel or "power transform".

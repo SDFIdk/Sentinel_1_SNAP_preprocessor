@@ -19,3 +19,4 @@ tmp*
 *.nc
 *.log
 *.7z
+*.aux.xml

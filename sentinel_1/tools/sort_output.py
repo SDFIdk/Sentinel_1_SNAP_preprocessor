@@ -14,9 +14,6 @@ class SortOutput(Tool):
         self.resolution = resolution
         self.polarization = polarization
 
-    def setup(self):
-        pass
-
     def loop(self, input_file):
         """
         Sorts geotiffs into folder based on polarizaton and orbital direction

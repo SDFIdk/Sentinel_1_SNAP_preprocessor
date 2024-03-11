@@ -45,6 +45,9 @@ class Utils(object):
         If given a list of extensions, the function will whatever yields any files firt
         under assumption that the folder will only contain one type of files.
         """
+        if not os.path.isdir(directory): 
+            return [directory]
+
         if not isinstance(extensions, list):
             extensions = [extensions]
 

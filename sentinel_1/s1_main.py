@@ -60,9 +60,9 @@ class S1Preprocessor:
         snap_executor = SnapPreprocessor(gpt_path=self.gpt_exe)
         denoiser = Denoiser(self.geotiff_dir, self.shape)
 
-        snap_executor.graph_processing(
-            self.safe_dir, self.geotiff_dir, self.pre_process_graph, input_ext=".zip"
-        )
+        # snap_executor.graph_processing(
+        #     self.safe_dir, self.geotiff_dir, self.pre_process_graph, input_ext=".zip"
+        # )
 
         copy_dir = os.path.join(self.working_dir, "geotiff_copy")
 
@@ -72,12 +72,13 @@ class S1Preprocessor:
         # )
 
         SplitPolarizations(self.geotiff_dir, self.shape, self.polarization, self.crs).run()
-        geotiff_utils.util_starter(
-            "split_polarizations",
-            output_dir=self.geotiff_dir,
-            shape=self.shape,
-            crs=self.crs,
-        )
+        sys.exit()
+        # geotiff_utils.util_starter(
+        #     "split_polarizations",
+        #     output_dir=self.geotiff_dir,
+        #     shape=self.shape,
+        #     crs=self.crs,
+        # )
 
         AlignRaster(input_dir = self.geotiff_dir).run()
 
