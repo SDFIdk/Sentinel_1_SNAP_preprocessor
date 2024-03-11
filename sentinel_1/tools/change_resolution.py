@@ -21,7 +21,10 @@ class ChangeResolution(Tool):
         output_file = str(uuid.uuid4()) + ".tif"
 
         warp_options = gdal.WarpOptions(
-            xRes=self.resolution, yRes=self.resolution, resampleAlg="near", format="GTiff"
+            xRes=self.resolution,
+            yRes=self.resolution,
+            resampleAlg="near",
+            format="GTiff",
         )
         output_raster = gdal.Warp(output_file, gdal_dataset, options=warp_options)
         gdal_dataset = None

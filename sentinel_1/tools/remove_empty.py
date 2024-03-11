@@ -5,6 +5,7 @@ import os
 
 from sentinel_1.tools.tool import Tool
 
+
 class RemoveEmpty(Tool):
     def __init__(self, input_dir):
         self.input_dir = input_dir

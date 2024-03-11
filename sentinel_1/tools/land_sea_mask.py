@@ -7,6 +7,7 @@ import geopandas as gpd
 
 from sentinel_1.tools.tool import Tool
 
+
 class LandSeaMask(Tool):
     def __init__(self, input_dir, land_sea_mask):
         self.input_dir = input_dir
@@ -20,21 +21,25 @@ class LandSeaMask(Tool):
         """
 
         shape = gpd.read_file(self.land_sea_mask)
-        
+
         with rio.open(input_file) as src:
-            mask = geometry_mask([geometry for geometry in shape.geometry], 
-                                transform=src.transform, 
-                                invert=True, 
-                                out_shape=(src.height, src.width))
-            
-            raster_data = src.read(1)  #only necessary to read the data band which is always first
-            
+            mask = geometry_mask(
+                [geometry for geometry in shape.geometry],
+                transform=src.transform,
+                invert=True,
+                out_shape=(src.height, src.width),
+            )
+
+            raster_data = src.read(
+                1
+            )  # only necessary to read the data band which is always first
+
             raster_data[~mask] = -9999
-            
+
             new_meta = src.meta.copy()
-            new_meta['nodata'] = -9999
-            
+            new_meta["nodata"] = -9999
+
             tmp_geotiff = os.path.join(self.input_dir, "tmp.tif")
-            with rio.open(tmp_geotiff, 'w', **new_meta) as dst:
+            with rio.open(tmp_geotiff, "w", **new_meta) as dst:
                 dst.write(raster_data, 1)
         shutil.move(tmp_geotiff, input_file)

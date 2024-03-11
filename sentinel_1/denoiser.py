@@ -9,6 +9,7 @@ import rasterio as rio
 
 from sentinel_1.utils import Utils
 
+
 class Denoiser(object):
     def __init__(self, geotiff_dir, shapefile_path):
         self.geotiff_dir = geotiff_dir

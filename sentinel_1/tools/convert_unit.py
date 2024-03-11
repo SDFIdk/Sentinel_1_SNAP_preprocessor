@@ -4,8 +4,9 @@ import numpy as np
 
 from sentinel_1.tools.tool import Tool
 
+
 class ConvertUnit(Tool):
-    def __init__(self, input_dir, source_unit, destination_unit, zero_max = False):
+    def __init__(self, input_dir, source_unit, destination_unit, zero_max=False):
         self.input_dir = input_dir
         self.source_unit = source_unit
         self.destination_unit = destination_unit

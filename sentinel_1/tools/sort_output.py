@@ -6,7 +6,9 @@ from sentinel_1.utils import Utils
 
 
 class SortOutput(Tool):
-    def __init__(self, input_dir, result_dir, denoise_mode, unit, resolution, polarization):
+    def __init__(
+        self, input_dir, result_dir, denoise_mode, unit, resolution, polarization
+    ):
         self.input_dir = input_dir
         self.result_dir = result_dir
         self.denoise_mode = denoise_mode

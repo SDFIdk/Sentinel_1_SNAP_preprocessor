@@ -5,6 +5,7 @@ import shutil
 from glob import glob
 import pathlib
 
+
 class ResultWrapper:
     @property
     def sentinel_1_files(self):
@@ -20,25 +21,32 @@ class ResultWrapper:
         self.result_dir = kwargs["result_dir"]
 
     def wrap_results(self):
-
-        if os.path.splitext(self.shape)[1] == '.zip':
+        if os.path.splitext(self.shape)[1] == ".zip":
             shape_data = self.shape
-        else: 
+        else:
             shape_data = pathlib.PurePath(self.shape).parent.name
-            shutil.make_archive(os.path.join(self.result_dir, shape_data), 'zip', pathlib.PurePath(self.shape).parent)
+            shutil.make_archive(
+                os.path.join(self.result_dir, shape_data),
+                "zip",
+                pathlib.PurePath(self.shape).parent,
+            )
 
-        all_results = glob(self.result_dir + '/*/')
-        all_results.append(os.path.join(self.result_dir, shape_data+'.zip'))
+        all_results = glob(self.result_dir + "/*/")
+        all_results.append(os.path.join(self.result_dir, shape_data + ".zip"))
 
-        result_zip = os.path.join(self.result_dir, os.path.basename(self.working_dir) + '.7z')
-        with py7zr.SevenZipFile(result_zip, 'w') as archive:
+        result_zip = os.path.join(
+            self.result_dir, os.path.basename(self.working_dir) + ".7z"
+        )
+        with py7zr.SevenZipFile(result_zip, "w") as archive:
             for item in all_results:
                 if os.path.isdir(item):
                     base_dir_name = os.path.basename(os.path.normpath(item))
                     for root, dirs, files in os.walk(item):
                         for file in files:
                             file_path = os.path.join(root, file)
-                            arcname = os.path.join(base_dir_name, os.path.relpath(file_path, start=item))
+                            arcname = os.path.join(
+                                base_dir_name, os.path.relpath(file_path, start=item)
+                            )
                             archive.write(file_path, arcname)
                             print(file)
                 else:

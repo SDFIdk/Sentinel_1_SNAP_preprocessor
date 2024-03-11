@@ -5,6 +5,7 @@ import sys
 from sentinel_1.tools.tool import Tool
 from sentinel_1.utils import Utils
 
+
 class CopyDir(Tool):
     def __init__(self, input_dir, copy_dir):
         self.input_dir = input_dir

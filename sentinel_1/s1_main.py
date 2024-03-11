@@ -16,6 +16,7 @@ from sentinel_1.tools.sort_output import SortOutput
 from sentinel_1.tools.split_polarizations import SplitPolarizations
 from sentinel_1.tools.trim_256 import Trim256
 
+
 class S1Preprocessor:
     @property
     def safe_dir(self):
@@ -55,7 +56,10 @@ class S1Preprocessor:
 
     def s1_workflow(self):
         geotiff_utils = ToolManager(
-            self.geotiff_dir, "*.tif", threads=self.threads, polarization=self.polarization
+            self.geotiff_dir,
+            "*.tif",
+            threads=self.threads,
+            polarization=self.polarization,
         )
         snap_executor = SnapPreprocessor(gpt_path=self.gpt_exe)
         denoiser = Denoiser(self.geotiff_dir, self.shape)
@@ -71,7 +75,9 @@ class S1Preprocessor:
         #     copy_dir, "*.tif", threads=1, polarization=self.polarization
         # )
 
-        SplitPolarizations(self.geotiff_dir, self.shape, self.polarization, self.crs).run()
+        SplitPolarizations(
+            self.geotiff_dir, self.shape, self.polarization, self.crs
+        ).run()
         sys.exit()
         # geotiff_utils.util_starter(
         #     "split_polarizations",
@@ -80,7 +86,7 @@ class S1Preprocessor:
         #     crs=self.crs,
         # )
 
-        AlignRaster(input_dir = self.geotiff_dir).run()
+        AlignRaster(input_dir=self.geotiff_dir).run()
 
         LandSeaMask(self.geotiff_dir, self.land_polygon).run()
 
@@ -94,11 +100,25 @@ class S1Preprocessor:
 
             ChangeResolution(self.geotiff_dir, resolution).run()
             ConvertUnit(self.geotiff_dir, "linear", "decibel").run()
-            AlignRaster(input_dir = self.geotiff_dir).run()
+            AlignRaster(input_dir=self.geotiff_dir).run()
             Trim256(self.geotiff_dir).run()
-            SortOutput(self.geotiff_dir, self.sentinel_1_output, denoise_mode, "decibel", resolution, self.polarization).run()
+            SortOutput(
+                self.geotiff_dir,
+                self.sentinel_1_output,
+                denoise_mode,
+                "decibel",
+                resolution,
+                self.polarization,
+            ).run()
 
             ConvertUnit(self.geotiff_dir, "decibel", "power").run()
-            AlignRaster(input_dir = self.geotiff_dir).run()
+            AlignRaster(input_dir=self.geotiff_dir).run()
             Trim256(self.geotiff_dir).run()
-            SortOutput(self.geotiff_dir, self.sentinel_1_output, denoise_mode, "power", resolution, self.polarization).run()
+            SortOutput(
+                self.geotiff_dir,
+                self.sentinel_1_output,
+                denoise_mode,
+                "power",
+                resolution,
+                self.polarization,
+            ).run()

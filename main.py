@@ -14,9 +14,6 @@ from osgeo import gdal  # for some reason it crashes if imported in other module
 # max_cloud_pct = 40 #Fraction agreed upon with GEUS
 # max_empty = 80
 
-# BUG INHERTANCE BASED POLARIZATION_SPLITTER KILLS FILES. CLIPPER DOES NOT START
-# metadata now follow all the way to output, see splitter for xml tag.
-# TODO threads not passed to tools
 # TODO Use Vandportalen.dk to determine flood timing going forward
 # TODO quality checker in wrapper.
 # TODO Support for both sigma0 and gamma0 in same dataset
@@ -26,6 +23,8 @@ from osgeo import gdal  # for some reason it crashes if imported in other module
 # TODO ensure functions preserve metadata 65000. Possibly create a setup and teardown for that? If that goes for individual files.
 # TODO harden the acquisistion against bad data until CDSETool is patched
 # TODO import folder of tools instead of every tool individually
+# TODO implement SAFE executor into Utils
+
 
 # User inputs
 working_dir = "TEST_DATA_FULL_SEND"
@@ -39,7 +38,7 @@ pre_process_graph = (
 result_dir = "results/"
 
 pre_processor = PreProcessor(
-    threads = 2,
+    threads=2,
     working_dir=working_dir,
     crs=crs,
     shape=shape,

@@ -11,7 +11,7 @@ from rasterio.windows import Window
 
 
 class Clip256(Tool):
-    def __init__(self, input_data, shape, crs, single_file = False):
+    def __init__(self, input_data, shape, crs, single_file=False):
         if os.path.isfile(input_data):
             self.input_dir = os.path.dirname(input_data)
         else:
@@ -24,7 +24,9 @@ class Clip256(Tool):
         Clips a geotiff to a rasters extent, padded to output a resolution divisible by 256
         Takes shape, crs and input_dir
         """
-        self.shape = Utils.shape_to_crs(shape=self.shape, input_file=input_file, output_dir=self.input_dir)
+        self.shape = Utils.shape_to_crs(
+            shape=self.shape, input_file=input_file, output_dir=self.input_dir
+        )
         ds = ogr.Open(self.shape)
         layer = ds.GetLayer()
         extent = layer.GetExtent()

@@ -3,6 +3,7 @@ import os
 from sentinel_1.utils import Utils
 from concurrent.futures import ThreadPoolExecutor
 
+
 class ToolManager:
     def __init__(self, input_dir, extension, threads=1, polarization=None):
         self.input_dir = input_dir
@@ -62,15 +63,17 @@ class ToolManager:
             input_file_list = self.input_dir
         else:
             input_file_list = Utils.file_list_from_dir(self.input_dir, self.extension)
-        
+
         def worker(input_file):
             self.tool_dict[tool](input_file, **kwargs)
-        
+
         with ThreadPoolExecutor(max_workers=self.threads) as executor:
-            futures = [executor.submit(worker, input_file) for input_file in input_file_list]
-            
+            futures = [
+                executor.submit(worker, input_file) for input_file in input_file_list
+            ]
+
             for future in futures:
                 try:
-                    future.result() 
+                    future.result()
                 except Exception as exc:
                     print(f"## Generated an exception: {exc}")

@@ -45,7 +45,7 @@ class Utils(object):
         If given a list of extensions, the function will whatever yields any files firt
         under assumption that the folder will only contain one type of files.
         """
-        if not os.path.isdir(directory): 
+        if not os.path.isdir(directory):
             return [directory]
 
         if not isinstance(extensions, list):
@@ -111,7 +111,6 @@ class Utils(object):
             zip_ref.extractall(unzipped_safe)
 
         return unzipped_safe
-
 
     def split_polarizations(input_file, **kwargs):
         """
@@ -181,8 +180,9 @@ class Utils(object):
         )
         orbit_direction = get_orbital_direction(input_file)
 
-        #Clipping file down here saves a lot of compute
+        # Clipping file down here saves a lot of compute
         from sentinel_1.utils import Utils
+
         Utils.clip_256(input_file, **kwargs)
 
         with rio.open(input_file) as src:

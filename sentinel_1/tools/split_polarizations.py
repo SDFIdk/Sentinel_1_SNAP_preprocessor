@@ -9,12 +9,14 @@ from pathlib import Path
 from sentinel_1.tools.tool import Tool
 from sentinel_1.tools.clip_256 import Clip256
 
+
 class SplitPolarizations(Tool):
-    def __init__(self, input_dir, shape, polarization, crs, output_dir = False):
+    def __init__(self, input_dir, shape, polarization, crs, output_dir=False):
         self.input_dir = input_dir
         if output_dir:
             self.output_dir = output_dir
-        else: self.output_dir = self.input_dir
+        else:
+            self.output_dir = self.input_dir
         self.shape = shape
         self.polarization = polarization
         self.crs = crs
@@ -83,13 +85,14 @@ class SplitPolarizations(Tool):
         )
         orbit_direction = get_orbital_direction(input_file)
 
-        #Clipping file down here saves a lot of compute
+        # Clipping file down here saves a lot of compute
         Clip256(input_file, self.shape, self.crs, single_file=True).run()
 
         with rio.open(input_file) as src:
             meta = src.meta.copy()
             meta.update(
-                count=src.count - (len(self.polarization) - 1), compress=Compression.lzw.name
+                count=src.count - (len(self.polarization) - 1),
+                compress=Compression.lzw.name,
             )
 
             selected_data_bands = [
@@ -119,4 +122,5 @@ class SplitPolarizations(Tool):
                         dst.write(src.read(incidence_index), i)
                         dst.set_band_description(i, incidence_band)
 
-        if self.input_dir == self.output_dir: os.remove(input_file)
+        if self.input_dir == self.output_dir:
+            os.remove(input_file)

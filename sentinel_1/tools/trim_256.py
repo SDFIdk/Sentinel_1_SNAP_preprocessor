@@ -5,6 +5,7 @@ from sentinel_1.tools.tool import Tool
 
 gdal.UseExceptions()
 
+
 class Trim256(Tool):
     def __init__(self, input_dir):
         self.input_dir = input_dir
