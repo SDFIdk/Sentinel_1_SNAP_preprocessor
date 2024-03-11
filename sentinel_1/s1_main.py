@@ -78,13 +78,6 @@ class S1Preprocessor:
         SplitPolarizations(
             self.geotiff_dir, self.shape, self.polarization, self.crs
         ).run()
-        sys.exit()
-        # geotiff_utils.util_starter(
-        #     "split_polarizations",
-        #     output_dir=self.geotiff_dir,
-        #     shape=self.shape,
-        #     crs=self.crs,
-        # )
 
         AlignRaster(input_dir=self.geotiff_dir).run()
 
