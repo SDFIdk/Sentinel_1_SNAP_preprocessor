@@ -6,7 +6,6 @@ from pathlib import Path
 
 import sys
 
-
 class PreProcessor:
     def __init__(self, **kwargs):
         Path(kwargs["working_dir"]).mkdir(parents=True, exist_ok=True)

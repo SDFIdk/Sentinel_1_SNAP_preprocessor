@@ -62,18 +62,16 @@ class S1Preprocessor:
         ).run()
 
         AlignRaster(input_dir=self.geotiff_dir).run()
-
         LandSeaMask(self.geotiff_dir, self.land_polygon).run()
-
         RemoveEmpty(self.geotiff_dir)
 
         for i, denoise_mode in enumerate(self.denoise_modes):
             resolution = 10
-            # if not i == 0: copy_dir_utils.util_starter("copy_dir", copy_dir=self.geotiff_dir)
 
             denoiser.select_denoiser(denoise_mode, to_intensity=False)
 
             ChangeResolution(self.geotiff_dir, resolution).run()
+            
             ConvertUnit(self.geotiff_dir, "linear", "decibel").run()
             AlignRaster(input_dir=self.geotiff_dir).run()
             Trim256(self.geotiff_dir).run()
