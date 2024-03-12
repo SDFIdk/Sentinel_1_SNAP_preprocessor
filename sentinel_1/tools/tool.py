@@ -27,6 +27,7 @@ class Tool:
 
     def run(self):
         self.setup()
+        self.printer()
         if self.threads > 1:
             self._run_parallel()
         else:

@@ -35,7 +35,6 @@ end_date = "2024-02-13"
 pre_process_graph = (
     "sentinel_1/snap_graphs/preprocessing_workflow_2023_incidence_geotiff.xml"
 )
-pre_process_graph = "sentinel_1/snap_graphs/small_val_graph.xml"
 result_dir = "results/"
 
 pre_processor = PreProcessor(

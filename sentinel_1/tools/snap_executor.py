@@ -44,7 +44,7 @@ class SnapExecutor(Tool):
                 raise Exception("## No Write node found! Check graph!")
             
     def printer(self):
-        print(f"## Applying SNAP processing stack...")
+        print("## Applying SNAP processing stack...")
 
     def loop(self, input_file):
         output_filename = os.path.basename(input_file).replace(
