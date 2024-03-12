@@ -21,6 +21,9 @@ class SplitPolarizations(Tool):
         self.polarization = polarization
         self.crs = crs
 
+    def printer(self):
+        print(f"## Splitting polarization bands...")
+
     def loop(self, input_file):
         """
         Splits a file with multiple polarization bands into one file per

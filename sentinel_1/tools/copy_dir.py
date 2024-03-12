@@ -11,6 +11,9 @@ class CopyDir(Tool):
         self.input_dir = input_dir
         self.copy_dir = copy_dir
 
+    def printer(self):
+        print(f"## Copying rsaters...")
+
     def loop(self, input_file):
         """
         Creates a copy of the directory given to it to a given location

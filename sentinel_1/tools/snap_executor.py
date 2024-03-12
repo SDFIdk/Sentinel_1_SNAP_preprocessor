@@ -42,11 +42,11 @@ class SnapExecutor(Tool):
                         self.output_ext = ext
                         return
                 raise Exception("## No Write node found! Check graph!")
-
+            
+    def printer(self):
+        print(f"## Applying SNAP processing stack...")
 
     def loop(self, input_file):
-        print(f"## Applying SNAP processing stack to {self.input_ext} files...")
-
         output_filename = os.path.basename(input_file).replace(
             self.input_ext, self.output_ext
         )

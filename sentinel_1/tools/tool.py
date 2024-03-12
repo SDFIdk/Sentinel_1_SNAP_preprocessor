@@ -10,6 +10,9 @@ class Tool:
     def setup(self):
         pass
 
+    def printer(self):
+        pass
+
     def loop(self, input_object):
         pass
 

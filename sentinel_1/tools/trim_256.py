@@ -10,6 +10,9 @@ class Trim256(Tool):
     def __init__(self, input_dir):
         self.input_dir = input_dir
 
+    def printer(self):
+        print(f"## Trimming to 256...")
+
     def loop(self, input_file):
         """
         Trims a dataset to a resolution divisible by 256

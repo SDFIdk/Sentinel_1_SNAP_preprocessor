@@ -37,7 +37,7 @@ class S1Preprocessor:
             "gpt_exe", "C:/Users/b307579/AppData/Local/Programs/snap/bin/gpt.exe"
         )
         self.threads = kwargs.get("threads", 1)
-        self.denoise_modes = kwargs.get("denoise_mode", ["SAR2SAR"])
+        self.denoise_modes = kwargs.get("denoise_mode", ["mean"])
         if not isinstance(self.denoise_modes, list):
             self.denoise_modes = [self.denoise_modes]
         self.polarization = kwargs.get("polarization", ["VV", "VH"])

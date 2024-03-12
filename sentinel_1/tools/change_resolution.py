@@ -10,6 +10,9 @@ class ChangeResolution(Tool):
         self.input_dir = input_dir
         self.resolution = resolution
 
+    def printer(self):
+        print(f"## Changing resolution...")
+
     def loop(self, input_file):
         """
         Resamples a raster to a new resolution

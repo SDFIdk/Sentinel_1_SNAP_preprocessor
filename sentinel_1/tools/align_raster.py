@@ -27,6 +27,9 @@ class AlignRaster(Tool):
 
         self.reference_geotransform = reference_geotransform
 
+    def printer(self):
+        print(f"## Aligning rasters..")
+
     def loop(self, input_file):
         """
         Ensures pixels in a raster are aligned to same grid.

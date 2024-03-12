@@ -10,6 +10,9 @@ class RemoveEmpty(Tool):
     def __init__(self, input_dir):
         self.input_dir = input_dir
 
+    def printer(self):
+        print(f"## Removing empty rasters...")
+
     def loop(self, input_file):
         """
         Finds geotiffs with no data and deletes them. Outputs none
