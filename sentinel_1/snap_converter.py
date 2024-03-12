@@ -1,6 +1,6 @@
 import subprocess
-import os
 import xml.etree.ElementTree as ET
+import os
 import sys
 
 from sentinel_1.utils import Utils
@@ -8,10 +8,6 @@ from sentinel_1.utils import Utils
 
 class SnapPreprocessor(object):
 
-    """
-    This script applies a SNAP graph onto a directorys worth of files
-    Takes in input, output, SNAP graph and a path the the gpt.exe
-    """
 
     def __init__(self, gpt_path):
         self.gpt = gpt_path
@@ -56,18 +52,3 @@ class SnapPreprocessor(object):
         Function looks for the field formatName in the Write node.
         This is specific to SNAP generated processing graphs
         """
-        format_dict = {"GeoTIFF": ".tif", "NetCDF": ".nc"}
-
-        root = ET.parse(graph_xml).getroot()
-
-        for node in root.findall("node"):
-            name = node.get("id")
-            if name == "Write":
-                params = node.find("parameters")
-                format_element = params.find("formatName")
-                format_name = format_element.text
-
-                for format, ext in format_dict.items():
-                    if format in format_name:
-                        return ext
-                raise Exception("## No Write node found! Check graph!")

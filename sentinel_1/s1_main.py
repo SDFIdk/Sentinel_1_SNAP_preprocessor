@@ -2,14 +2,11 @@ import sys
 import os
 from pathlib import Path
 from sentinel_1.denoiser import Denoiser
-from sentinel_1.snap_converter import SnapPreprocessor
-from sentinel_1.tool_manager import ToolManager
 
+from sentinel_1.tools.snap_executor import SnapExecutor
 from sentinel_1.tools.align_raster import AlignRaster
 from sentinel_1.tools.change_resolution import ChangeResolution
-from sentinel_1.tools.clip_256 import Clip256
 from sentinel_1.tools.convert_unit import ConvertUnit
-from sentinel_1.tools.copy_dir import CopyDir
 from sentinel_1.tools.land_sea_mask import LandSeaMask
 from sentinel_1.tools.remove_empty import RemoveEmpty
 from sentinel_1.tools.sort_output import SortOutput
@@ -55,25 +52,10 @@ class S1Preprocessor:
             self.denoise_modes = [self.denoise_modes]
 
     def s1_workflow(self):
-        geotiff_utils = ToolManager(
-            self.geotiff_dir,
-            "*.tif",
-            threads=self.threads,
-            polarization=self.polarization,
-        )
-        snap_executor = SnapPreprocessor(gpt_path=self.gpt_exe)
+
         denoiser = Denoiser(self.geotiff_dir, self.shape)
 
-        # snap_executor.graph_processing(
-        #     self.safe_dir, self.geotiff_dir, self.pre_process_graph, input_ext=".zip"
-        # )
-
-        copy_dir = os.path.join(self.working_dir, "geotiff_copy")
-
-        geotiff_utils.util_starter("copy_dir", copy_dir=copy_dir)
-        # copy_dir_utils = ToolManager(
-        #     copy_dir, "*.tif", threads=1, polarization=self.polarization
-        # )
+        SnapExecutor(self.safe_dir, self.geotiff_dir, self.gpt_exe, self.pre_process_graph, threads = 6).run()
 
         SplitPolarizations(
             self.geotiff_dir, self.shape, self.polarization, self.crs

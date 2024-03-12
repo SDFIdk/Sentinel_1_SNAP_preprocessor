@@ -1,13 +1,11 @@
-import tifffile
 from concurrent.futures import ProcessPoolExecutor, wait
 from sentinel_1.utils import Utils
 
 
 class Tool:
-    threads = 1
-
-    def __init__(self, input_dir):
+    def __init__(self, input_dir, threads, crs):
         self.input_dir = input_dir
+        self.threads = threads
 
     def setup(self):
         pass
@@ -19,7 +17,10 @@ class Tool:
         pass
 
     def files(self):
-        return Utils.file_list_from_dir(self.input_dir, "*.tif")
+        if 'safe' in self.input_dir:
+            return Utils.file_list_from_dir(self.input_dir, "*.zip")
+        else:
+            return Utils.file_list_from_dir(self.input_dir, "*.tif")
 
     def run(self):
         self.setup()
