@@ -34,7 +34,7 @@ pre_process_graph = (
 result_dir = "results/"
 
 pre_processor = PreProcessor(
-    threads=6,
+    threads=1,
     working_dir=working_dir,
     crs=crs,
     shape=shape,

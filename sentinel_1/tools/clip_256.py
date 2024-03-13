@@ -11,11 +11,8 @@ from rasterio.windows import Window
 
 
 class Clip256(Tool):
-    def __init__(self, input_data, shape, crs, single_file=False, threads = 1):
-        if os.path.isfile(input_data):
-            self.input_dir = os.path.dirname(input_data)
-        else:
-            self.input_dir = input_data
+    def __init__(self, input_data, shape, crs, threads = 1):
+        self.input_dir = input_data
         self.shape = shape
         self.crs = crs
         self.threads = threads

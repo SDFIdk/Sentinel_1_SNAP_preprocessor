@@ -61,6 +61,8 @@ class S1Preprocessor:
             self.geotiff_dir, self.shape, self.polarization, self.crs
         ).run()
 
+        # sys.exit()
+
         AlignRaster(input_dir=self.geotiff_dir).run()
         LandSeaMask(self.geotiff_dir, self.land_polygon).run()
         RemoveEmpty(self.geotiff_dir)
@@ -71,7 +73,7 @@ class S1Preprocessor:
             denoiser.select_denoiser(denoise_mode, to_intensity=False)
 
             ChangeResolution(self.geotiff_dir, resolution).run()
-            
+
             ConvertUnit(self.geotiff_dir, "linear", "decibel").run()
             AlignRaster(input_dir=self.geotiff_dir).run()
             Trim256(self.geotiff_dir).run()

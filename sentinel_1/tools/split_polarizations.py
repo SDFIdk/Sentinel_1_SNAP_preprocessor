@@ -5,9 +5,9 @@ import tifffile
 import xml.etree.ElementTree as ET
 from rasterio.enums import Compression
 from pathlib import Path
+from sentinel_1.utils import Utils
 
 from sentinel_1.tools.tool import Tool
-from sentinel_1.tools.clip_256 import Clip256
 
 
 class SplitPolarizations(Tool):
@@ -62,6 +62,9 @@ class SplitPolarizations(Tool):
 
         def band_names_from_snap_geotiff(input_file, tag=65000):
             # 65000 is standard geotiff tag for metadata xml
+            print('------')
+            print(input_file)
+            print('------')
             with tifffile.TiffFile(input_file) as tif:
                 tree = tif.pages[0].tags[tag].value
                 assert (
@@ -90,7 +93,7 @@ class SplitPolarizations(Tool):
         orbit_direction = get_orbital_direction(input_file)
 
         # Clipping file down here saves a lot of compute
-        Clip256(input_file, self.shape, self.crs, single_file=True).run()
+        Utils.clip_256_single(input_file, self.shape, self.crs)
 
         with rio.open(input_file) as src:
             meta = src.meta.copy()
