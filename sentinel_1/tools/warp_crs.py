@@ -8,9 +8,10 @@ gdal.UseExceptions()
 
 
 class WarpCrs(Tool):
-    def __init__(self, input_dir, crs):
+    def __init__(self, input_dir, crs, threads = 1):
         self.input_dir = input_dir
         self.crs = crs
+        self.threads = threads
 
     def printer(self):
         print(f"## Changing CRS..")

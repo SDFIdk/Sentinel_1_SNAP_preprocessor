@@ -8,9 +8,11 @@ from sentinel_1.utils import Utils
 
 
 class AlignRaster(Tool):
-    def __init__(self, input_dir):
+    def __init__(self, input_dir, threads = 1):
         self.input_dir = input_dir
         self.reference_geotransform = None
+        self.threads = threads
+
 
     def setup(self):
         """

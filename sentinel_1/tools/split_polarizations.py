@@ -11,7 +11,7 @@ from sentinel_1.tools.clip_256 import Clip256
 
 
 class SplitPolarizations(Tool):
-    def __init__(self, input_dir, shape, polarization, crs, output_dir=False):
+    def __init__(self, input_dir, shape, polarization, crs, output_dir=False, threads = 1):
         self.input_dir = input_dir
         if output_dir:
             self.output_dir = output_dir
@@ -20,6 +20,7 @@ class SplitPolarizations(Tool):
         self.shape = shape
         self.polarization = polarization
         self.crs = crs
+        self.threads = threads
 
     def printer(self):
         print(f"## Splitting polarization bands...")

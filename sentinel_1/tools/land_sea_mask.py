@@ -9,9 +9,11 @@ from sentinel_1.tools.tool import Tool
 
 
 class LandSeaMask(Tool):
-    def __init__(self, input_dir, land_sea_mask):
+    def __init__(self, input_dir, land_sea_mask, threads = 1):
         self.input_dir = input_dir
         self.land_sea_mask = land_sea_mask
+        self.threads = threads
+
 
     def printer(self):
         print(f"## Applying land/sea mask...")

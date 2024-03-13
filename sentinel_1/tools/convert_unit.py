@@ -6,11 +6,13 @@ from sentinel_1.tools.tool import Tool
 
 
 class ConvertUnit(Tool):
-    def __init__(self, input_dir, source_unit, destination_unit, zero_max=False):
+    def __init__(self, input_dir, source_unit, destination_unit, zero_max=False, threads = 1):
         self.input_dir = input_dir
         self.source_unit = source_unit
         self.destination_unit = destination_unit
         self.zero_max = zero_max
+        self.threads = threads
+
 
     def printer(self):
         print(f"## Converting from {self.source_unit} to {self.destination_unit}...")

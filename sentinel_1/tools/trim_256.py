@@ -7,8 +7,9 @@ gdal.UseExceptions()
 
 
 class Trim256(Tool):
-    def __init__(self, input_dir):
+    def __init__(self, input_dir, threads = 1):
         self.input_dir = input_dir
+        self.threads = threads
 
     def printer(self):
         print(f"## Trimming to 256...")

@@ -7,9 +7,11 @@ from sentinel_1.utils import Utils
 
 
 class CopyDir(Tool):
-    def __init__(self, input_dir, copy_dir):
+    def __init__(self, input_dir, copy_dir, threads = 1):
         self.input_dir = input_dir
         self.copy_dir = copy_dir
+        self.threads = threads
+
 
     def printer(self):
         print(f"## Copying rsaters...")

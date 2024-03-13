@@ -6,9 +6,11 @@ from sentinel_1.tools.tool import Tool
 
 
 class ChangeResolution(Tool):
-    def __init__(self, input_dir, resolution):
+    def __init__(self, input_dir, resolution, threads = 1):
         self.input_dir = input_dir
         self.resolution = resolution
+        self.threads = threads
+
 
     def printer(self):
         print(f"## Changing resolution...")
