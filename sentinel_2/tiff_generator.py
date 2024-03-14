@@ -1,16 +1,11 @@
 import sys
-import subprocess
 
-# sys.path.append('Scripts/')
-# import gdal_merge
 import zipfile
 import os
 import shutil
 import glob
 from pathlib import Path
 from osgeo import gdal
-import pprint
-import rasterio as rio
 
 gdal.UseExceptions()
 
@@ -66,29 +61,30 @@ class Tiff_generator(object):
         output_vrt = output_subdirectory + "/IMAGE_DATA/" + output_vrt
         granule = Path(unprocessed_band)
 
+        bands = {
+            "band_AOT": str(granule / "R10m" / str(band_path + "AOT_10m.jp2")),
+            "band_02": str(granule / "R10m" / str(band_path + "B02_10m.jp2")),
+            "band_03": str(granule / "R10m" / str(band_path + "B03_10m.jp2")),
+            "band_04": str(granule / "R10m" / str(band_path + "B04_10m.jp2")),
+            "band_05": str(granule / "R20m" / str(band_path + "B05_20m.jp2")),
+            "band_06": str(granule / "R20m" / str(band_path + "B06_20m.jp2")),
+            "band_07": str(granule / "R20m" / str(band_path + "B07_20m.jp2")),
+            "band_08": str(granule / "R10m" / str(band_path + "B08_10m.jp2")),
+            "band_8A": str(granule / "R20m" / str(band_path + "B8A_20m.jp2")),
+            "band_09": str(granule / "R60m" / str(band_path + "B09_60m.jp2")),
+            "band_WVP": str(granule / "R10m" / str(band_path + "WVP_10m.jp2")),
+            "band_11": str(granule / "R20m" / str(band_path + "B11_20m.jp2")),
+            "band_12": str(granule / "R20m" / str(band_path + "B12_20m.jp2")),
+        }
 
-        # a = gdal.Open(granule / "R10m" / str(band_path + "AOT_10m.jp2"))
-        # print(str(a.RasterCount))
-        # metadata=a.GetMetadata()
-        # print(metadata)
+        # for _, band in bands.items():
+        #     if not band.exists(): print(band)
+        #     else: 
+        #         print(band)
+        #         a = gdal.Open(str(band))
+        #         print(a.GetMetadata())
 
         # sys.exit()
-
-        bands = {
-            "band_AOT": granule / "R10m" / str(band_path + "AOT_10m.jp2"),
-            "band_02": granule / "/R10m/" / str(band_path + "B02_10m.jp2"),
-            "band_03": granule / "/R10m/" / str(band_path + "B03_10m.jp2"),
-            "band_04": granule / "/R10m/" / str(band_path + "B04_10m.jp2"),
-            "band_05": granule / "/R20m/" / str(band_path + "B05_20m.jp2"),
-            "band_06": granule / "/R20m/" / str(band_path + "B06_20m.jp2"),
-            "band_07": granule / "/R20m/" / str(band_path + "B07_20m.jp2"),
-            "band_08": granule / "/R10m/" / str(band_path + "B08_10m.jp2"),
-            "band_8A": granule / "/R20m/" / str(band_path + "B8A_20m.jp2"),
-            "band_09": granule / "/R60m/" / str(band_path + "B09_60m.jp2"),
-            "band_WVP": granule / "/R10m/"/ str(band_path + "WVP_10m.jp2"),
-            "band_11": granule / "/R20m/" / str(band_path + "B11_20m.jp2"),
-            "band_12": granule / "/R20m/" / str(band_path + "B12_20m.jp2"),
-        }
 
         vrt_dataset = gdal.BuildVRT(
             output_vrt,
@@ -102,9 +98,9 @@ class Tiff_generator(object):
         for i, band_name in enumerate(bands, start=1):
             band = vrt_dataset.GetRasterBand(i)
             band.SetMetadataItem("DESCRIPTION", band_name)
-        # sys.exit()
 
         gdal.Translate(geotiff_output, vrt_dataset, format="GTiff")
 
+        sys.exit()
 
         return geotiff_output

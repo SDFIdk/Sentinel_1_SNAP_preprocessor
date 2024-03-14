@@ -21,6 +21,7 @@ from osgeo import gdal  # for some reason it crashes if imported in other module
 # TODO write resolution, denoise_mode and unit to metadata to simplify "sort_unit" inputs.
 # TODO ensure functions preserve metadata 65000. Possibly create a setup and teardown for that? If that goes for individual files.
 # TODO harden the acquisistion against bad data until CDSETool is patched
+# TODO inhertaince based class system for S2 component
 
 # User inputs
 working_dir = "TEST_DATA_FULL_SEND"
@@ -34,7 +35,7 @@ pre_process_graph = (
 result_dir = "results/"
 
 pre_processor = PreProcessor(
-    threads=1,
+    # threads=1,
     working_dir=working_dir,
     crs=crs,
     shape=shape,

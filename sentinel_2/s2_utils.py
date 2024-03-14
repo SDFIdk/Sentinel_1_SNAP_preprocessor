@@ -10,6 +10,7 @@ import shutil
 import uuid
 import pyproj
 
+gdal.UseExceptions()
 
 class Utils(object):
     def gdal_error_handler(err_class, err_num, err_msg):
@@ -67,7 +68,11 @@ class Utils(object):
             options = gdal.WarpOptions(
                 cutlineDSName=shape, cropToCutline=True, dstSRS="EPSG:4326"
             )
-            Utils.open_option_warp_move(scl_filename, options, "tmp/clip_scl.jp2")
+
+            gdal_dataset = gdal.Open(scl_filename)
+            gdal.Warp("tmp/clip_scl.jp2", gdal_dataset, options=options)
+            gdal_dataset = None
+            shutil.move("tmp/clip_scl.jp2", scl_filename)
 
         cloud_percentage = Utils.get_cloud_percentage(scl_filename)
         del scl_filename
@@ -122,13 +127,6 @@ class Utils(object):
             resampleAlg=gdal.GRA_NearestNeighbour,
         )
 
-        gdal.Warp(output, gdal_dataset, options=options)
-        shutil.move(output, dataset)
-
-    def open_option_warp_move(dataset, options, output):
-        gdal.UseExceptions()
-
-        gdal_dataset = gdal.Open(dataset)
         gdal.Warp(output, gdal_dataset, options=options)
         shutil.move(output, dataset)
 

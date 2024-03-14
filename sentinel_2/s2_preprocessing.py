@@ -39,9 +39,10 @@ class Preprocessor(object):
             print("# " + str(i + 1) + " / " + str(len(safe_file_list)), end="\r")
 
             cloud_clover_in_aoi = Utils.aoi_cloud_cover(safe_file, shape)
-
+            
             if cloud_clover_in_aoi >= max_cloud:
-                print(f"# Cloud cover in {safe_file} exceeded max, skipping...")
+                print(f"# Cloud cover within area of interest at {cloud_clover_in_aoi} %")
+                print(f"# {safe_file} exceeded max, skipping...")
             else:
                 Tiff_generator.generate_geotiffs(safe_file, self.output_dir)
         return
