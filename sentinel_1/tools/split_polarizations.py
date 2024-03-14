@@ -62,9 +62,6 @@ class SplitPolarizations(Tool):
 
         def band_names_from_snap_geotiff(input_file, tag=65000):
             # 65000 is standard geotiff tag for metadata xml
-            print('------')
-            print(input_file)
-            print('------')
             with tifffile.TiffFile(input_file) as tif:
                 tree = tif.pages[0].tags[tag].value
                 assert (

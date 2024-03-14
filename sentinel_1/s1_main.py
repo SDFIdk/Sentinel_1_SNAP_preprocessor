@@ -55,13 +55,11 @@ class S1Preprocessor:
 
         denoiser = Denoiser(self.geotiff_dir, self.shape)
 
-        # SnapExecutor(self.safe_dir, self.geotiff_dir, self.gpt_exe, self.pre_process_graph, threads = 6).run()
+        SnapExecutor(self.safe_dir, self.geotiff_dir, self.gpt_exe, self.pre_process_graph, threads = 6).run()
 
         SplitPolarizations(
             self.geotiff_dir, self.shape, self.polarization, self.crs
         ).run()
-
-        # sys.exit()
 
         AlignRaster(input_dir=self.geotiff_dir).run()
         LandSeaMask(self.geotiff_dir, self.land_polygon).run()
