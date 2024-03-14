@@ -101,6 +101,6 @@ class Tiff_generator(object):
 
         gdal.Translate(geotiff_output, vrt_dataset, format="GTiff")
 
-        sys.exit()
+        # sys.exit()
 
         return geotiff_output

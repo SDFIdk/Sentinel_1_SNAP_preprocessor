@@ -39,7 +39,7 @@ class Preprocessor(object):
             print("# " + str(i + 1) + " / " + str(len(safe_file_list)), end="\r")
 
             cloud_clover_in_aoi = Utils.aoi_cloud_cover(safe_file, shape)
-            
+
             if cloud_clover_in_aoi >= max_cloud:
                 print(f"# Cloud cover within area of interest at {cloud_clover_in_aoi} %")
                 print(f"# {safe_file} exceeded max, skipping...")
@@ -74,12 +74,7 @@ class Preprocessor(object):
         for i, data in enumerate(input_data_list):
             print("# " + str(i + 1) + " / " + str(len(input_data_list)), end="\r")
 
-            data = data.replace("\\", "/")
-
-            options = gdal.WarpOptions(
-                cutlineDSName=shape, cropToCutline=True, dstSRS=crs
-            )
-            Utils.open_option_warp_move(data, options, output_tif)
+            Utils.clip_sentinel_2(data, output_tif, shape, crs)
 
     def remove_empty_files(self, max_empty_percent=50):
         print("## Removing images with too little data...")

@@ -69,11 +69,6 @@ class Utils(object):
                 cutlineDSName=shape, cropToCutline=True, dstSRS="EPSG:4326"
             )
 
-            gdal_dataset = gdal.Open(scl_filename)
-            gdal.Warp("tmp/clip_scl.jp2", gdal_dataset, options=options)
-            gdal_dataset = None
-            shutil.move("tmp/clip_scl.jp2", scl_filename)
-
         cloud_percentage = Utils.get_cloud_percentage(scl_filename)
         del scl_filename
         return cloud_percentage
@@ -145,3 +140,15 @@ class Utils(object):
             shutil.copy(source, destination)
         else:
             shutil.move(source, destination)
+
+    def clip_sentinel_2(data, output_tif, shape, crs):
+
+        data = data.replace("\\", "/")
+        options = gdal.WarpOptions(
+            cutlineDSName=shape, cropToCutline=True, dstSRS=crs
+        )
+
+        gdal_dataset = gdal.Open(data)
+        gdal.Warp(output_tif, gdal_dataset, options=options)
+        gdal_dataset = None
+        shutil.move(output_tif, data)
