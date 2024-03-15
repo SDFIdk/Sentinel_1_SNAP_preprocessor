@@ -42,7 +42,7 @@ for location_data in location_list:
         end_date=end_date,
         pre_process_graph=pre_process_graph,
         denoise_mode="mean",
-        max_cloud_pct=100,
+        max_cloud_pct=80,
         result_dir=result_dir,
         gpt_exe=gpt_exe
     )

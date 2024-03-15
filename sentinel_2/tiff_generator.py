@@ -82,15 +82,6 @@ class Tiff_generator(object):
             "band_12": str(granule / "R20m" / str(band_path + "B12_20m.jp2")),
         }
 
-        # for _, band in bands.items():
-        #     if not band.exists(): print(band)
-        #     else: 
-        #         print(band)
-        #         a = gdal.Open(str(band))
-        #         print(a.GetMetadata())
-
-        # sys.exit()
-
         vrt_dataset = gdal.BuildVRT(
             output_vrt,
             list(bands.values()),
