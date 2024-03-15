@@ -6,6 +6,7 @@ import shutil
 import glob
 from pathlib import Path
 from osgeo import gdal
+import shutil
 
 gdal.UseExceptions()
 
@@ -20,31 +21,35 @@ class Tiff_generator(object):
             if os.path.isdir(os.path.join(a_dir, name))
         ]
 
-    def generate_geotiffs(input_product, output_path):
-        basename = os.path.basename(input_product)
-        safe_dir = os.path.join(output_path, basename[:-3] + "SAFE")
+    def generate_geotiffs(safe_file, geotiff_output_path):
+        basename = os.path.basename(safe_file)
+        safe_unzip_dir = os.path.join(geotiff_output_path, basename[:-3] + "SAFE")
 
-        zip = zipfile.ZipFile(input_product)
-        zip.extractall(output_path)
+        zip = zipfile.ZipFile(safe_file)
+        zip.extractall(geotiff_output_path)
+        zip.close()
 
-        product_name = os.path.basename(input_product)[:-4]
-        output_subdirectory = os.path.join(output_path, product_name + "_PROCESSED")
+        product_name = os.path.basename(safe_file)[:-4]
+        output_subdirectory = os.path.join(geotiff_output_path, product_name + "_PROCESSED")
         Path(output_subdirectory).mkdir(exist_ok=True)
 
         sub_directories = Tiff_generator.get_immediate_subdirectories(
-            safe_dir + "/GRANULE"
+            safe_unzip_dir + "/GRANULE"
         )
 
         for granule in sub_directories:
             unprocessed_band = os.path.join(
-                output_path, product_name + ".SAFE", "GRANULE", granule, "IMG_DATA"
+                geotiff_output_path, product_name + ".SAFE", "GRANULE", granule, "IMG_DATA"
             )
             Tiff_generator.generate_all_bands(
-                unprocessed_band, granule, output_subdirectory, output_path
+                unprocessed_band, granule, output_subdirectory, geotiff_output_path
             )
 
-        shutil.rmtree(safe_dir)
+        shutil.rmtree(safe_unzip_dir)
         shutil.rmtree(output_subdirectory)
+
+        #TEMPORARY WORKAROUND 
+        os.remove(safe_file)
 
     def generate_all_bands(unprocessed_band, granule, output_subdirectory, newout):
         granule_part_1 = unprocessed_band.split(".SAFE")[0][-22:-16]
@@ -100,7 +105,5 @@ class Tiff_generator(object):
             band.SetMetadataItem("DESCRIPTION", band_name)
 
         gdal.Translate(geotiff_output, vrt_dataset, format="GTiff")
-
-        # sys.exit()
 
         return geotiff_output
