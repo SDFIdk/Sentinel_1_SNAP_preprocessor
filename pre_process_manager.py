@@ -19,7 +19,7 @@ class PreProcessor:
         # self.downloader.download_sentinel_1()
         # self.s1_preprocessor.s1_workflow()
 
-        # self.downloader.download_sentinel_2()
+        self.downloader.download_sentinel_2()
         self.s2_preprocessor.s2_workflow()
 
-        self.wrapper.wrap_results()
+        # self.wrapper.wrap_results()

@@ -26,9 +26,9 @@ from osgeo import gdal  # for some reason it crashes if imported in other module
 # User inputs
 working_dir = "TEST_DATA_FULL_SEND"
 crs = "EPSG:25832"
-shape = "shapes/stavis_odense/POLYGON.shp"
-start_date = "2024-02-05"
-end_date = "2024-02-13"
+shape = "shapes/holstebro/POLYGON.shp"
+start_date = "2015-11-20"
+end_date = "2015-12-13"
 pre_process_graph = (
     "sentinel_1/snap_graphs/preprocessing_workflow_2023_incidence_geotiff.xml"
 )

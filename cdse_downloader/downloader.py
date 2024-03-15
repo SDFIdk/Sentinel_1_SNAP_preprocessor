@@ -16,7 +16,10 @@ class Downloader:
 
     @property
     def sentinel_2_safe_dir(self):
-        return os.path.join(self.working_dir, "sentinel_2", "safe")
+        # return os.path.join(self.working_dir, "sentinel_2", "safe")
+
+        #TEMPORARY WORKAROUND
+        return os.path.join("sentinel_2_temp_dir/", "sentinel_2", "safe")        
 
     def __init__(self, **kwargs):
         self.start_date = kwargs["start_date"]
