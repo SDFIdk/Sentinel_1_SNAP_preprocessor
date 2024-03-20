@@ -35,8 +35,9 @@ class ResultWrapper:
         all_results.append(os.path.join(self.result_dir, shape_data + ".zip"))
 
         result_zip = os.path.join(
-            self.result_dir, os.path.basename(self.working_dir) + ".7z"
+            self.result_dir, os.path.basename(os.path.normpath(self.working_dir)) + ".7z"
         )
+
         with py7zr.SevenZipFile(result_zip, "w") as archive:
             for item in all_results:
                 if os.path.isdir(item):
