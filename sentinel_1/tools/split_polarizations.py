@@ -63,10 +63,10 @@ class SplitPolarizations(Tool):
         def band_names_from_snap_geotiff(input_file, tag=65000):
             # 65000 is standard geotiff tag for metadata xml
             with tifffile.TiffFile(input_file) as tif:
-                tree = tif.pages[0].tags[tag].value
-                assert (
-                    tree
-                ), f"# {input_file} does not contain SNAP assocaited metadata!"
+                try: tree = tif.pages[0].tags[tag].value
+                except: Exception (
+                    f"No tag 65000 found in {input_file}!"
+                )
 
                 root = ET.fromstring(tree)
                 data_access = root.findall("Data_Access")[0]

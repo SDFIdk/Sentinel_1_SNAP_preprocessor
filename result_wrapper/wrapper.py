@@ -21,6 +21,8 @@ class ResultWrapper:
         self.result_dir = kwargs["result_dir"]
 
     def wrap_results(self):
+
+        print('## Wrapping results...')
         if os.path.splitext(self.shape)[1] == ".zip":
             shape_data = self.shape
         else:
@@ -52,10 +54,12 @@ class ResultWrapper:
                 else:
                     archive.write(item, os.path.basename(item))
 
-        # for item in all_results:
-        #     try:
-        #         shutil.rmtree(item)
-        #     except:
-        #         os.remove(item)
-        #     finally:
-        #         raise Exception(f"## Cannot remove {item}!")
+        for item in all_results:
+            try:
+                shutil.rmtree(item)
+            except:
+                print(all_results)
+                raise Exception(f"## Cannot remove {item}!")
+
+
+        print('## Dataset completed!')
