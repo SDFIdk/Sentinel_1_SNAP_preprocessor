@@ -12,7 +12,7 @@ from sentinel_1.tools.remove_empty import RemoveEmpty
 from sentinel_1.tools.sort_output import SortOutput
 from sentinel_1.tools.split_polarizations import SplitPolarizations
 from sentinel_1.tools.trim_256 import Trim256
-
+from sentinel_1.tools.stitch_orbitals import StitchOrbitals
 
 class S1Preprocessor:
     @property
@@ -42,6 +42,7 @@ class S1Preprocessor:
             self.denoise_modes = [self.denoise_modes]
         self.polarization = kwargs.get("polarization", ["VV", "VH"])
         self.land_polygon = kwargs.get("land_polygon", "shapes/landpolygon_1000.zip")
+        self.orbital_stitch = kwargs.get("orbital_stitch", False)
 
         Path(self.geotiff_dir).mkdir(parents=True, exist_ok=True)
         Path(self.sentinel_1_output).mkdir(parents=True, exist_ok=True)
@@ -55,7 +56,12 @@ class S1Preprocessor:
 
         denoiser = Denoiser(self.geotiff_dir, self.shape)
 
-        SnapExecutor(self.safe_dir, self.geotiff_dir, self.gpt_exe, self.pre_process_graph, threads = 6).run()
+        # SnapExecutor(self.safe_dir, self.geotiff_dir, self.gpt_exe, self.pre_process_graph, threads = 6).run()
+
+        if self.orbital_stitch: StitchOrbitals(self.geotiff_dir).run()
+        print('# TEST ENDED')
+        sys.exit()
+
 
         SplitPolarizations(
             self.geotiff_dir, self.shape, self.polarization, self.crs

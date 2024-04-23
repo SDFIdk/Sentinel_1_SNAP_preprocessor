@@ -16,10 +16,11 @@ from osgeo import gdal  # for some reason it crashes if imported in other module
 
 result_dir="geus_rerun_output"
 pre_process_graph = "sentinel_1/snap_graphs/preprocessing_workflow_2023_incidence_geotiff.xml"
+# pre_process_graph = "sentinel_1/snap_graphs/safe_to_geotiff.xml"
 gpt_exe = 'C:/Users/b025527/AppData/Local/snap/bin/gpt.exe'
 
 location_list = [
-    ('J:/javej/geus_total_rerun/holstebro_2015/', "shapes/holstebro/POLYGON.shp", "2015-11-20", "2015-12-13"),
+    # ('J:/javej/geus_total_rerun/holstebro_2015/', "shapes/holstebro/POLYGON.shp", "2015-11-20", "2015-12-13"),
     # ('J:/javej/geus_total_rerun/holstebro_2022/', "shapes/holstebro/POLYGON.shp", "2022-12-18", "2023-01-13"),
     # ('J:/javej/geus_total_rerun/kolding_2020/', "shapes/kolding/POLYGON.shp", "2020-02-03", "2020-02-28"),
     # ('J:/javej/geus_total_rerun/odense_2022/', "shapes/stavis_odense/POLYGON.shp", "2022-02-09", "2022-03-05"),
@@ -28,13 +29,14 @@ location_list = [
     # ('J:/javej/geus_total_rerun/skjern_2024/', "shapes/skjern/POLYGON.shp", "2024-01-11", "2024-01-25"),
     # ('J:/javej/geus_total_rerun/sneum_2024/', "shapes/sneum_aa/POLYGON.shp", "2024-01-11", "2024-01-25"),
     # ('J:/javej/geus_total_rerun/varde_2024/', "shapes/varde/POLYGON.shp", "2024-01-11", "2024-01-25"),
+    ('TEST_DATA/', "shapes/whole_dk/POLYGON.shp", "2021-01-11", "2021-01-13")
     ]
 
 for location_data in location_list:
     working_dir, shape, start_date, end_date = location_data
 
     pre_processor = PreProcessor(
-        threads = 16,
+        threads = 4,
         working_dir=working_dir,
         crs="EPSG:25832",
         shape=shape,
@@ -44,6 +46,7 @@ for location_data in location_list:
         denoise_mode="mean",
         max_cloud_pct=100,
         result_dir=result_dir,
-        gpt_exe=gpt_exe
+        # gpt_exe=gpt_exe
+        orbital_stitch = True
     )
     pre_processor.start_workflow()

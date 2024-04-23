@@ -33,7 +33,7 @@ class SplitPolarizations(Tool):
         """
 
         def get_orbital_direction(input_file, tag=65000):
-            # 65000 is standard geotiff tag for metadata xml
+            # 65000 is standard geotiff tag for SNAP metadata xml
             with tifffile.TiffFile(input_file) as tif:
                 tree = tif.pages[0].tags[tag].value
                 assert (
