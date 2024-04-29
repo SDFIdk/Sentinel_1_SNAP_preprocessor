@@ -4,6 +4,7 @@ import sys
 import shutil
 from glob import glob
 import pathlib
+import time
 
 
 class ResultWrapper:
@@ -19,6 +20,24 @@ class ResultWrapper:
         self.working_dir = kwargs["working_dir"]
         self.shape = kwargs["shape"]
         self.result_dir = kwargs["result_dir"]
+
+    def safe_remove(self, path):
+        """Attempt to remove a file or directory with retries for locked files."""
+        max_retries = 5
+        retry_delay = 1  # one second
+
+        for _ in range(max_retries):
+            try:
+                if os.path.isdir(path):
+                    shutil.rmtree(path)
+                elif os.path.isfile(path):
+                    os.remove(path)
+                break
+            except Exception as e:
+                print(f"# Warning: failed to delete {path} due to {e}")
+                time.sleep(retry_delay)
+        else:
+            print(f"# Error: could not delete {path} after {max_retries} retries.")
 
     def wrap_results(self):
 
@@ -55,11 +74,4 @@ class ResultWrapper:
                     archive.write(item, os.path.basename(item))
 
         for item in all_results:
-            try:
-                shutil.rmtree(item)
-            except:
-                print(all_results)
-                raise Exception(f"## Cannot remove {item}!")
-
-
-        print('## Dataset completed!')
+            self.safe_remove(item)
