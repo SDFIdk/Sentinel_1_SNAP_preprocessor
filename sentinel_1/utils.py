@@ -82,14 +82,14 @@ class Utils(object):
     def remove_folder(folder):
         shutil.rmtree(folder)
 
-    def shape_to_crs(shape, input_file, output_dir):
+    def shape_to_crs(shape, crs_geotiff, output_shape):
         gdf = gpd.read_file(shape)
 
-        geotiff_crs = rio.open(input_file).crs
+        geotiff_crs = rio.open(crs_geotiff).crs
 
         gdf_warp = gdf.to_crs(geotiff_crs)
 
-        new_shape_dir = os.path.join(output_dir, "crs_corrected_shape/")
+        new_shape_dir = os.path.join(output_shape, "crs_corrected_shape/")
         Path(new_shape_dir).mkdir(exist_ok=True)
 
         output_shape = new_shape_dir + "new_" + os.path.basename(shape)
@@ -104,7 +104,7 @@ class Utils(object):
         Takes shape, crs and input_dir
         """
         shape = Utils.shape_to_crs(
-            shape, input_file, output_dir=os.path.dirname(input_file)
+            shape, input_file, output_shape=os.path.dirname(input_file)
         )
         ds = ogr.Open(shape)
         layer = ds.GetLayer()

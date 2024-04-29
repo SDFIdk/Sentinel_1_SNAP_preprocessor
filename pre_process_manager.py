@@ -1,5 +1,6 @@
 from cdse_downloader.downloader import Downloader
 from sentinel_1.s1_main import S1Preprocessor
+from sentinel_1.utils import shape_to_crs
 from sentinel_2.s2_main import S2Preprocessor
 from result_wrapper.wrapper import ResultWrapper
 from pathlib import Path
@@ -9,6 +10,11 @@ import sys
 class PreProcessor:
     def __init__(self, **kwargs):
         Path(kwargs["working_dir"]).mkdir(parents=True, exist_ok=True)
+
+        kwargs['shape']
+
+        print(kwargs['shape'])
+        sys.exit()
 
         self.downloader = Downloader(**kwargs)
         self.s1_preprocessor = S1Preprocessor(**kwargs)

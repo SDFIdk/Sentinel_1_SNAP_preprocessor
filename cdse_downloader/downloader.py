@@ -7,7 +7,9 @@ from datetime import date
 from pathlib import Path
 import sys
 import os
-
+from pyproj import Transformer
+from shapely import wkt
+from shapely.ops import transform
 
 class Downloader:
     @property
@@ -44,6 +46,9 @@ class Downloader:
                 "geometry": shape_to_wkt(self.shape),
             },
         )
+        print(len(features))
+        print(shape_to_wkt(self.shape))
+        sys.exit()
         assert (
             len(features) != 0
         ), f"## No Sentinel-1 data available between {self.start_date} and {self.end_date}!"
