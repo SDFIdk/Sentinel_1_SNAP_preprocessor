@@ -103,19 +103,19 @@ class StitchOrbitals():
 
             print(f"Mosaic created: {output_file}")
 
-        def create_pyramids(file_path):
-            """
-            Create pyramids for a GeoTIFF file using GDAL Python bindings.
-            """
-            ds = gdal.Open(file_path, gdal.GA_Update)
+        # def create_pyramids(file_path):
+        #     """
+        #     Create pyramids for a GeoTIFF file using GDAL Python bindings.
+        #     """
+        #     ds = gdal.Open(file_path, gdal.GA_Update)
             
-            if ds is None:
-                print("Failed to open file.")
-                return
+        #     if ds is None:
+        #         print("Failed to open file.")
+        #         return
             
-            ds.BuildOverviews("average", [2, 4, 8, 16, 32])
-            ds = None
-            print(f'# Pyramids created for {file_path}')
+        #     ds.BuildOverviews("average", [2, 4, 8, 16, 32])
+        #     ds = None
+        #     print(f'# Pyramids created for {file_path}')
 
         def delete_original_files(original_geotiffs):
             for geotiff in original_geotiffs: 

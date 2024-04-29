@@ -2,14 +2,13 @@ from cdsetool.query import query_features, shape_to_wkt
 from cdsetool.credentials import Credentials
 from cdsetool.download import download_features
 from cdsetool.monitor import StatusMonitor
-from datetime import date
+from sentinel_1.utils import Utils
 
 from pathlib import Path
 import sys
 import os
-from pyproj import Transformer
-from shapely import wkt
-from shapely.ops import transform
+from datetime import datetime
+from collections import Counter
 
 class Downloader:
     @property
@@ -26,8 +25,16 @@ class Downloader:
     def __init__(self, **kwargs):
         self.start_date = kwargs["start_date"]
         self.end_date = kwargs["end_date"]
-        self.shape = kwargs["shape"]
         self.working_dir = kwargs["working_dir"]
+
+        self.tmp_shape_dir = os.path.join(self.working_dir, 'tmp_shp')
+        self.shape = Utils.shape_to_crs(
+            kwargs["shape"], 
+            self.tmp_shape_dir,
+            target_crs = 'EPSG:4326'
+            )
+
+        self.verbose = kwargs.get("verbose", False)
         self.cloud_cover = kwargs.get("cloud_cover", "[0,100]").replace(" ", "")
         self.concurrency = kwargs.get("concurrency", 4)
 
@@ -46,14 +53,21 @@ class Downloader:
                 "geometry": shape_to_wkt(self.shape),
             },
         )
-        print(len(features))
-        print(shape_to_wkt(self.shape))
-        sys.exit()
+
+        if self.verbose:
+            datelist = []
+            for feature in features:
+                datelist.append(feature['properties']['startDate'])
+            self.count_dates_by_month(datelist)
+
         assert (
             len(features) != 0
         ), f"## No Sentinel-1 data available between {self.start_date} and {self.end_date}!"
+
         print(f"## {len(features)} Sentinel-1 products will be acquired")
         self.download_features(features, self.sentinel_1_safe_dir)
+        
+        Utils.safer_remove(self.tmp_shape_dir)
 
     def download_sentinel_2(self):
         features = query_features(
@@ -88,3 +102,13 @@ class Downloader:
                 },
             )
         )
+
+    def count_dates_by_month(self, dates):
+
+        date_objects = [datetime.strptime(date.split('T')[0], "%Y-%m-%d") for date in dates]            
+        month_year = [(date.year, date.month) for date in date_objects]
+        month_counts = Counter(month_year)
+        
+        print('# Data available for dates:')
+        for (year, month), count in sorted(month_counts.items()):
+            print(f"{year}-{month:02d}: {count} files")
