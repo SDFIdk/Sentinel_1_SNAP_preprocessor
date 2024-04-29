@@ -147,6 +147,21 @@ class Utils(object):
             with tempfile.NamedTemporaryFile(delete=False, suffix=".tif") as tmp_file:
                 tmp_file_path_2 = tmp_file.name
 
+            #OLD METHOD, RAM INTENSIVE
+            # with rio.open(
+            #     tmp_file_path_2,
+            #     "w",
+            #     driver="GTiff",
+            #     height=new_height,
+            #     width=new_width,
+            #     count=src.count,
+            #     dtype=str(clipped_data.dtype),
+            #     crs=crs,
+            #     nodata=-9999,
+            #     transform=new_transform,
+            # ) as dst:
+            #     dst.write(clipped_data)
+
             with rio.open(
                 tmp_file_path_2,
                 "w",
@@ -154,12 +169,16 @@ class Utils(object):
                 height=new_height,
                 width=new_width,
                 count=src.count,
-                dtype=str(clipped_data.dtype),
+                dtype=src.dtypes[0],
                 crs=crs,
                 nodata=-9999,
-                transform=new_transform,
+                transform=new_transform
             ) as dst:
-                dst.write(clipped_data)
+                for j, window in src.block_windows(1):
+                    data = src.read(window=window)
+                    new_transform = src.window_transform(window)
+                    dst.write(data, window=window)
+                    dst.set_transform(new_transform, window=window)
 
         shutil.move(tmp_file_path_2, input_file)
 

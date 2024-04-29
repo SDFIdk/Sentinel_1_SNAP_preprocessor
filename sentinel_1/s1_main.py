@@ -59,13 +59,13 @@ class S1Preprocessor:
         # SnapExecutor(self.safe_dir, self.geotiff_dir, self.gpt_exe, self.pre_process_graph, threads = 6).run()
 
         if self.orbital_stitch: StitchOrbitals(self.geotiff_dir).run()
-        print('# TEST ENDED')
-        sys.exit()
-
 
         SplitPolarizations(
-            self.geotiff_dir, self.shape, self.polarization, self.crs
+            self.geotiff_dir, self.shape, self.polarization, self.crs, self.orbital_stitch
         ).run()
+
+        print('# TEST ENDED')
+        sys.exit()
 
         AlignRaster(input_dir=self.geotiff_dir).run()
         LandSeaMask(self.geotiff_dir, self.land_polygon).run()

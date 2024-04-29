@@ -11,7 +11,7 @@ from sentinel_1.tools.tool import Tool
 
 
 class SplitPolarizations(Tool):
-    def __init__(self, input_dir, shape, polarization, crs, output_dir=False, threads = 1):
+    def __init__(self, input_dir, shape, polarization, crs, orbital_stitch=False, output_dir=False, threads = 1):
         self.input_dir = input_dir
         if output_dir:
             self.output_dir = output_dir
@@ -21,6 +21,7 @@ class SplitPolarizations(Tool):
         self.polarization = polarization
         self.crs = crs
         self.threads = threads
+        self.orbital_stitch = orbital_stitch
 
     def printer(self):
         print(f"## Splitting polarization bands...")
@@ -63,6 +64,7 @@ class SplitPolarizations(Tool):
         def band_names_from_snap_geotiff(input_file, tag=65000):
             # 65000 is standard geotiff tag for metadata xml
             with tifffile.TiffFile(input_file) as tif:
+                print(input_file)
                 tree = tif.pages[0].tags[tag].value
                 assert (
                     tree
@@ -90,7 +92,8 @@ class SplitPolarizations(Tool):
         orbit_direction = get_orbital_direction(input_file)
 
         # Clipping file down here saves a lot of compute
-        Utils.clip_256_single(input_file, self.shape, self.crs)
+        if not self.orbital_stitch:
+            Utils.clip_256_single(input_file, self.shape, self.crs)
 
         with rio.open(input_file) as src:
             meta = src.meta.copy()

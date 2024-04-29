@@ -29,7 +29,7 @@ location_list = [
     # ('J:/javej/geus_total_rerun/skjern_2024/', "shapes/skjern/POLYGON.shp", "2024-01-11", "2024-01-25"),
     # ('J:/javej/geus_total_rerun/sneum_2024/', "shapes/sneum_aa/POLYGON.shp", "2024-01-11", "2024-01-25"),
     # ('J:/javej/geus_total_rerun/varde_2024/', "shapes/varde/POLYGON.shp", "2024-01-11", "2024-01-25"),
-    ('TEST_DATA/', "shapes/whole_dk/POLYGON.shp", "2021-01-11", "2021-01-13")
+    ('TEST_DATA/', "shapes/varde/POLYGON.shp", "2021-01-11", "2021-01-13")
     ]
 
 for location_data in location_list:
