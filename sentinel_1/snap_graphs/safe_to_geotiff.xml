@@ -19,7 +19,7 @@
     </sources>
     <parameters class="com.bc.ceres.binding.dom.XppDomElement">
       <file>${outputSafeFile}</file>
-      <formatName>NetCDF4-CF</formatName>
+      <formatName>GeoTIFF-BigTIFF</formatName>
     </parameters>
   </node>
   <applicationData id="Presentation">

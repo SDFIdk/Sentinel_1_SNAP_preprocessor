@@ -2,6 +2,7 @@
 __pycache__/
 input/
 output/
+shapes/
 tmp
 tmp*
 
@@ -20,3 +21,4 @@ tmp*
 *.log
 *.7z
 *.aux.xml
+*myGraph.xml
