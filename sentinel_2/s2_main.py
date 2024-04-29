@@ -46,3 +46,7 @@ class S2Preprocessor:
         preprocessor.remove_empty_files(self.max_empty)
 
         preprocessor.result_mover(self.geotiff_dir, self.sentinel_2_output)
+
+        #TEMPORARY WORKAROUND
+        import shutil
+        shutil.rmtree("sentinel_2_temp_dir/")

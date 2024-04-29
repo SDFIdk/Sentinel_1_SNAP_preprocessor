@@ -18,6 +18,10 @@ class Preprocessor(object):
         # self.output_dir = output_dir + 'unprocessed_geotiffs/'
         self.tmp = "tmp/"
 
+        # #TEMPORARY WORKAROUND
+        # self.input_dir = os.path.join("sentinel_2_temp_dir/", "sentinel_2", "safe") 
+        # self.output_dir = os.path.join("sentinel_2_temp_dir/", "sentinel_2", "geotiff") 
+
         Utils.check_create_folder(self.input_dir)
         Utils.check_create_folder(self.output_dir)
 
