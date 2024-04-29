@@ -24,7 +24,7 @@ class Clip256(Tool):
         Takes shape, crs and input_dir
         """
         self.shape = Utils.shape_to_crs(
-            shape=self.shape, input_file=input_file, output_dir=self.input_dir
+            shape=self.shape, crs_geotiff=input_file, output_shape=self.input_dir
         )
         ds = ogr.Open(self.shape)
         layer = ds.GetLayer()

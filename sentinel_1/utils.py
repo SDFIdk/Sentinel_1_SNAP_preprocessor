@@ -1,9 +1,8 @@
 import zipfile
-from osgeo import gdal, osr, ogr
+from osgeo import gdal, ogr
 import os
 import sys
 import geopandas as gpd
-import numpy as np
 from pathlib import Path
 import glob
 import shutil
@@ -13,9 +12,9 @@ import tempfile
 import rasterio as rio
 from rasterio.windows import Window
 from rasterio.enums import Compression
-from rasterio.features import geometry_mask
 import xml.etree.ElementTree as ET
 import tifffile
+import time
 
 
 class Utils(object):
@@ -82,31 +81,52 @@ class Utils(object):
     def remove_folder(folder):
         shutil.rmtree(folder)
 
-    def shape_to_crs(shape, input_file, output_dir):
+    def shape_to_crs(shape, output_shape, crs_geotiff = False, target_crs = False):
         gdf = gpd.read_file(shape)
 
-        geotiff_crs = rio.open(input_file).crs
+        assert (crs_geotiff != target_crs), (
+            "Only provide either crs_geotiff or target_crs!"
+        )
 
-        gdf_warp = gdf.to_crs(geotiff_crs)
+        if crs_geotiff: target_crs = rio.open(crs_geotiff).crs
 
-        new_shape_dir = os.path.join(output_dir, "crs_corrected_shape/")
-        Path(new_shape_dir).mkdir(exist_ok=True)
+        gdf_warp = gdf.to_crs(target_crs)
+
+        new_shape_dir = os.path.join(output_shape, "crs_corrected_shape/")
+        Path(new_shape_dir).mkdir(exist_ok=True, parents=True)
 
         output_shape = new_shape_dir + "new_" + os.path.basename(shape)
         gdf_warp.to_file(output_shape)
 
         return output_shape
     
+    def safer_remove(path):
+        """Attempt to remove a file or directory with retries for locked files."""
+        max_retries = 5
+        retry_delay = 1  # one second
+
+        for _ in range(max_retries):
+            try:
+                if os.path.isdir(path):
+                    shutil.rmtree(path)
+                elif os.path.isfile(path):
+                    os.remove(path)
+                break
+            except Exception as e:
+                print(f"# Warning: failed to delete {path} due to {e}")
+                time.sleep(retry_delay)
+        else:
+            print(f"# Error: could not delete {path} after {max_retries} retries.")
 
     def clip_256_single(input_file, shape, crs):
         """
         Clips a geotiff to a rasters extent, padded to output a resolution divisible by 256
         Takes shape, crs and input_dir
         """
-        shape = Utils.shape_to_crs(
-            shape, input_file, output_dir=os.path.dirname(input_file)
+        crs_corrected_shape = Utils.shape_to_crs(
+            shape, output_shape=os.path.dirname(input_file), crs_geotiff=input_file
         )
-        ds = ogr.Open(shape)
+        ds = ogr.Open(crs_corrected_shape)
         layer = ds.GetLayer()
         extent = layer.GetExtent()
         minX, maxX, minY, maxY = extent
@@ -120,7 +140,7 @@ class Utils(object):
 
         warp_options = gdal.WarpOptions(
             outputBounds=[minX, minY, maxX, maxY],
-            cutlineDSName=shape,
+            cutlineDSName=crs_corrected_shape,
             cropToCutline=True,
             dstNodata=nodata_value,
             srcSRS=src_srs,
@@ -181,6 +201,9 @@ class Utils(object):
                     dst.set_transform(new_transform, window=window)
 
         shutil.move(tmp_file_path_2, input_file)
+
+        Utils.safer_remove(crs_corrected_shape)
+
 
     # -----------------------------BELOW: MOVE TO SEPERATE FILES-----------------------------
 
