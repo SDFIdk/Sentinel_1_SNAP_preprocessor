@@ -20,9 +20,8 @@ pre_process_graph = "sentinel_1/snap_graphs/preprocessing_workflow_2023_incidenc
 gpt_exe = 'C:/Users/b025527/AppData/Local/snap/bin/gpt.exe'
 
 location_list = [
-    # ('J:/javej/geus_total_rerun/holstebro_2015/', "shapes/holstebro/POLYGON.shp", "2015-11-20", "2015-12-13"),
+    ('J:/javej/geus_total_rerun/holstebro_2015/', "shapes/holstebro/POLYGON.shp", "2015-11-20", "2015-12-13"),
     # ('J:/javej/geus_total_rerun/holstebro_2022/', "shapes/holstebro/POLYGON.shp", "2022-12-18", "2023-01-13"),
-    # ('J:/javej/geus_total_rerun/kolding_2020/', "shapes/kolding/POLYGON.shp", "2020-02-03", "2020-02-28"),
     # ('J:/javej/geus_total_rerun/odense_2022/', "shapes/stavis_odense/POLYGON.shp", "2022-02-09", "2022-03-05"),
     # ('J:/javej/geus_total_rerun/ribe_2024/', "shapes/ribe/POLYGON.shp", "2024-01-11", "2024-01-25"),
     # ('J:/javej/geus_total_rerun/ribe_2020/', "shapes/ribe/POLYGON.shp", "2020-02-01", "2020-05-01"),
@@ -31,6 +30,8 @@ location_list = [
     # ('J:/javej/geus_total_rerun/varde_2024/', "shapes/varde/POLYGON.shp", "2024-01-11", "2024-01-25"),
     ('TEST_DATA/', "shapes/varde/POLYGON.shp", "2021-01-11", "2021-01-13")
     ]
+
+#REACTIVATE DOWNLOADERS AND SNAP EXECUTOR
 
 for location_data in location_list:
     working_dir, shape, start_date, end_date = location_data
@@ -44,7 +45,7 @@ for location_data in location_list:
         end_date=end_date,
         pre_process_graph=pre_process_graph,
         denoise_mode="mean",
-        max_cloud_pct=100,
+        max_cloud_pct=80,
         result_dir=result_dir,
         # gpt_exe=gpt_exe
         orbital_stitch = True

@@ -8,17 +8,11 @@ from sentinel_2.s2_preprocessing import Preprocessor
 class S2Preprocessor:
     @property
     def safe_dir(self):
-        # return os.path.join(self.working_dir, "sentinel_2", "safe")
-
-        #TEMPORARY WORKAROUND
-        return os.path.join("sentinel_2_temp_dir/", "sentinel_2", "geotiff") 
+        return os.path.join(self.working_dir, "sentinel_2", "safe")
 
     @property
     def geotiff_dir(self):
-        # return os.path.join(self.working_dir, "sentinel_2", "geotiff")
-
-        #TEMPORARY WORKAROUND
-        return os.path.join("sentinel_2_temp_dir/", "sentinel_2", "geotiff") 
+        return os.path.join(self.working_dir, "sentinel_2", "geotiff")
 
     @property
     def sentinel_2_output(self):
@@ -52,3 +46,7 @@ class S2Preprocessor:
         preprocessor.remove_empty_files(self.max_empty)
 
         preprocessor.result_mover(self.geotiff_dir, self.sentinel_2_output)
+
+        #TEMPORARY WORKAROUND
+        import shutil
+        shutil.rmtree("sentinel_2_temp_dir/")
