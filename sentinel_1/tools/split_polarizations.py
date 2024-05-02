@@ -74,20 +74,27 @@ class SplitPolarizations(Tool):
 
                 data_bands = []
                 incidence_bands = []
-                for i, data_file in enumerate(data_access.findall("Data_File")):
+
+                i = 1
+                for data_file in data_access.findall("Data_File"):
                     band_name = data_file.find("DATA_FILE_PATH").get("href")
                     band_name = os.path.splitext(os.path.basename(band_name))[0]
 
                     if "VV" in band_name or "VH" in band_name:
-                        data_bands.append((i + 1, band_name))
-                    else:
-                        incidence_bands.append((i + 1, band_name))
+                        data_bands.append((i , band_name))
+                        i += 1
+                    elif band_name == 'incidenceAngleFromEllipsoid':
+                        # HARD CODED CHECK FOR SPECIC INCIDENCE ANGLE, REQUIRED BY GEUS
+                        incidence_bands.append((i, band_name))
+                        i += 1
+                        print('GOTCHA!')
 
             return data_bands, incidence_bands, root
 
         data_bands, incidence_bands, metadata_xml = band_names_from_snap_geotiff(
             input_file
         )
+
         orbit_direction = get_orbital_direction(input_file)
 
         # Clipping file down here saves a lot of compute
@@ -123,7 +130,7 @@ class SplitPolarizations(Tool):
                     dst.nodata = -9999
 
                     for i, (incidence_index, incidence_band) in enumerate(
-                        incidence_bands, start=2
+                        incidence_bands, start=len(data_bands)
                     ):
                         dst.write(src.read(incidence_index), i)
                         dst.set_band_description(i, incidence_band)

@@ -13,6 +13,8 @@ from sentinel_1.tools.sort_output import SortOutput
 from sentinel_1.tools.split_polarizations import SplitPolarizations
 from sentinel_1.tools.trim_256 import Trim256
 from sentinel_1.tools.mosaic_orbits import MosaicOrbits
+from sentinel_1.tools.stitch_orbitals import StitchOrbitals
+from sentinel_1.tools.build_pyramids import BuildPyramids
 
 class S1Preprocessor:
     @property
@@ -57,7 +59,7 @@ class S1Preprocessor:
 
         # SnapExecutor(self.safe_dir, self.geotiff_dir, self.gpt_exe, self.pre_process_graph, threads = 6).run()
 
-        if self.mosaic_orbits: MosaicOrbits(input_dir = self.geotiff_dir).run()
+        # if self.orbital_stitch: StitchOrbitals(self.geotiff_dir).run()
 
         SplitPolarizations(
             self.geotiff_dir, self.shape, self.polarization, self.crs, self.mosaic_orbits
@@ -90,6 +92,7 @@ class S1Preprocessor:
             ConvertUnit(self.geotiff_dir, "decibel", "power").run()
             AlignRaster(input_dir=self.geotiff_dir).run()
             Trim256(self.geotiff_dir).run()
+            BuildPyramids(self.geotiff_dir).run()
             SortOutput(
                 self.geotiff_dir,
                 self.sentinel_1_output,
