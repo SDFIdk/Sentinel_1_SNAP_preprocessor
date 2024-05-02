@@ -74,6 +74,16 @@ class MosaicOrbits():
                     band_names.append(os.path.splitext(os.path.basename(band_name))[0])
 
             return band_names, root       
+        
+        
+        def reintegrate_snap_xml(output_file, metadata_xml):
+            """
+            Write XML content to custom tag 65000 in a TIFF file.
+            """
+
+            with tifffile.TiffWriter(output_file, append=True) as tif:
+                tif.write(extra_tags=[(65000, 's', 0, metadata_xml, True)])
+
 
         def mosaic_large_geotiffs(file_list, output_file):
             """
@@ -100,10 +110,11 @@ class MosaicOrbits():
                             dst.write(data, window=window)
 
                     print(f"Processed and added {file} to mosaic.")
-                dst.update_tags(ns="xml", **{"TIFFT G_XMLPACKET": metadata_xml})
                 for bidx, name in enumerate(band_names, 1):
                     dst.set_band_description(bidx, name)
                 dst.no_data = -9999
+
+            reintegrate_snap_xml(output_file, metadata_xml)
 
             print(f"Mosaic created: {output_file}")
 
