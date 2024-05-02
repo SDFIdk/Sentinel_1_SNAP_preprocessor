@@ -12,7 +12,7 @@ from sentinel_1.tools.remove_empty import RemoveEmpty
 from sentinel_1.tools.sort_output import SortOutput
 from sentinel_1.tools.split_polarizations import SplitPolarizations
 from sentinel_1.tools.trim_256 import Trim256
-from sentinel_1.tools.mosaic_orbitals import MosaicOrbitals
+from sentinel_1.tools.mosaic_orbits import MosaicOrbits
 
 class S1Preprocessor:
     @property
@@ -42,7 +42,7 @@ class S1Preprocessor:
             self.denoise_modes = [self.denoise_modes]
         self.polarization = kwargs.get("polarization", ["VV", "VH"])
         self.land_polygon = kwargs.get("land_polygon", "shapes/landpolygon_1000.zip")
-        self.orbital_mosaic = kwargs.get("orbital_mosaic", False)
+        self.mosaic_orbits = kwargs.get("mosaic_orbits", False)
 
         Path(self.geotiff_dir).mkdir(parents=True, exist_ok=True)
         Path(self.sentinel_1_output).mkdir(parents=True, exist_ok=True)
@@ -53,15 +53,14 @@ class S1Preprocessor:
             self.denoise_modes = [self.denoise_modes]
 
     def s1_workflow(self):
-
         denoiser = Denoiser(self.geotiff_dir, self.shape)
 
         # SnapExecutor(self.safe_dir, self.geotiff_dir, self.gpt_exe, self.pre_process_graph, threads = 6).run()
 
-        if self.orbital_mosaic: MosaicOrbitals(self.geotiff_dir).run()
+        if self.mosaic_orbits: MosaicOrbits(input_dir = self.geotiff_dir).run()
 
         SplitPolarizations(
-            self.geotiff_dir, self.shape, self.polarization, self.crs, self.orbital_mosaic
+            self.geotiff_dir, self.shape, self.polarization, self.crs, self.mosaic_orbits
         ).run()
 
         AlignRaster(input_dir=self.geotiff_dir).run()

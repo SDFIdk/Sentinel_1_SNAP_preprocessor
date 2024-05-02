@@ -8,25 +8,29 @@ from rasterio.windows import from_bounds
 import shutil
 import tifffile
 import xml.etree.ElementTree as ET
-
-
+from sentinel_1.tools.tool import Tool
 import glob
 # from sentinel_1.utils import Utils
 
 gdal.UseExceptions()
 
-class MosaicOrbitals():
-    def __init__(self, geotiff_dir):
-        self.geotiff_dir = geotiff_dir
+class MosaicOrbits():
+    def __init__(self, input_dir):
+        self.input_dir = input_dir
+
+    def printer(self):
+        print(f"## Mosaicing files with common orbits..")
 
     def run(self):
         """
         Combines images from the same orbit on within the same day into a single image
         """
 
-        def build_metadata_dict(geotiff_dir):
+        self.printer()
+
+        def build_metadata_dict(input_dir):
             orbit_dict = {}
-            for geotiff in glob.glob(geotiff_dir + '/*.tif'):
+            for geotiff in glob.glob(input_dir + '/*.tif'):
                 geotiff_name = os.path.basename(geotiff)
 
                 if '_COMBINED_ORBIT' in geotiff_name: continue
@@ -103,28 +107,14 @@ class MosaicOrbitals():
 
             print(f"Mosaic created: {output_file}")
 
-        # def create_pyramids(file_path):
-        #     """
-        #     Create pyramids for a GeoTIFF file using GDAL Python bindings.
-        #     """
-        #     ds = gdal.Open(file_path, gdal.GA_Update)
-            
-        #     if ds is None:
-        #         print("Failed to open file.")
-        #         return
-            
-        #     ds.BuildOverviews("average", [2, 4, 8, 16, 32])
-        #     ds = None
-        #     print(f'# Pyramids created for {file_path}')
-
         def delete_original_files(original_geotiffs):
             for geotiff in original_geotiffs: 
                 try: os.remove(geotiff)
                 except: continue
 
-        original_geotiffs = glob.glob(self.geotiff_dir + '/*.tif')
+        original_geotiffs = glob.glob(self.input_dir + '/*.tif')
 
-        orbit_dict = build_metadata_dict(self.geotiff_dir)
+        orbit_dict = build_metadata_dict(self.input_dir)
         
         combine_common_orbits(orbit_dict)
 

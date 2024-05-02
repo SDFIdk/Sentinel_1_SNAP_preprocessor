@@ -30,7 +30,7 @@ class AlignRaster(Tool):
         self.reference_geotransform = reference_geotransform
 
     def printer(self):
-        print(f"## Aligning rasters..")
+        print("## Aligning rasters..")
 
     def loop(self, input_file):
         """

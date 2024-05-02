@@ -46,6 +46,6 @@ for location_data in location_list:
         max_cloud_pct=80,
         result_dir=result_dir,
         gpt_exe=gpt_exe,
-        orbital_mosaic = True,
+        mosaic_orbits = True,
     )
     pre_processor.start_workflow()
