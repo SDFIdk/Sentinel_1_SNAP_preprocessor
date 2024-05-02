@@ -25,5 +25,3 @@ class PreProcessor:
         self.wrapper.wrap_results()
 
         print('## Dataset completed!')
-
-        sys.exit()

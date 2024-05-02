@@ -26,8 +26,8 @@ class Tool:
             return Utils.file_list_from_dir(self.input_dir, "*.tif")
 
     def run(self):
-        self.setup()
         self.printer()
+        self.setup()
         if self.threads > 1:
             self._run_parallel()
         else:
