@@ -57,9 +57,9 @@ class S1Preprocessor:
 
         denoiser = Denoiser(self.geotiff_dir, self.shape)
 
-        SnapExecutor(self.safe_dir, self.geotiff_dir, self.gpt_exe, self.pre_process_graph, threads = 6).run()
+        # SnapExecutor(self.safe_dir, self.geotiff_dir, self.gpt_exe, self.pre_process_graph, threads = 6).run()
 
-        if self.orbital_stitch: StitchOrbitals(self.geotiff_dir).run()
+        # if self.orbital_stitch: StitchOrbitals(self.geotiff_dir).run()
 
         SplitPolarizations(
             self.geotiff_dir, self.shape, self.polarization, self.crs, self.orbital_stitch
