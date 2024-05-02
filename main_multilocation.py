@@ -28,7 +28,7 @@ location_list = [
     # ('J:/javej/geus_total_rerun/skjern_2024/', "shapes/skjern/POLYGON.shp", "2024-01-11", "2024-01-25"),
     # ('J:/javej/geus_total_rerun/sneum_2024/', "shapes/sneum_aa/POLYGON.shp", "2024-01-11", "2024-01-25"),
     # ('J:/javej/geus_total_rerun/varde_2024/', "shapes/varde/POLYGON.shp", "2024-01-11", "2024-01-25"),
-    ('TEST_DATA/', "shapes/landpolygon_1000/landpolygon_1000.shp", "2024-01-01", "2024-04-29"),
+    ('J:/javej/geus_orbit_mosaic_test/', "shapes/landpolygon_1000/landpolygon_1000.shp", "2024-01-01", "2024-04-29"),
     ]
 
 for location_data in location_list:
@@ -45,7 +45,7 @@ for location_data in location_list:
         denoise_mode="mean",
         max_cloud_pct=80,
         result_dir=result_dir,
-        # gpt_exe=gpt_exe
-        orbital_stitch = True
+        gpt_exe=gpt_exe,
+        orbital_mosaic = True,
     )
     pre_processor.start_workflow()

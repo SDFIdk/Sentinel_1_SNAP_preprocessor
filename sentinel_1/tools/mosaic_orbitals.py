@@ -15,7 +15,7 @@ import glob
 
 gdal.UseExceptions()
 
-class StitchOrbitals():
+class MosaicOrbitals():
     def __init__(self, geotiff_dir):
         self.geotiff_dir = geotiff_dir
 
