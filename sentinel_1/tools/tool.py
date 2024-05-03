@@ -1,7 +1,6 @@
 from concurrent.futures import ProcessPoolExecutor, wait
 from sentinel_1.utils import Utils
 
-
 class Tool:
     def __init__(self, input_dir, threads, crs):
         self.input_dir = input_dir

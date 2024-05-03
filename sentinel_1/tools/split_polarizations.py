@@ -11,7 +11,7 @@ from sentinel_1.tools.tool import Tool
 
 
 class SplitPolarizations(Tool):
-    def __init__(self, input_dir, shape, polarization, crs, orbital_stitch=False, output_dir=False, threads = 1):
+    def __init__(self, input_dir, shape, polarization, crs, mosaic_orbits=False, output_dir=False, threads = 1):
         self.input_dir = input_dir
         if output_dir:
             self.output_dir = output_dir
@@ -21,7 +21,7 @@ class SplitPolarizations(Tool):
         self.polarization = polarization
         self.crs = crs
         self.threads = threads
-        self.orbital_stitch = orbital_stitch
+        self.mosaic_orbits = mosaic_orbits
 
     def printer(self):
         print(f"## Splitting polarization bands...")
@@ -98,7 +98,7 @@ class SplitPolarizations(Tool):
         orbit_direction = get_orbital_direction(input_file)
 
         # Clipping file down here saves a lot of compute
-        if not self.orbital_stitch:
+        if not self.mosaic_orbits:
             Utils.clip_256_single(input_file, self.shape, self.crs)
 
         with rio.open(input_file) as src:

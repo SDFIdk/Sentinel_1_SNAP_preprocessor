@@ -55,7 +55,6 @@ class MosaicOrbits():
                     os.rename(common_orbit_files[0], output_file)
                 else:
                     mosaic_large_geotiffs(common_orbit_files, output_file)
-                    # create_pyramids(output_file)
 
         def extract_metadata_xml(input_file, tag=65000):
             # 65000 is standard geotiff tag for SNAP metadata xml
@@ -99,7 +98,9 @@ class MosaicOrbits():
             with rio.open(file_list[0]) as src:
                 meta = src.meta.copy()
 
+
             with rio.open(output_file, 'w', **meta) as dst:
+                breakpoint()
                 print(output_file)
                 for idx, file in enumerate(file_list):
                     with rio.open(file) as src:
