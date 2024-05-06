@@ -5,10 +5,10 @@ import shutil
 import sys
 import geopandas as gpd
 
-from sentinel_1.tools.tool import Tool
+from sentinel_1.tools.tif_tool import TifTool
 
 
-class LandSeaMask(Tool):
+class LandSeaMask(TifTool):
     def __init__(self, input_dir, land_sea_mask, threads = 1):
         self.input_dir = input_dir
         self.land_sea_mask = land_sea_mask

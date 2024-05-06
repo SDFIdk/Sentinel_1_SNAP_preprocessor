@@ -8,7 +8,7 @@ from rasterio.windows import from_bounds
 import shutil
 import tifffile
 import xml.etree.ElementTree as ET
-from sentinel_1.tools.tool import Tool
+from sentinel_1.tools.tif_tool import TifTool
 import glob
 # from sentinel_1.utils import Utils
 

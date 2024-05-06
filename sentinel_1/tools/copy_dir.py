@@ -2,11 +2,11 @@ import os
 import shutil
 import sys
 
-from sentinel_1.tools.tool import Tool
+from sentinel_1.tools.tif_tool import TifTool
 from sentinel_1.utils import Utils
 
 
-class CopyDir(Tool):
+class CopyDir(TifTool):
     def __init__(self, input_dir, copy_dir, threads = 1):
         self.input_dir = input_dir
         self.copy_dir = copy_dir

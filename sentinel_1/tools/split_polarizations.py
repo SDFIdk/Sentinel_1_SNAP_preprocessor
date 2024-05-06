@@ -7,11 +7,16 @@ from rasterio.enums import Compression
 from pathlib import Path
 from sentinel_1.utils import Utils
 
-from sentinel_1.tools.tool import Tool
+from sentinel_1.tools.tif_tool import TifTool
 
 
+<<<<<<< HEAD
 class SplitPolarizations(Tool):
     def __init__(self, input_dir, shape, polarization, crs, mosaic_orbits=False, output_dir=False, threads = 1):
+=======
+class SplitPolarizations(TifTool):
+    def __init__(self, input_dir, shape, polarization, crs, orbital_stitch=False, output_dir=False, threads = 1):
+>>>>>>> master
         self.input_dir = input_dir
         if output_dir:
             self.output_dir = output_dir
