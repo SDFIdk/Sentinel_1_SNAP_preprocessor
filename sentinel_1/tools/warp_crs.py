@@ -2,12 +2,12 @@ from osgeo import gdal
 import shutil
 import sys
 import uuid
-from sentinel_1.tools.tool import Tool
+from sentinel_1.tools.tif_tool import TifTool
 
 gdal.UseExceptions()
 
 
-class WarpCrs(Tool):
+class WarpCrs(TifTool):
     def __init__(self, input_dir, crs, threads = 1):
         self.input_dir = input_dir
         self.crs = crs
