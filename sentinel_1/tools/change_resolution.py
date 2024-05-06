@@ -15,7 +15,7 @@ class ChangeResolution(TifTool):
     def printer(self):
         print(f"## Changing resolution...")
 
-    def loop(self, input_file):
+    def process_file(self, input_file):
         """
         Resamples a raster to a new resolution
         Takes x_size and y_size (defaults to square resolution if no y)

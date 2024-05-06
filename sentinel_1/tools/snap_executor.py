@@ -64,6 +64,3 @@ class SnapExecutor(SAFETool):
             print(f"GPT exited with an error:\n{stderr.decode()}")
         else:
             print(stdout.decode())
-
-    def metadata_update(self):
-        

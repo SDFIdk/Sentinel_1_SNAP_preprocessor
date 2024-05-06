@@ -16,7 +16,7 @@ class WarpCrs(TifTool):
     def printer(self):
         print(f"## Changing CRS..")
 
-    def loop(self, input_file):
+    def process_file(self, input_file):
         """
         Warps a raster to a new crs
         Takes crs

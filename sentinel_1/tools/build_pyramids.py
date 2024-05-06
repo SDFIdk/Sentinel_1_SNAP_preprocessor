@@ -13,7 +13,7 @@ class BuildPyramids(TifTool):
     def printer(self):
         print(f"## Building pyramids...")
 
-    def loop(self, input_file):
+    def process_file(self, input_file):
 
         """
         Create pyramids for a GeoTIFF file using GDAL Python 

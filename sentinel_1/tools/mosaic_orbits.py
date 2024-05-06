@@ -8,25 +8,23 @@ from rasterio.windows import from_bounds
 import shutil
 import tifffile
 import xml.etree.ElementTree as ET
-from sentinel_1.tools.tif_tool import TifTool
+from sentinel_1.tools.safe_tool import SAFETool
 import glob
 # from sentinel_1.utils import Utils
 
 gdal.UseExceptions()
 
-class MosaicOrbits():
+class MosaicOrbits(SAFETool):
     def __init__(self, input_dir):
         self.input_dir = input_dir
 
     def printer(self):
         print(f"## Mosaicing files with common orbits..")
 
-    def run(self):
+    def process_file(self):
         """
         Combines images from the same orbit on within the same day into a single image
         """
-
-        self.printer()
 
         def build_metadata_dict(input_dir):
             orbit_dict = {}

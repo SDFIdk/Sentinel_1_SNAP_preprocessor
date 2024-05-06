@@ -5,18 +5,14 @@ import tifffile
 import xml.etree.ElementTree as ET
 from rasterio.enums import Compression
 from pathlib import Path
+
 from sentinel_1.utils import Utils
-
 from sentinel_1.tools.tif_tool import TifTool
+from sentinel_1.snap_xml_handler import ExtractMetadata
 
 
-<<<<<<< HEAD
-class SplitPolarizations(Tool):
-    def __init__(self, input_dir, shape, polarization, crs, mosaic_orbits=False, output_dir=False, threads = 1):
-=======
 class SplitPolarizations(TifTool):
-    def __init__(self, input_dir, shape, polarization, crs, orbital_stitch=False, output_dir=False, threads = 1):
->>>>>>> master
+    def __init__(self, input_dir, shape, polarization, crs, mosaic_orbits=False, output_dir=False, threads = 1):
         self.input_dir = input_dir
         if output_dir:
             self.output_dir = output_dir
@@ -31,7 +27,7 @@ class SplitPolarizations(TifTool):
     def printer(self):
         print(f"## Splitting polarization bands...")
 
-    def loop(self, input_file):
+    def process_file(self, input_file):
         """
         Splits a file with multiple polarization bands into one file per
         band with copies of auxiliary bands.

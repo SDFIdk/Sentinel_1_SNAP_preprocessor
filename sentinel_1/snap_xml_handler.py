@@ -96,9 +96,6 @@ class ExtractMetadata:
             metadata = src.tags()
             metadata.update(self.metadata_dict)
 
-            # Optionally, you can also update tags per band if needed
-            # dst.update_tags(1, **metadata)
-
 
     def run(self):
         self.snap_xml = self.get_snap_xml(self.input_file)
@@ -110,8 +107,12 @@ class ExtractMetadata:
         self.write_metadata()
 
 
+class UpdataMetadata:
 
+    def copy_metadata(input_file):
+        with rio.open(input_file, 'r+') as src:
+            return src.tags()
 
-
-
-
+    def paste_metadata(self, input_file,  metadata):
+        with rio.open(input_file, 'r+') as dst:
+            dst.update_tags(**metadata)
