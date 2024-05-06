@@ -18,7 +18,7 @@ class Clip256(TifTool):
         self.threads = threads
 
 
-    def loop(self, input_file):
+    def process_file(self, input_file):
         """
         Clips a geotiff to a rasters extent, padded to output a resolution divisible by 256
         Takes shape, crs and input_dir

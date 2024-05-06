@@ -16,7 +16,7 @@ class CopyDir(TifTool):
     def printer(self):
         print(f"## Copying rsaters...")
 
-    def loop(self, input_file):
+    def process_file(self, input_file):
         """
         Creates a copy of the directory given to it to a given location
         Takes file and copy_dir

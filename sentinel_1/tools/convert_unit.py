@@ -17,7 +17,7 @@ class ConvertUnit(TifTool):
     def printer(self):
         print(f"## Converting from {self.source_unit} to {self.destination_unit}...")
 
-    def loop(self, input_file):
+    def process_file(self, input_file):
         """
         Converts units from raw backscatter to decibel or "power transform".
         True zero_max will cap values of non linear at zero.

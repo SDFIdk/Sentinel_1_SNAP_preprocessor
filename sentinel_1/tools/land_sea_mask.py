@@ -18,7 +18,7 @@ class LandSeaMask(TifTool):
     def printer(self):
         print(f"## Applying land/sea mask...")
 
-    def loop(self, input_file):
+    def process_file(self, input_file):
         """
         Sets all values in a raster outside a polygon to noData
         Default set to the Danish Landpolygon

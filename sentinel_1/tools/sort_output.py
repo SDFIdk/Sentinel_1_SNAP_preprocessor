@@ -19,7 +19,7 @@ class SortOutput(TifTool):
     def printer(self):
         print(f"## Sorting outputs...")
 
-    def loop(self, input_file):
+    def process_file(self, input_file):
         """
         Sorts geotiffs into folder based on polarizaton and orbital direction
         Requires "create_sorted_outputs" function to be run beforehand

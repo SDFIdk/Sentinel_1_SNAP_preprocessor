@@ -1,5 +1,6 @@
 from concurrent.futures import ProcessPoolExecutor, wait
 from sentinel_1.utils import Utils
+from sentinel_1.snap_xml_handler import ExtractMetadata
 
 
 class SAFETool:
@@ -22,8 +23,8 @@ class SAFETool:
     def teardown(self):
         pass
 
-    def metadata_update(self):
-        pass
+    def metadata_update(self, input_file):
+        ExtractMetadata(input_file)
 
     def files(self):
         return Utils.file_list_from_dir(self.input_dir, "*.zip")
@@ -40,6 +41,6 @@ class SAFETool:
         for input_file in files:
             self.loop(input_file)
 
-            self.metadata_update
+            self.metadata_update(input_file)
             
             

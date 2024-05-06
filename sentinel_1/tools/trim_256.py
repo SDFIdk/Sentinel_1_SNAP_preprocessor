@@ -14,7 +14,7 @@ class Trim256(TifTool):
     def printer(self):
         print(f"## Trimming to 256...")
 
-    def loop(self, input_file):
+    def process_file(self, input_file):
         """
         Trims a dataset to a resolution divisible by 256
         """

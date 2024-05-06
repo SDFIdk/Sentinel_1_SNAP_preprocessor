@@ -1,8 +1,13 @@
 from concurrent.futures import ProcessPoolExecutor, wait
 from sentinel_1.utils import Utils
+from sentinel_1.snap_xml_handler import UpdataMetadata
+import rasterio as rio
 
 
 class TifTool:
+    """
+    Tool category for Sentinel-1 GeoTIFFs derived from SNAP
+    """
     def __init__(self, input_dir, threads, crs):
         self.input_dir = input_dir
         self.threads = threads
@@ -13,7 +18,12 @@ class TifTool:
     def printer(self):
         pass
 
-    def loop(self, input_object):
+    def loop(self, input_file):
+        self.metadata = UpdataMetadata.copy_metadata(input_file)
+        self.process_file(input_file)
+        UpdataMetadata.paste_metadata(input_file, self.metadata)
+
+    def process_file(self, input_object):
         pass
 
     def teardown(self):
@@ -39,10 +49,10 @@ class TifTool:
         files = self.files()
 
         with ProcessPoolExecutor(self.threads) as exc:
-            futures = [exc.submit(self.loop, input_file) for input_file in files]
+            futures = [exc.submit(self.process_file, input_file) for input_file in files]
             wait(futures)
 
     def _run_linear(self):
         files = self.files()
         for input_file in files:
-            self.loop(input_file)
+            self.process_file(input_file)

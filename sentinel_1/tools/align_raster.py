@@ -32,7 +32,7 @@ class AlignRaster(TifTool):
     def printer(self):
         print("## Aligning rasters..")
 
-    def loop(self, input_file):
+    def process_file(self, input_file):
         """
         Ensures pixels in a raster are aligned to same grid.
         Requires "get_reference_geotransform" function to be run beforehand
