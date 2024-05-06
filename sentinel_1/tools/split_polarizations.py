@@ -10,8 +10,13 @@ from sentinel_1.utils import Utils
 from sentinel_1.tools.tif_tool import TifTool
 
 
+<<<<<<< HEAD
+class SplitPolarizations(Tool):
+    def __init__(self, input_dir, shape, polarization, crs, mosaic_orbits=False, output_dir=False, threads = 1):
+=======
 class SplitPolarizations(TifTool):
     def __init__(self, input_dir, shape, polarization, crs, orbital_stitch=False, output_dir=False, threads = 1):
+>>>>>>> master
         self.input_dir = input_dir
         if output_dir:
             self.output_dir = output_dir
@@ -21,7 +26,7 @@ class SplitPolarizations(TifTool):
         self.polarization = polarization
         self.crs = crs
         self.threads = threads
-        self.orbital_stitch = orbital_stitch
+        self.mosaic_orbits = mosaic_orbits
 
     def printer(self):
         print(f"## Splitting polarization bands...")
@@ -98,7 +103,7 @@ class SplitPolarizations(TifTool):
         orbit_direction = get_orbital_direction(input_file)
 
         # Clipping file down here saves a lot of compute
-        if not self.orbital_stitch:
+        if not self.mosaic_orbits:
             Utils.clip_256_single(input_file, self.shape, self.crs)
 
         with rio.open(input_file) as src:
