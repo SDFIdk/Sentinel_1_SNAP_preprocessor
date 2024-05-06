@@ -17,7 +17,8 @@ from osgeo import gdal  # for some reason it crashes if imported in other module
 result_dir="geus_rerun_output"
 pre_process_graph = "sentinel_1/snap_graphs/preprocessing_workflow_2023_incidence_geotiff.xml"
 # pre_process_graph = "sentinel_1/snap_graphs/safe_to_geotiff.xml"
-gpt_exe = 'C:/Users/b025527/AppData/Local/snap/bin/gpt.exe'
+# gpt_exe = 'C:/Users/b307579/AppData/Local/snap/bin/gpt.exe'
+gpt_exe = 'C:/Users/b307579/AppData/Local/Programs/snap10/bin/gpt.exe'
 
 location_list = [
     # ('J:/javej/geus_total_rerun/holstebro_2015/', "shapes/holstebro/POLYGON.shp", "2015-11-20", "2015-12-13"),

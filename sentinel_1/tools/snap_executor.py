@@ -56,7 +56,6 @@ class SnapExecutor(SAFETool):
             "-PoutputSafeFile=" + output_path,
             "-q", str(self.threads)  
         ]
-
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = process.communicate()
 

@@ -110,7 +110,7 @@ class ExtractMetadata:
 class UpdataMetadata:
 
     def copy_metadata(input_file):
-        with rio.open(input_file, 'r+') as src:
+        with rio.open(input_file, 'r') as src:
             return src.tags()
 
     def paste_metadata(self, input_file,  metadata):
