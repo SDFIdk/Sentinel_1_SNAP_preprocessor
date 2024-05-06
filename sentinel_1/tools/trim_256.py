@@ -1,12 +1,12 @@
 from osgeo import gdal
 import shutil
 import sys
-from sentinel_1.tools.tool import Tool
+from sentinel_1.tools.tif_tool import TifTool
 
 gdal.UseExceptions()
 
 
-class Trim256(Tool):
+class Trim256(TifTool):
     def __init__(self, input_dir, threads = 1):
         self.input_dir = input_dir
         self.threads = threads

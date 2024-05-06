@@ -8,7 +8,6 @@ from sentinel_1.utils import Utils
 
 class SnapPreprocessor(object):
 
-
     def __init__(self, gpt_path):
         self.gpt = gpt_path
 

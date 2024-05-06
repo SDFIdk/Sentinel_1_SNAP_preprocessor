@@ -1,10 +1,10 @@
 import os
 import sys
-from sentinel_1.tools.tool import Tool
+from sentinel_1.tools.safe_tool import SAFETool
 import subprocess
 import xml.etree.ElementTree as ET
 
-class SnapExecutor(Tool):
+class SnapExecutor(SAFETool):
     """
     This script applies a SNAP graph onto a directorys worth of files
     Takes in input, output, SNAP graph and a path the the gpt.exe
@@ -16,9 +16,7 @@ class SnapExecutor(Tool):
         self.input_ext = input_ext
         self.output_dir = output_dir
         self.graph_xml = graph_xml
-        #have to run this in serial from Tool's side, as SNAP handles it own multi processing 
-        self.threads = 1
-        self.gpt_threads = threads
+        self.threads = threads
 
     def setup(self):
         """
@@ -56,7 +54,7 @@ class SnapExecutor(Tool):
             self.graph_xml,
             "-PinputSafeFile=" + input_file,
             "-PoutputSafeFile=" + output_path,
-            "-q", str(self.gpt_threads)  
+            "-q", str(self.threads)  
         ]
 
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -66,3 +64,6 @@ class SnapExecutor(Tool):
             print(f"GPT exited with an error:\n{stderr.decode()}")
         else:
             print(stdout.decode())
+
+    def metadata_update(self):
+        

@@ -4,13 +4,13 @@ import sys
 import tempfile
 import os
 from pathlib import Path
-from sentinel_1.tools.tool import Tool
+from sentinel_1.tools.tif_tool import TifTool
 from sentinel_1.utils import Utils
 import rasterio as rio
 from rasterio.windows import Window
 
 
-class Clip256(Tool):
+class Clip256(TifTool):
     def __init__(self, input_data, shape, crs, threads = 1):
         self.input_dir = input_data
         self.shape = shape

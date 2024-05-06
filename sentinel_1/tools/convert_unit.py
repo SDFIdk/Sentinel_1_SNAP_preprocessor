@@ -2,10 +2,10 @@ import sys
 import rasterio as rio
 import numpy as np
 
-from sentinel_1.tools.tool import Tool
+from sentinel_1.tools.tif_tool import TifTool
 
 
-class ConvertUnit(Tool):
+class ConvertUnit(TifTool):
     def __init__(self, input_dir, source_unit, destination_unit, zero_max=False, threads = 1):
         self.input_dir = input_dir
         self.source_unit = source_unit

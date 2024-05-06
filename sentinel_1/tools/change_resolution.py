@@ -2,10 +2,10 @@ from osgeo import gdal
 import shutil
 import sys
 import uuid
-from sentinel_1.tools.tool import Tool
+from sentinel_1.tools.tif_tool import TifTool
 
 
-class ChangeResolution(Tool):
+class ChangeResolution(TifTool):
     def __init__(self, input_dir, resolution, threads = 1):
         self.input_dir = input_dir
         self.resolution = resolution
