@@ -53,3 +53,5 @@ class Trim256(TifTool):
         out_band = None
 
         shutil.move(temp_output_path, input_file)
+
+        return input_file

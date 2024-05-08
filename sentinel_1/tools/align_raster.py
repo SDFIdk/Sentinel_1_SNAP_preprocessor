@@ -52,3 +52,5 @@ class AlignRaster(TifTool):
         )
 
         shutil.move(tmp_file_path, input_file)
+
+        return input_file

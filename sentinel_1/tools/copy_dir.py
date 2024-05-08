@@ -14,7 +14,7 @@ class CopyDir(TifTool):
 
 
     def printer(self):
-        print(f"## Copying rsaters...")
+        print(f"## Copying rasters...")
 
     def process_file(self, input_file):
         """
@@ -26,3 +26,5 @@ class CopyDir(TifTool):
 
         copy_file = self.copy_dir + os.path.basename(input_file)
         shutil.copyfile(input_file, copy_file)
+
+        return input_file

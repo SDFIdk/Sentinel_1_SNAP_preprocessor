@@ -29,7 +29,6 @@ class ConvertUnit(TifTool):
                 dataset = src.read(1)
                 zero_max_func(dataset)
                 src.write(dataset, 1)
-            return
 
         def zero_max_func(dataset):
             dataset[dataset > 0] = 0
@@ -60,7 +59,7 @@ class ConvertUnit(TifTool):
         if self.source_unit == self.destination_unit and self.zero_max:
             assert self.source_unit != "linear", "## Cannot set linear values to zero!"
             only_zero_max_conversion(input_file)
-            return
+            return input_file
 
         zero_max_out = False
         if self.zero_max and self.source_unit == "linear":
@@ -78,3 +77,5 @@ class ConvertUnit(TifTool):
                 dataset, linear_to_dest[self.destination_unit], zero_max_out
             )
             src.write(dataset, 1)
+
+        return input_file

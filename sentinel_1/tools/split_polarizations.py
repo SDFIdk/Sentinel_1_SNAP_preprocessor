@@ -8,7 +8,6 @@ from pathlib import Path
 
 from sentinel_1.utils import Utils
 from sentinel_1.tools.tif_tool import TifTool
-from sentinel_1.snap_xml_handler import ExtractMetadata
 
 
 class SplitPolarizations(TifTool):
@@ -91,18 +90,19 @@ class SplitPolarizations(TifTool):
                         print('GOTCHA!')
 
             return data_bands, incidence_bands, root
-
-        data_bands, incidence_bands, metadata_xml = band_names_from_snap_geotiff(
-            input_file
-        )
-
-        orbit_direction = get_orbital_direction(input_file)
+        
+        # data_bands, incidence_bands, metadata_xml = band_names_from_snap_geotiff(
+        #     input_file
+        # )
+        # orbit_direction = get_orbital_direction(input_file)
 
         # Clipping file down here saves a lot of compute
         if not self.mosaic_orbits:
             Utils.clip_256_single(input_file, self.shape, self.crs)
 
         with rio.open(input_file) as src:
+            print(src.tags())
+            sys.exit()
             meta = src.meta.copy()
             meta.update(
                 count=src.count - (len(self.polarization) - 1),
@@ -115,6 +115,7 @@ class SplitPolarizations(TifTool):
                 for item in get_band_polarization(pol, data_bands)
             ]
 
+            output_filenames = []
             for i, (data_index, data_band) in enumerate(selected_data_bands, start=1):
                 band_info = data_band + "_" + orbit_direction
                 filename = (
@@ -127,7 +128,6 @@ class SplitPolarizations(TifTool):
                 with rio.open(output_geotiff, "w", **meta) as dst:
                     dst.write(src.read(data_index), 1)
                     dst.set_band_description(1, data_band)
-                    dst.update_tags(ns="xml", **{"TIFFTAG_XMLPACKET": metadata_xml})
                     dst.nodata = -9999
 
                     for i, (incidence_index, incidence_band) in enumerate(

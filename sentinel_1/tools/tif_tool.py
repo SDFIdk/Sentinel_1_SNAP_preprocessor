@@ -1,6 +1,6 @@
 from concurrent.futures import ProcessPoolExecutor, wait
 from sentinel_1.utils import Utils
-from sentinel_1.snap_xml_handler import UpdataMetadata
+from sentinel_1.metadata_utils import UpdataMetadata
 import rasterio as rio
 
 
@@ -18,10 +18,10 @@ class TifTool:
     def printer(self):
         pass
 
-    def loop(self, input_file):
+    def metadata_process_file(self, input_file):
         self.metadata = UpdataMetadata.copy_metadata(input_file)
-        self.process_file(input_file)
-        UpdataMetadata.paste_metadata(input_file, self.metadata)
+        new_filename = self.process_file(input_file)
+        UpdataMetadata.paste_metadata(new_filename, self.metadata)
 
     def process_file(self, input_object):
         pass
@@ -30,10 +30,7 @@ class TifTool:
         pass
 
     def files(self):
-        if 'safe' in self.input_dir:
-            return Utils.file_list_from_dir(self.input_dir, "*.zip")
-        else:
-            return Utils.file_list_from_dir(self.input_dir, "*.tif")
+        return Utils.file_list_from_dir(self.input_dir, "*.tif")
 
     def run(self):
         self.printer()
@@ -49,10 +46,10 @@ class TifTool:
         files = self.files()
 
         with ProcessPoolExecutor(self.threads) as exc:
-            futures = [exc.submit(self.process_file, input_file) for input_file in files]
+            futures = [exc.submit(self.metadata_process_file, input_file) for input_file in files]
             wait(futures)
 
     def _run_linear(self):
         files = self.files()
         for input_file in files:
-            self.process_file(input_file)
+            self.metadata_process_file(input_file)

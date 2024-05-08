@@ -109,10 +109,31 @@ class ExtractMetadata:
 
 class UpdataMetadata:
 
+    # needs to take account of name changes of files as well as the possibility of files disappearing.
+    # files should submit their new names as they finish processing. The two should be handed to the paste function
+
+    # old filenames can be a list, which should then be ordered and metadata from the youngest should be 
+    # used inserted to new_name
+
+    #THIS REQUIRES AN UPDATE TO ALL TIFFTOOLS
+
+    #IF NONE IS RETURNED, THE FILE IS CONSIDERED DELETED AND SHOULD JUST BE SKIPPED
+
+    #IF A TOOL RETURNS MULTIPLE FILES, BOTH SHOULD BE RETURNED AS A LIST AND METADATA PASTED INTO BOTH
+
+    # in theory all of this metadata handling can absorb many of the args which needs to be passed into the 
+    # file sorter...
+
     def copy_metadata(input_file):
+        # if a file list is given, take metadata for the youngest
         with rio.open(input_file, 'r') as src:
             return src.tags()
 
     def paste_metadata(self, input_file,  metadata):
-        with rio.open(input_file, 'r+') as dst:
-            dst.update_tags(**metadata)
+        if not input_file: return
+        if not isinstance(input_file, list): 
+            input_file = [input_file]
+
+        for geotiff in input_file:
+            with rio.open(geotiff, 'r+') as dst:
+                dst.update_tags(**metadata)

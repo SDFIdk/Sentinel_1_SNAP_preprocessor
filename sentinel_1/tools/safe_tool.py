@@ -1,6 +1,6 @@
 from concurrent.futures import ProcessPoolExecutor, wait
 from sentinel_1.utils import Utils
-from sentinel_1.snap_xml_handler import ExtractMetadata
+from sentinel_1.metadata_utils import ExtractMetadata
 
 
 class SAFETool:
