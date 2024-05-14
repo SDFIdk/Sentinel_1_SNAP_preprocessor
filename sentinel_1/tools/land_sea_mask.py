@@ -48,3 +48,5 @@ class LandSeaMask(TifTool):
             with rio.open(tmp_geotiff, "w", **new_meta) as dst:
                 dst.write(raster_data, 1)
         shutil.move(tmp_geotiff, input_file)
+
+        return input_file

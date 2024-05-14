@@ -82,3 +82,5 @@ class Clip256(TifTool):
                 dst.write(clipped_data)
 
         shutil.move(tmp_file_path_2, input_file)
+
+        return input_file

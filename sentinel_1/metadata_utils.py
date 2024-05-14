@@ -22,7 +22,7 @@ class ExtractMetadata:
         self.input_file = input_file
         self.metadata_dict = {}
 
-    def get_snap_xml(self, input_file):
+    def get_snap_xml(self):
         """
         Extract metadata xml
         """
@@ -30,11 +30,11 @@ class ExtractMetadata:
         # SNAP stores metadata in xml format in tag 65000
         tag = 65000
 
-        with tifffile.TiffFile(input_file) as tif:
+        with tifffile.TiffFile(self.input_file) as tif:
             tree = tif.pages[0].tags[tag].value
             assert (
                 tree
-            ), f"# {input_file} does not contain SNAP assocaited metadata!"
+            ), f"# {self.input_file} does not contain SNAP assocaited metadata!"
 
             self.snap_xml = tree
 
@@ -90,29 +90,33 @@ class ExtractMetadata:
         self.metadata_dict['orbit_number'] = self.input_file[48:54]
 
     def write_metadata(self):
-
+        """
+        Write dict to metadata
+        """
         with rio.open(self.input_file, 'r+') as src:
-
-            metadata = src.tags()
-            metadata.update(self.metadata_dict)
-
+            src.update_tags(**self.metadata_dict)
 
     def run(self):
-        self.snap_xml = self.get_snap_xml(self.input_file)
-
+        self.get_snap_xml()
         self.get_orbital_direction()
         self.get_band_info()
         self.get_orbit_number()
-
         self.write_metadata()
-
 
 class UpdataMetadata:
 
     def copy_metadata(input_file):
+        if isinstance(input_file, list):
+            input_file = input_file[0]
+
         with rio.open(input_file, 'r') as src:
             return src.tags()
 
     def paste_metadata(self, input_file,  metadata):
-        with rio.open(input_file, 'r+') as dst:
-            dst.update_tags(**metadata)
+        if not input_file: return
+        if not isinstance(input_file, list): 
+            input_file = [input_file]
+
+        for geotiff in input_file:
+            with rio.open(geotiff, 'r+') as dst:
+                dst.update_tags(**metadata)

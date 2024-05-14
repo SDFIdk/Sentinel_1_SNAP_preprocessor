@@ -39,7 +39,7 @@ for location_data in location_list:
     working_dir, shape, start_date, end_date = location_data
 
     pre_processor = PreProcessor(
-        threads = 4,
+        threads = 1,
         working_dir=working_dir,
         crs="EPSG:25832",
         shape=shape,

@@ -23,7 +23,7 @@ class ChangeResolution(TifTool):
 
         gdal_dataset = gdal.Open(input_file)
 
-        output_file = str(uuid.uuid4()) + ".tif"
+        tmp_output_file = str(uuid.uuid4()) + ".tif"
 
         warp_options = gdal.WarpOptions(
             xRes=self.resolution,
@@ -31,8 +31,10 @@ class ChangeResolution(TifTool):
             resampleAlg="near",
             format="GTiff",
         )
-        output_raster = gdal.Warp(output_file, gdal_dataset, options=warp_options)
+        output_raster = gdal.Warp(tmp_output_file, gdal_dataset, options=warp_options)
         gdal_dataset = None
         output_raster = None
 
-        shutil.move(output_file, input_file)
+        shutil.move(tmp_output_file, input_file)
+
+        return input_file

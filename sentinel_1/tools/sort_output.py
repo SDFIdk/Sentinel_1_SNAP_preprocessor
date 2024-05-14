@@ -39,4 +39,5 @@ class SortOutput(TifTool):
         Utils.check_create_folder(sort_dir)
         sort_filename = os.path.join(sort_dir, os.path.basename(input_file))
         shutil.copyfile(input_file, sort_filename)
-        return
+        
+        return None

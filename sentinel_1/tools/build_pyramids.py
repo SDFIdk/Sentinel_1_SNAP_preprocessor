@@ -27,3 +27,5 @@ class BuildPyramids(TifTool):
         
         ds.BuildOverviews("average", [2, 4, 8, 16, 32])
         ds = None
+
+        return input_file

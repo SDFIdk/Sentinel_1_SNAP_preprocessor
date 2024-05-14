@@ -24,6 +24,7 @@ class RemoveEmpty(TifTool):
             data = src.read(1)
 
             if not np.all(np.isnan(data)):
-                return
+                return input_file
 
             os.remove(input_file)
+            return None

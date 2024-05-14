@@ -1,14 +1,11 @@
 import os
 import sys
 import rasterio as rio
-import tifffile
-import xml.etree.ElementTree as ET
 from rasterio.enums import Compression
 from pathlib import Path
 
 from sentinel_1.utils import Utils
 from sentinel_1.tools.tif_tool import TifTool
-from sentinel_1.snap_xml_handler import ExtractMetadata
 
 
 class SplitPolarizations(TifTool):
@@ -34,71 +31,19 @@ class SplitPolarizations(TifTool):
         Takes output_dir, polarization and crs
         """
 
-        def get_orbital_direction(input_file, tag=65000):
-            # 65000 is standard geotiff tag for SNAP metadata xml
-            with tifffile.TiffFile(input_file) as tif:
-                tree = tif.pages[0].tags[tag].value
-                assert (
-                    tree
-                ), f"# {input_file} does not contain SNAP assocaited metadata!"
-
-                root = ET.fromstring(tree)
-                metadata = root.findall("Dataset_Sources")[0][0][0]
-
-                for mdattr in metadata.findall("MDATTR"):
-                    if not mdattr.get("name") == "PASS":
-                        continue
-
-                    orbital_direction = mdattr.text
-                    if orbital_direction == "ASCENDING":
-                        return "ASC"
-                    elif orbital_direction == "DESCENDING":
-                        return "DSC"
-
         def get_band_polarization(pol, data_bands):
             data_matches = []
             for i, band in enumerate(data_bands):
                 if pol in band[1]:
                     data_matches.append((i + 1, pol))
             return data_matches
-
-        def band_names_from_snap_geotiff(input_file, tag=65000):
-            # 65000 is standard geotiff tag for metadata xml
-            with tifffile.TiffFile(input_file) as tif:
-                try: tree = tif.pages[0].tags[tag].value
-                except: Exception (
-                    f"No tag 65000 found in {input_file}!"
-                )
-
-                root = ET.fromstring(tree)
-                data_access = root.findall("Data_Access")[0]
-
-                data_bands = []
-                incidence_bands = []
-
-                i = 1
-                for data_file in data_access.findall("Data_File"):
-                    band_name = data_file.find("DATA_FILE_PATH").get("href")
-                    band_name = os.path.splitext(os.path.basename(band_name))[0]
-
-                    if "VV" in band_name or "VH" in band_name:
-                        data_bands.append((i , band_name))
-                        i += 1
-                    elif band_name == 'incidenceAngleFromEllipsoid':
-                        # HARD CODED CHECK FOR SPECIC INCIDENCE ANGLE, REQUIRED BY GEUS
-                        incidence_bands.append((i, band_name))
-                        i += 1
-                        print('GOTCHA!')
-
-            return data_bands, incidence_bands, root
-
-        data_bands, incidence_bands, metadata_xml = band_names_from_snap_geotiff(
-            input_file
-        )
-
-        orbit_direction = get_orbital_direction(input_file)
+        
+        data_bands = Utils.extract_from_metadata(input_file, 'data_bands')
+        incidence_bands = Utils.extract_from_metadata(input_file, 'data_bands')
+        orbit_direction = Utils.extract_from_metadata(input_file, 'data_bands')
 
         # Clipping file down here saves a lot of compute
+        # WITH METADATA NOW BEING HANDLED BY THE TOOL, CLIPPING CAN BE OUTSOURCED.
         if not self.mosaic_orbits:
             Utils.clip_256_single(input_file, self.shape, self.crs)
 
@@ -115,6 +60,7 @@ class SplitPolarizations(TifTool):
                 for item in get_band_polarization(pol, data_bands)
             ]
 
+            output_filenames = []
             for i, (data_index, data_band) in enumerate(selected_data_bands, start=1):
                 band_info = data_band + "_" + orbit_direction
                 filename = (
@@ -122,12 +68,12 @@ class SplitPolarizations(TifTool):
                     + band_info
                     + "_band.tif"
                 )
+                output_filenames.append(filename)
                 output_geotiff = os.path.join(self.output_dir, filename)
 
                 with rio.open(output_geotiff, "w", **meta) as dst:
                     dst.write(src.read(data_index), 1)
                     dst.set_band_description(1, data_band)
-                    dst.update_tags(ns="xml", **{"TIFFTAG_XMLPACKET": metadata_xml})
                     dst.nodata = -9999
 
                     for i, (incidence_index, incidence_band) in enumerate(
@@ -138,3 +84,5 @@ class SplitPolarizations(TifTool):
 
         if self.input_dir == self.output_dir:
             os.remove(input_file)
+
+        return output_filenames

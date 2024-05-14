@@ -38,3 +38,5 @@ class WarpCrs(TifTool):
         )
         gdal.Warp(output_file, gdal_dataset, options=options)
         shutil.move(output_file, input_file)
+
+        return input_file
