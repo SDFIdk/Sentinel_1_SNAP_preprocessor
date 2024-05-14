@@ -24,7 +24,7 @@ class SAFETool:
         pass
 
     def metadata_update(self, input_file):
-        ExtractMetadata(input_file)
+        ExtractMetadata(input_file).run()
 
     def files(self):
         return Utils.file_list_from_dir(self.input_dir, "*.zip")
