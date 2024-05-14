@@ -11,9 +11,6 @@ import pyproj
 import tempfile
 import rasterio as rio
 from rasterio.windows import Window
-from rasterio.enums import Compression
-import xml.etree.ElementTree as ET
-import tifffile
 import time
 
 

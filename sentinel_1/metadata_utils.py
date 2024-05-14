@@ -52,11 +52,9 @@ class ExtractMetadata:
 
             orbital_direction = mdattr.text
             if orbital_direction == "ASCENDING":
-                return "ASC"
+                self.metadata_dict['orbital_direction'] = "ASC"
             elif orbital_direction == "DESCENDING":
-                return "DSC"
-            
-        self.metadata_dict['orbital_direction'] = orbital_direction
+                self.metadata_dict['orbital_direction'] = "DSC"
 
     def get_band_info(self):
 
@@ -95,6 +93,7 @@ class ExtractMetadata:
         """
         with rio.open(self.input_file, 'r+') as src:
             src.update_tags(**self.metadata_dict)
+            print(src.tags())
 
     def run(self):
         self.get_snap_xml()
@@ -120,3 +119,11 @@ class UpdataMetadata:
         for geotiff in input_file:
             with rio.open(geotiff, 'r+') as dst:
                 dst.update_tags(**metadata)
+
+# if __name__ == '__main__':
+#     import glob
+#     files = glob.glob('TEST_DATA/sentinel_1/geotiff/*.tif')
+#     print(files)
+
+#     for f in files:
+#         ExtractMetadata(f).run()

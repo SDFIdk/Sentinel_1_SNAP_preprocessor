@@ -3,6 +3,7 @@ import sys
 import rasterio as rio
 from rasterio.enums import Compression
 from pathlib import Path
+import ast
 
 from sentinel_1.utils import Utils
 from sentinel_1.tools.tif_tool import TifTool
@@ -36,11 +37,12 @@ class SplitPolarizations(TifTool):
             for i, band in enumerate(data_bands):
                 if pol in band[1]:
                     data_matches.append((i + 1, pol))
+
             return data_matches
         
-        data_bands = Utils.extract_from_metadata(input_file, 'data_bands')
-        incidence_bands = Utils.extract_from_metadata(input_file, 'data_bands')
-        orbit_direction = Utils.extract_from_metadata(input_file, 'data_bands')
+        data_bands = ast.literal_eval(Utils.extract_from_metadata(input_file, 'data_bands'))
+        incidence_bands = ast.literal_eval(Utils.extract_from_metadata(input_file, 'incidence_bands'))
+        orbital_direction = Utils.extract_from_metadata(input_file, 'orbital_direction')
 
         # Clipping file down here saves a lot of compute
         # WITH METADATA NOW BEING HANDLED BY THE TOOL, CLIPPING CAN BE OUTSOURCED.
@@ -62,7 +64,7 @@ class SplitPolarizations(TifTool):
 
             output_filenames = []
             for i, (data_index, data_band) in enumerate(selected_data_bands, start=1):
-                band_info = data_band + "_" + orbit_direction
+                band_info = data_band + "_" + orbital_direction
                 filename = (
                     os.path.basename(input_file).replace(Path(input_file).suffix, "_")
                     + band_info
@@ -72,6 +74,7 @@ class SplitPolarizations(TifTool):
                 output_geotiff = os.path.join(self.output_dir, filename)
 
                 with rio.open(output_geotiff, "w", **meta) as dst:
+                    print(data_index)
                     dst.write(src.read(data_index), 1)
                     dst.set_band_description(1, data_band)
                     dst.nodata = -9999
