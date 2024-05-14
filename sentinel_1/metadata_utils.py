@@ -102,29 +102,13 @@ class ExtractMetadata:
         self.get_band_info()
         self.get_orbit_number()
         self.write_metadata()
-        
-        
-
 
 class UpdataMetadata:
 
-    # needs to take account of name changes of files as well as the possibility of files disappearing.
-    # files should submit their new names as they finish processing. The two should be handed to the paste function
-
-    # old filenames can be a list, which should then be ordered and metadata from the youngest should be 
-    # used inserted to new_name
-
-    #THIS REQUIRES AN UPDATE TO ALL TIFFTOOLS
-
-    #IF NONE IS RETURNED, THE FILE IS CONSIDERED DELETED AND SHOULD JUST BE SKIPPED
-
-    #IF A TOOL RETURNS MULTIPLE FILES, BOTH SHOULD BE RETURNED AS A LIST AND METADATA PASTED INTO BOTH
-
-    # in theory all of this metadata handling can absorb many of the args which needs to be passed into the 
-    # file sorter...
-
     def copy_metadata(input_file):
-        # if a file list is given, take metadata for the youngest
+        if isinstance(input_file, list):
+            input_file = input_file[0]
+
         with rio.open(input_file, 'r') as src:
             return src.tags()
 
