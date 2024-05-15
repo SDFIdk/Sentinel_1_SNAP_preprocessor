@@ -42,11 +42,14 @@ class Preprocessor(object):
         for i, safe_file in enumerate(safe_file_list):
             print("# " + str(i + 1) + " / " + str(len(safe_file_list)), end="\r")
 
-            cloud_clover_in_aoi = Utils.aoi_cloud_cover(safe_file, shape)
+            if shape:
+                cloud_clover_in_aoi = Utils.aoi_cloud_cover(safe_file, shape)
 
-            if cloud_clover_in_aoi >= max_cloud:
-                print(f"# Cloud cover within area of interest at {cloud_clover_in_aoi} %")
-                print(f"# {safe_file} exceeded max, skipping...")
+                if cloud_clover_in_aoi >= max_cloud:
+                    print(f"# Cloud cover within area of interest at {cloud_clover_in_aoi} %")
+                    print(f"# {safe_file} exceeded max, skipping...")
+                else:
+                    Tiff_generator.generate_geotiffs(safe_file, self.output_dir)
             else:
                 Tiff_generator.generate_geotiffs(safe_file, self.output_dir)
         return
@@ -69,6 +72,7 @@ class Preprocessor(object):
         print("## Clipping geotiff to shape...")
 
         if not shape:
+            print('## No shape given, cutting skipped')
             return
 
         output_tif = self.tmp + "tmp.tif"

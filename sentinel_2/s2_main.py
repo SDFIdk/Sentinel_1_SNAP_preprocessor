@@ -21,16 +21,19 @@ class S2Preprocessor:
     def __init__(self, **kwargs):
         self.working_dir = kwargs["working_dir"]
         self.crs = kwargs["crs"]
-        self.shape = kwargs["shape"]
+        self.shape = kwargs.get("shape", None)
         self.max_cloud_pct = kwargs.get("max_cloud_pct", 40)
         self.max_empty = kwargs.get("max_empty", 80)
         self.result_dir = kwargs["result_dir"]
+        self.clip_to_shape = kwargs.get("clip_to_shape", True)
 
         Path(self.safe_dir).mkdir(parents=True, exist_ok=True)
         Path(self.geotiff_dir).mkdir(parents=True, exist_ok=True)
         Path(self.sentinel_2_output).mkdir(parents=True, exist_ok=True)
 
     def s2_workflow(self):
+
+        self.shape = None
         preprocessor = Preprocessor(self.safe_dir, self.geotiff_dir)
 
         preprocessor.self_check(self.crs)
@@ -39,7 +42,7 @@ class S2Preprocessor:
 
         preprocessor.warp_files_to_crs(self.crs)
 
-        preprocessor.clip_to_shape(self.shape, self.crs)
+        if self.clip_to_shape: preprocessor.clip_to_shape(self.shape, self.crs)
 
         preprocessor.warp_files_to_crs(self.crs)
 

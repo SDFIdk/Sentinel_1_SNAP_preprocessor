@@ -4,10 +4,9 @@ import os
 import rasterio as rio
 import xml.etree.ElementTree as ET
 import glob
+import ast
 from sentinel_1.tools.tif_tool import TifTool
 from sentinel_1.utils import Utils
-
-
 
 gdal.UseExceptions()
 
@@ -59,8 +58,7 @@ class MosaicOrbits(TifTool):
             with rio.open(input_file, 'r') as src:
                 metadata = src.tags()
 
-                band_names = metadata['data_bands'] | metadata['incidence_bands']
-                breakpoint()
+                band_names = ast.literal_eval(metadata['data_bands']).append(ast.literal_eval(metadata['incidence_bands']))
 
             return band_names
 
@@ -79,14 +77,11 @@ class MosaicOrbits(TifTool):
                 meta = src.meta.copy()
 
             with rio.open(output_file, 'w', **meta) as dst:
-                breakpoint()
-                print(output_file)
-                for idx, file in enumerate(file_list):
+                for file in file_list:
                     with rio.open(file) as src:
 
-                        for ji, window in src.block_windows(1):
+                        for _, window in src.block_windows(1):
                             data = src.read(window=window)
-
                             dst.write(data, window=window)
 
                     print(f"Processed and added {file} to mosaic.")

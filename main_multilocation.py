@@ -51,5 +51,6 @@ for location_data in location_list:
         result_dir=result_dir,
         gpt_exe=gpt_exe,
         mosaic_orbits = True,
+        clip_to_shape = False
     )
     pre_processor.start_workflow()

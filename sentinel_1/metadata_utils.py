@@ -93,7 +93,6 @@ class ExtractMetadata:
         """
         with rio.open(self.input_file, 'r+') as src:
             src.update_tags(**self.metadata_dict)
-            print(src.tags())
 
     def run(self):
         self.get_snap_xml()

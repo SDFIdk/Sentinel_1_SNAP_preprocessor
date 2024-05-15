@@ -10,7 +10,7 @@ from sentinel_1.tools.tif_tool import TifTool
 
 
 class SplitPolarizations(TifTool):
-    def __init__(self, input_dir, shape, polarization, crs, mosaic_orbits=False, output_dir=False, threads = 1):
+    def __init__(self, input_dir, shape, polarization, crs, mosaic_orbits=False, output_dir=False, threads = 1, clip_to_shape = False):
         self.input_dir = input_dir
         if output_dir:
             self.output_dir = output_dir
