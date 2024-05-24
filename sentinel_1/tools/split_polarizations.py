@@ -7,10 +7,11 @@ import ast
 
 from sentinel_1.utils import Utils
 from sentinel_1.tools.tif_tool import TifTool
+from sentinel_1.metadata_utils import ExtractMetadata as EM
 
 
 class SplitPolarizations(TifTool):
-    def __init__(self, input_dir, shape, polarization, crs, mosaic_orbits=False, output_dir=False, threads = 1, clip_to_shape = False):
+    def __init__(self, input_dir, shape, polarization, crs, output_dir=False, threads = 1, clip_to_shape = False):
         self.input_dir = input_dir
         if output_dir:
             self.output_dir = output_dir
@@ -20,7 +21,7 @@ class SplitPolarizations(TifTool):
         self.polarization = polarization
         self.crs = crs
         self.threads = threads
-        self.mosaic_orbits = mosaic_orbits
+        self.clip_to_shape = clip_to_shape
 
     def printer(self):
         print(f"## Splitting polarization bands...")
@@ -40,20 +41,21 @@ class SplitPolarizations(TifTool):
 
             return data_matches
         
-        data_bands = ast.literal_eval(Utils.extract_from_metadata(input_file, 'data_bands'))
-        incidence_bands = ast.literal_eval(Utils.extract_from_metadata(input_file, 'incidence_bands'))
-        orbital_direction = Utils.extract_from_metadata(input_file, 'orbital_direction')
+        data_bands = ast.literal_eval(EM.extract_from_metadata(input_file, 'data_bands'))
+        incidence_bands = ast.literal_eval(EM.extract_from_metadata(input_file, 'incidence_bands'))
+        orbital_direction = EM.extract_from_metadata(input_file, 'orbital_direction')
 
         # Clipping file down here saves a lot of compute
         # WITH METADATA NOW BEING HANDLED BY THE TOOL, CLIPPING CAN BE OUTSOURCED.
-        if not self.mosaic_orbits:
+        if self.clip_to_shape:
             Utils.clip_256_single(input_file, self.shape, self.crs)
-
+            
         with rio.open(input_file) as src:
             meta = src.meta.copy()
             meta.update(
                 count=src.count - (len(self.polarization) - 1),
-                compress=Compression.lzw.name,
+                #COMPRESSION OF NEW FILES?
+                # compress=Compression.lzw.name,
             )
 
             selected_data_bands = [
@@ -64,26 +66,30 @@ class SplitPolarizations(TifTool):
 
             output_filenames = []
             for i, (data_index, data_band) in enumerate(selected_data_bands, start=1):
+
                 band_info = data_band + "_" + orbital_direction
                 filename = (
                     os.path.basename(input_file).replace(Path(input_file).suffix, "_")
                     + band_info
-                    + "_band.tif"
+                    + ".tif"
                 )
-                output_filenames.append(filename)
                 output_geotiff = os.path.join(self.output_dir, filename)
 
-                with rio.open(output_geotiff, "w", **meta) as dst:
-                    print(data_index)
-                    dst.write(src.read(data_index), 1)
-                    dst.set_band_description(1, data_band)
-                    dst.nodata = -9999
+                output_filenames.append(output_geotiff)
 
-                    for i, (incidence_index, incidence_band) in enumerate(
-                        incidence_bands, start=len(data_bands)
-                    ):
-                        dst.write(src.read(incidence_index), i)
-                        dst.set_band_description(i, incidence_band)
+                with rio.open(output_geotiff, "w", **meta) as dst:
+                    dst.write(src.read(data_index), 1)
+
+                    #METADATA
+                    # dst.set_band_description(1, data_band)
+                    # dst.nodata = -9999
+
+                    #BAND NAMING
+                    # for i, (incidence_index, incidence_band) in enumerate(
+                    #     incidence_bands, start=len(data_bands)
+                    # ):
+                    #     dst.write(src.read(incidence_index), i)
+                    #     dst.set_band_description(i, incidence_band)
 
         if self.input_dir == self.output_dir:
             os.remove(input_file)

@@ -10,12 +10,6 @@ from sentinel_1.utils import Utils
 
 gdal.UseExceptions()
 
-#TODO THIS SHOULD EITHER BE STANDALONE OR A THIRD TYPE OF TOOL.
-# As mosaicing cannot be done file by file and requires a dict be made of the entire contents of the tif dir,
-# it cannot be managed by normal superclasses
-# Create new class specifically for tools which require special setup with groups of files per thread and ensure
-# metadata handling is performed on it
-
 class MosaicOrbits(TifTool):
     def __init__(self, input_dir, threads = 1):
         self.input_dir = input_dir
@@ -50,17 +44,12 @@ class MosaicOrbits(TifTool):
         def rename_output(output_file):
             return os.path.splitext(output_file)[0] + '_ORBIT_MOSAIC' + os.path.splitext(output_file)[1]
         
-        # def combine_common_orbits(orbit_dict):
-
         def band_names_from_metadata(input_file):
 
-            #EXTRACT BAND NAMES FROM METADATA
-            with rio.open(input_file, 'r') as src:
-                metadata = src.tags()
-
-                band_names = ast.literal_eval(metadata['data_bands']).append(ast.literal_eval(metadata['incidence_bands']))
-
-            return band_names
+            data_bands = ast.literal_eval(Utils.extract_from_metadata(input_file, 'data_bands'))
+            incidence_bands = ast.literal_eval(Utils.extract_from_metadata(input_file, 'incidence_bands'))
+            
+            return data_bands + incidence_bands
 
         def mosaic_large_geotiffs(file_list, output_file):
             """
@@ -71,7 +60,7 @@ class MosaicOrbits(TifTool):
             - output_file (str): Path to the output mosaic file.
             """
 
-            band_names = band_names_from_metadata(file_list[-1])
+            band_names = band_names_from_metadata(file_list[0])
             
             with rio.open(file_list[0]) as src:
                 meta = src.meta.copy()
@@ -84,12 +73,14 @@ class MosaicOrbits(TifTool):
                             data = src.read(window=window)
                             dst.write(data, window=window)
 
-                    print(f"Processed and added {file} to mosaic.")
-                for bidx, name in enumerate(band_names, 1):
+                    print(f"# Processed and added {file} to mosaic.")
+
+                for bidx, name in band_names:
                     dst.set_band_description(bidx, name)
+
                 dst.no_data = -9999
 
-           
+
         mosaic_file_name = rename_output(mosaic_stack[0])  
         
         if len(mosaic_stack) == 1: 

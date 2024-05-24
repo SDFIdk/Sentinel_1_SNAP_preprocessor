@@ -5,6 +5,7 @@ output/
 shapes/
 tmp
 tmp*
+COPIES OF TEST DATA DONT DELETE/
 
 *.zip
 !shapes/landpolygon_1000.zip

@@ -58,21 +58,28 @@ class S1Preprocessor:
         denoiser = Denoiser(self.geotiff_dir, self.shape)
 
         # SnapExecutor(self.safe_dir, self.geotiff_dir, self.gpt_exe, self.pre_process_graph, threads = 6).run()
+        
+        # if self.mosaic_orbits: 
+        #     MosaicOrbits(self.geotiff_dir).run()
+        #     self.clip_to_shape = True
 
-        if self.mosaic_orbits: 
-            MosaicOrbits(self.geotiff_dir).run()
-            self.clip_to_shape = True
-
-        SplitPolarizations(
-            self.geotiff_dir, self.shape, self.polarization, self.crs, self.mosaic_orbits, self.clip_to_shape
-        ).run()
-
-        # print('TEST COMPLETE')
         # sys.exit()
 
+        SplitPolarizations(
+            input_dir= self.geotiff_dir, 
+            shape = self.shape, 
+            polarization = self.polarization, 
+            crs = self.crs,
+            clip_to_shape = self.clip_to_shape
+        ).run()
+
+        print('TEST COMPLETE')
+        sys.exit()
         AlignRaster(input_dir=self.geotiff_dir).run()
         LandSeaMask(self.geotiff_dir, self.land_polygon).run()
         RemoveEmpty(self.geotiff_dir)
+        #test with only spilt_pol to see if files can remain uncorropted if not mosaiced
+
 
         for _, denoise_mode in enumerate(self.denoise_modes):
             #HARDCODED STANDARD RESOLUTION
@@ -85,6 +92,8 @@ class S1Preprocessor:
             ConvertUnit(self.geotiff_dir, "linear", "decibel").run()
             AlignRaster(input_dir=self.geotiff_dir).run()
             Trim256(self.geotiff_dir).run()
+            BuildPyramids(self.geotiff_dir).run()
+            print('DONE')
             sys.exit()
             SortOutput(
                 self.geotiff_dir,

@@ -31,7 +31,7 @@ location_list = [
     # ('J:/javej/geus_total_rerun/varde_2024/', "shapes/varde/POLYGON.shp", "2024-01-11", "2024-01-25"),
 
     # ('TEST_DATA/', "shapes/landpolygon_1000/landpolygon_1000.shp", "2024-01-01", "2024-04-29"),
-    ('TEST_DATA/', "shapes/varde/POLYGON.shp", "2024-01-11", "2024-01-25"),
+    ('TEST_DATA/', "shapes/ribe/POLYGON.shp", "2024-01-11", "2024-01-25"),
 
     ]
 
@@ -51,6 +51,6 @@ for location_data in location_list:
         result_dir=result_dir,
         gpt_exe=gpt_exe,
         mosaic_orbits = True,
-        clip_to_shape = False
+        clip_to_shape = True
     )
     pre_processor.start_workflow()

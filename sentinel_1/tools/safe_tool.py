@@ -1,6 +1,6 @@
 from concurrent.futures import ProcessPoolExecutor, wait
 from sentinel_1.utils import Utils
-from sentinel_1.metadata_utils import ExtractMetadata
+from sentinel_1.metadata_utils import ExtractSNAPMetadata
 
 
 class SAFETool:
@@ -24,7 +24,7 @@ class SAFETool:
         pass
 
     def metadata_update(self, input_file):
-        ExtractMetadata(input_file).run()
+        ExtractSNAPMetadata(input_file).run()
 
     def files(self):
         return Utils.file_list_from_dir(self.input_dir, "*.zip")
