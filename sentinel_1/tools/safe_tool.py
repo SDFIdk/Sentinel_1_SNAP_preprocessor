@@ -39,8 +39,8 @@ class SAFETool:
     def _run_linear(self):
         files = self.files()
         for input_file in files:
-            self.loop(input_file)
+            output_file = self.loop(input_file)
 
-            self.metadata_update(input_file)
+            self.metadata_update(output_file)
             
             

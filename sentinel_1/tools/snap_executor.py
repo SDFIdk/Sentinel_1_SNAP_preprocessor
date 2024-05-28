@@ -56,6 +56,9 @@ class SnapExecutor(SAFETool):
             "-PoutputSafeFile=" + output_path,
             "-q", str(self.threads)  
         ]
+        print(self.gpt_exe)
+        print(self.graph_xml)
+        print(input_file)
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = process.communicate()
 
@@ -63,3 +66,7 @@ class SnapExecutor(SAFETool):
             print(f"GPT exited with an error:\n{stderr.decode()}")
         else:
             print(stdout.decode())
+
+        return output_path
+
+        
