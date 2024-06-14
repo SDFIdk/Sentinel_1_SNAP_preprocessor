@@ -114,6 +114,7 @@ class UpdataMetadata:
             return src.tags()
 
     def paste_metadata(input_file,  metadata):
+        # print(metadata)
         if not input_file: return
         if not isinstance(input_file, list): 
             input_file = [input_file]

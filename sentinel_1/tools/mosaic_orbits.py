@@ -1,10 +1,7 @@
 from osgeo import gdal
 import sys
 import os
-import numpy as np
-import rasterio as rio
-import rasterio.merge as merge
-from rasterio.windows import Window
+from datetime import datetime
 import glob
 import ast
 from sentinel_1.tools.tif_tool import TifTool
@@ -46,52 +43,16 @@ class MosaicOrbits(TifTool):
         def rename_output(output_file):
             return os.path.splitext(output_file)[0] + '_ORBIT_MOSAIC' + os.path.splitext(output_file)[1]
         
-        def band_names_from_metadata(input_file):
+        # def band_names_from_metadata(input_file):
 
-            data_bands = ast.literal_eval(Utils.extract_from_metadata(input_file, 'data_bands'))
-            incidence_bands = ast.literal_eval(Utils.extract_from_metadata(input_file, 'incidence_bands'))
+        #     data_bands = ast.literal_eval(Utils.extract_from_metadata(input_file, 'data_bands'))
+        #     incidence_bands = ast.literal_eval(Utils.extract_from_metadata(input_file, 'incidence_bands'))
             
-            return data_bands + incidence_bands
+        #     return data_bands + incidence_bands
 
-        # def mosaic_large_geotiffs(file_list, output_file):
-        #     """
-        #     Mosaic large GeoTIFF files by processing them in chunks.
-        #     RUNS OUT OF MEMORY
-
-        #     Parameters:
-        #     - file_list (list): List of file paths to be merged.
-        #     - output_file (str): Path to the output mosaic file.
-        #     """
-
-        #     band_names = band_names_from_metadata(file_list[0])
-            
-        #     files_to_mosaic = []
-        #     for geotiff in file_list:
-        #         src = rio.open(geotiff, 'r')
-        #         files_to_mosaic.append(src)
-
-        #     mosaic, out_trans = merge.merge(files_to_mosaic)
-
-        #     out_meta = files_to_mosaic[0].meta.copy()
-        #     out_meta.update({
-        #         "driver": "GTiff",
-        #         "height": mosaic.shape[1],
-        #         "width": mosaic.shape[2],
-        #         "transform": out_trans
-
-        #     })
-
-        #     with rio.open(output_file, 'w', **out_meta) as dst:
-        #         dst.write(mosaic)
-        #         for bidx, name in band_names:
-        #             dst.set_band_description(bidx, name)
-
-        #     for src in files_to_mosaic:
-        #         src.close()
-
-        def extract_datetime_from_filename(filename):
+        def datetime_from_s1_filename(geotiff):
             """
-            Extracts the datetime from the filename based on the specific pattern.
+            Extracts the datetime from Sentinel-1 GRD filename patterns
             
             Args:
             filename (str): The filename from which to extract the datetime.
@@ -99,36 +60,30 @@ class MosaicOrbits(TifTool):
             Returns:
             datetime: The extracted datetime object.
             """
-            pattern = re.compile(r"S1A_IW_GRDH_1SDV_(\d{8}T\d{6})")
-            S1A_IW_GRDH_1SDV_
-            20240111T171839
-            _20240111T171904_052062_064AC0_84B3.tif
-            match = pattern.search(filename)
-            if match:
-                date_str = match.group(1)
-                return datetime.strptime(date_str, '%Y%m%dT%H%M%S')
-            else:
-                raise ValueError(f"Filename {filename} does not match the expected pattern")
+            date_str = os.path.basename(geotiff)[17:32]
+            return datetime.strptime(date_str, '%Y%m%dT%H%M%S')
+
 
         def mosaic_large_geotiffs(file_list, output_file):
 
-            band_names = band_names_from_metadata(file_list[0])
-            print(band_names)
-            print('---')
-            print(file_list)
-
+            # band_names = band_names_from_metadata(file_list[0])
 
             src_ds_list = [gdal.Open(file) for file in file_list]
-            print('---')
-            print(src_ds_list)
 
-            sys.exit()
+            num_bands = src_ds_list[0].RasterCount
 
-
-            gdal.Warp(output_file, src_ds_list, format='GTiff', srcNodata=-9999, dstNodata=-9999)
-
-            for ds in src_ds_list:
-                ds = None
+            gdal.Warp(output_file, 
+                      src_ds_list, 
+                      format='GTiff', 
+                      srcNodata=0,
+                      dstNodata=-9999,
+                      options=['COMPRESS=LZW', 'TILED=YES']
+                      )
+            
+            out_ds = gdal.Open(output_file, gdal.GA_Update)
+            for band_idx in range(1, num_bands + 1):
+                band_name = src_ds_list[0].GetRasterBand(band_idx).GetDescription()
+                out_ds.GetRasterBand(band_idx).SetDescription(band_name)
 
 
         mosaic_file_name = rename_output(mosaic_stack[0])  
@@ -136,6 +91,7 @@ class MosaicOrbits(TifTool):
         if len(mosaic_stack) == 1: 
             os.rename(mosaic_stack[0], mosaic_file_name)
         else:
+            mosaic_stack.sort(key=lambda x: datetime_from_s1_filename(os.path.basename(x)), reverse=True)
             mosaic_large_geotiffs(mosaic_stack, mosaic_file_name)
 
         return mosaic_file_name

@@ -14,11 +14,12 @@ from osgeo import gdal  # for some reason it crashes if imported in other module
 # max_cloud_pct = 40 #Fraction agreed upon with GEUS
 # max_empty = 80
 
-result_dir="geus_rerun_output"
+result_dir = "whole_dk_mosaic"
 pre_process_graph = "sentinel_1/snap_graphs/preprocessing_workflow_2023_incidence_geotiff.xml"
 # pre_process_graph = "sentinel_1/snap_graphs/safe_to_geotiff.xml"
 # gpt_exe = 'C:/Users/b307579/AppData/Local/snap/bin/gpt.exe'
-gpt_exe = 'C:/Users/b307579/AppData/Local/Programs/snap10/bin/gpt.exe'
+# gpt_exe = 'C:/Users/b307579/AppData/Local/Programs/snap10/bin/gpt.exe'
+gpt_exe = 'C:/Users/b025527/AppData/Local/snap/bin/gpt.exe'
 
 location_list = [
     # ('J:/javej/geus_total_rerun/holstebro_2015/', "shapes/holstebro/POLYGON.shp", "2015-11-20", "2015-12-13"),
@@ -28,10 +29,10 @@ location_list = [
     # ('J:/javej/geus_total_rerun/ribe_2020/', "shapes/ribe/POLYGON.shp", "2020-02-01", "2020-05-01"),
     # ('J:/javej/geus_total_rerun/skjern_2024/', "shapes/skjern/POLYGON.shp", "2024-01-11", "2024-01-25"),
     # ('J:/javej/geus_total_rerun/sneum_2024/', "shapes/sneum_aa/POLYGON.shp", "2024-01-11", "2024-01-25"),
-    # ('J:/javej/geus_total_rerun/varde_2024/', "shapes/varde/POLYGON.shp", "2024-01-11", "2024-01-25"),
+    # ('J:/javej/geus_total_rerun/varde_2024/', "shapes/varde/POLYGON.shp", "2023-01-01", "2024-02-01"),
 
-    # ('TEST_DATA/', "shapes/landpolygon_1000/landpolygon_1000.shp", "2024-01-01", "2024-04-29"),
-    ('TEST_DATA/', "shapes/ribe/POLYGON.shp", "2024-01-11", "2024-01-25"),
+    ('J:/javej/geus_total_rerun/whole_dk_mosaic/', "shapes/dk_single_poly/POLYGON.shp", "2024-01-10", "2024-01-25"),
+    # ('J:/javej/alling_aa_bst/', "shapes/alling_aa/POLYGON.shp", "2023-10-18", "2023-11-10"),
 
     ]
 
@@ -51,6 +52,6 @@ for location_data in location_list:
         result_dir=result_dir,
         gpt_exe=gpt_exe,
         mosaic_orbits = True,
-        clip_to_shape = True
+        # clip_to_shape = True
     )
     pre_processor.start_workflow()

@@ -14,6 +14,7 @@ from sentinel_1.tools.split_polarizations import SplitPolarizations
 from sentinel_1.tools.trim_256 import Trim256
 from sentinel_1.tools.mosaic_orbits import MosaicOrbits
 from sentinel_1.tools.build_pyramids import BuildPyramids
+from sentinel_1.tools.copy_dir import CopyDir
 
 class S1Preprocessor:
     @property
@@ -59,11 +60,9 @@ class S1Preprocessor:
 
         # SnapExecutor(self.safe_dir, self.geotiff_dir, self.gpt_exe, self.pre_process_graph, threads = 6).run()
         
-        # if self.mosaic_orbits: 
-        #     MosaicOrbits(self.geotiff_dir).run()
-        #     self.clip_to_shape = True
-
-        # sys.exit()
+        if self.mosaic_orbits: 
+            MosaicOrbits(self.geotiff_dir).run()
+            self.clip_to_shape = True
 
         SplitPolarizations(
             input_dir= self.geotiff_dir, 
@@ -72,13 +71,13 @@ class S1Preprocessor:
             crs = self.crs,
             clip_to_shape = self.clip_to_shape
         ).run()
+        BuildPyramids(self.geotiff_dir).run()
+        CopyDir(self.geotiff_dir, "J:/javej/geus_total_rerun/whole_dk_mosaic/sentinel_1/bu_split")
 
-        print('TEST COMPLETE')
-        sys.exit()
+
         AlignRaster(input_dir=self.geotiff_dir).run()
         LandSeaMask(self.geotiff_dir, self.land_polygon).run()
         RemoveEmpty(self.geotiff_dir)
-        #test with only spilt_pol to see if files can remain uncorropted if not mosaiced
 
 
         for _, denoise_mode in enumerate(self.denoise_modes):
@@ -93,8 +92,7 @@ class S1Preprocessor:
             AlignRaster(input_dir=self.geotiff_dir).run()
             Trim256(self.geotiff_dir).run()
             BuildPyramids(self.geotiff_dir).run()
-            print('DONE')
-            sys.exit()
+
             SortOutput(
                 self.geotiff_dir,
                 self.sentinel_1_output,
