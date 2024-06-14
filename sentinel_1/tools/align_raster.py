@@ -42,15 +42,15 @@ class AlignRaster(TifTool):
         with tempfile.NamedTemporaryFile(delete=False, suffix=".tif") as tmp_file:
             tmp_file_path = tmp_file.name  # Get the temporary file path
 
-        gdal.Warp(
-            tmp_file_path,
-            input_file,
-            xRes=self.reference_geotransform[1],
-            yRes=-self.reference_geotransform[5],
-            targetAlignedPixels=True,
-            resampleAlg=gdal.GRA_NearestNeighbour,
-        )
+            gdal.Warp(
+                tmp_file_path,
+                input_file,
+                xRes=self.reference_geotransform[1],
+                yRes=-self.reference_geotransform[5],
+                targetAlignedPixels=True,
+                resampleAlg=gdal.GRA_NearestNeighbour,
+            )
 
-        shutil.move(tmp_file_path, input_file)
+            shutil.move(tmp_file_path, input_file)
 
         return input_file
