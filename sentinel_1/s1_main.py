@@ -60,25 +60,23 @@ class S1Preprocessor:
 
         # SnapExecutor(self.safe_dir, self.geotiff_dir, self.gpt_exe, self.pre_process_graph, threads = 6).run()
         
-        if self.mosaic_orbits: 
-            MosaicOrbits(self.geotiff_dir).run()
-            self.clip_to_shape = True
+        # if self.mosaic_orbits: 
+        #     MosaicOrbits(self.geotiff_dir).run()
+        #     self.clip_to_shape = True
 
-        SplitPolarizations(
-            input_dir= self.geotiff_dir, 
-            shape = self.shape, 
-            polarization = self.polarization, 
-            crs = self.crs,
-            clip_to_shape = self.clip_to_shape
-        ).run()
-        BuildPyramids(self.geotiff_dir).run()
-        CopyDir(self.geotiff_dir, "J:/javej/geus_total_rerun/whole_dk_mosaic/sentinel_1/bu_split")
+        # SplitPolarizations(
+        #     input_dir= self.geotiff_dir, 
+        #     shape = self.shape, 
+        #     polarization = self.polarization, 
+        #     crs = self.crs,
+        #     clip_to_shape = self.clip_to_shape
+        # ).run()
+        # CopyDir(self.geotiff_dir, "J:/javej/geus_total_rerun/whole_dk_mosaic/sentinel_1/bu_split")
 
 
         AlignRaster(input_dir=self.geotiff_dir).run()
         LandSeaMask(self.geotiff_dir, self.land_polygon).run()
         RemoveEmpty(self.geotiff_dir)
-
 
         for _, denoise_mode in enumerate(self.denoise_modes):
             #HARDCODED STANDARD RESOLUTION

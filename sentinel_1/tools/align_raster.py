@@ -3,9 +3,9 @@ import os
 import shutil
 import sys
 import tempfile
+import uuid
 from sentinel_1.tools.tif_tool import TifTool
 from sentinel_1.utils import Utils
-
 
 class AlignRaster(TifTool):
     def __init__(self, input_dir, threads = 1):
@@ -39,9 +39,10 @@ class AlignRaster(TifTool):
         Takes reference_geotransform
         """
 
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".tif") as tmp_file:
-            tmp_file_path = tmp_file.name  # Get the temporary file path
-
+        path = os.path.split(input_file)[0]
+        file_name = str(uuid.uuid4())[0:7] + '.tif'
+        tmp_file_path = os.path.join(path, file_name)
+        
         gdal.Warp(
             tmp_file_path,
             input_file,

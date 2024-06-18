@@ -148,58 +148,40 @@ class Utils(object):
         with tempfile.NamedTemporaryFile(delete=False, suffix=".tif") as tmp_file:
             tmp_file_path = tmp_file.name
 
-        _ = gdal.Warp(tmp_file_path, src, options=warp_options)
+            _ = gdal.Warp(tmp_file_path, src, options=warp_options)
 
-        ds = None
-        src = None
+            ds = None
+            src = None
 
-        with rio.open(tmp_file_path) as src:
-            new_width = (src.width // 256) * 256
-            new_height = (src.height // 256) * 256
+            with rio.open(tmp_file_path) as src:
+                new_width = (src.width // 256) * 256
+                new_height = (src.height // 256) * 256
 
-            window = Window(0, 0, new_width, new_height)
-            clipped_data = src.read(window=window)
-            new_transform = src.window_transform(window)
+                window = Window(0, 0, new_width, new_height)
+                clipped_data = src.read(window=window)
+                new_transform = src.window_transform(window)
 
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".tif") as tmp_file:
-                tmp_file_path_2 = tmp_file.name
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".tif") as tmp_file:
+                    tmp_file_path_2 = tmp_file.name
 
-            # OLD METHOD, RAM INTENSIVE
-            with rio.open(
-                tmp_file_path_2,
-                "w",
-                driver="GTiff",
-                height=new_height,
-                width=new_width,
-                count=src.count,
-                dtype=str(clipped_data.dtype),
-                crs=crs,
-                nodata=-9999,
-                transform=new_transform,
-            ) as dst:
-                dst.write(clipped_data)
+                # OLD METHOD, RAM INTENSIVE
+                with rio.open(
+                    tmp_file_path_2,
+                    "w",
+                    driver="GTiff",
+                    height=new_height,
+                    width=new_width,
+                    count=src.count,
+                    dtype=str(clipped_data.dtype),
+                    crs=crs,
+                    nodata=-9999,
+                    transform=new_transform,
+                ) as dst:
+                    dst.write(clipped_data)
 
-            # with rio.open(
-            #     tmp_file_path_2,
-            #     "w",
-            #     driver="GTiff",
-            #     height=new_height,
-            #     width=new_width,
-            #     count=src.count,
-            #     dtype=src.dtypes[0],
-            #     crs=crs,
-            #     nodata=-9999,
-            #     transform=new_transform
-            # ) as dst:
-            #     for j, window in src.block_windows(1):
-            #         data = src.read(window=window)
-            #         new_transform = src.window_transform(window)
-            #         dst.write(data, window=window)
-            #         dst.set_transform(new_transform, window=window)
+            shutil.move(tmp_file_path_2, input_file)
 
-        shutil.move(tmp_file_path_2, input_file)
-
-        Utils.safer_remove(crs_corrected_shape)
+            Utils.safer_remove(crs_corrected_shape)
 
     def extract_from_metadata(input_file, tag):
         with rio.open(input_file, 'r') as src:
@@ -308,6 +290,16 @@ class Utils(object):
                 dst.write(clipped_data)
 
         shutil.move(tmp_file_path_2, input_file)
+
+    def temp_file_name_in_path_folder(path_file):
+        """
+        Creates a file path to a file name in the
+        folder of the provided file.
+        Intended for making temporary files
+        """
+        path = os.path.split(path_file)[0]
+        file_name = str(uuid.uuid4())[0:7] + '.tif'
+        return os.path.join(path, file_name)
 
 
 gdal.UseExceptions()

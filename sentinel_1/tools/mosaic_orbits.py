@@ -43,13 +43,6 @@ class MosaicOrbits(TifTool):
         def rename_output(output_file):
             return os.path.splitext(output_file)[0] + '_ORBIT_MOSAIC' + os.path.splitext(output_file)[1]
         
-        # def band_names_from_metadata(input_file):
-
-        #     data_bands = ast.literal_eval(Utils.extract_from_metadata(input_file, 'data_bands'))
-        #     incidence_bands = ast.literal_eval(Utils.extract_from_metadata(input_file, 'incidence_bands'))
-            
-        #     return data_bands + incidence_bands
-
         def datetime_from_s1_filename(geotiff):
             """
             Extracts the datetime from Sentinel-1 GRD filename patterns
@@ -66,8 +59,6 @@ class MosaicOrbits(TifTool):
 
         def mosaic_large_geotiffs(file_list, output_file):
 
-            # band_names = band_names_from_metadata(file_list[0])
-
             src_ds_list = [gdal.Open(file) for file in file_list]
 
             num_bands = src_ds_list[0].RasterCount
@@ -76,7 +67,7 @@ class MosaicOrbits(TifTool):
                       src_ds_list, 
                       format='GTiff', 
                       srcNodata=0,
-                      dstNodata=-9999,
+                      dstNodata=0,
                       options=['COMPRESS=LZW', 'TILED=YES']
                       )
             

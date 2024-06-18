@@ -3,6 +3,7 @@ import shutil
 import sys
 import uuid
 from sentinel_1.tools.tif_tool import TifTool
+from sentinel_1.utils import Utils
 
 
 class ChangeResolution(TifTool):
@@ -23,7 +24,7 @@ class ChangeResolution(TifTool):
 
         gdal_dataset = gdal.Open(input_file)
 
-        tmp_output_file = str(uuid.uuid4()) + ".tif"
+        tmp_output_file = Utils.temp_file_name_in_path_folder(input_file)
 
         warp_options = gdal.WarpOptions(
             xRes=self.resolution,
