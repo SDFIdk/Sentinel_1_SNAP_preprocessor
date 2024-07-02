@@ -7,7 +7,7 @@ from sentinel_1.utils import Utils
 
 class SortOutput(TifTool):
     def __init__(
-        self, input_dir, result_dir, denoise_mode, unit, resolution, polarization, threads = 1):
+        self, input_dir, result_dir, unit, resolution, polarization, denoise_mode = 'mean', threads = 1):
         self.input_dir = input_dir
         self.result_dir = result_dir
         self.denoise_mode = denoise_mode
