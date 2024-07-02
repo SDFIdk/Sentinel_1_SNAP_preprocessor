@@ -1,9 +1,11 @@
 import os
-import sys
 from pathlib import Path
 
-from sentinel_2.s2_preprocessing import Preprocessor
-
+from sentinel_2.tools.safe_to_geotiff import SAFEToGeotiff
+from sentinel_2.tools.warp_to_crs import CRSWarp
+from sentinel_2.tools.clip_to_shape import ClipToShape
+from sentinel_2.tools.remove_empty import RemoveEmpty
+from sentinel_2.tools.result_mover import ResultMover
 
 class S2Preprocessor:
     @property
@@ -20,9 +22,9 @@ class S2Preprocessor:
 
     def __init__(self, **kwargs):
         self.working_dir = kwargs["working_dir"]
-        self.crs = kwargs["crs"]
+        self.crs = kwargs.get("crs", "EPSG:25832")
         self.shape = kwargs.get("shape", None)
-        self.max_cloud_pct = kwargs.get("max_cloud_pct", 40)
+        self.max_cloud = kwargs.get("max_cloud_pct", 40)
         self.max_empty = kwargs.get("max_empty", 80)
         self.result_dir = kwargs["result_dir"]
         self.clip_to_shape = kwargs.get("clip_to_shape", True)
@@ -32,24 +34,9 @@ class S2Preprocessor:
         Path(self.sentinel_2_output).mkdir(parents=True, exist_ok=True)
 
     def s2_workflow(self):
-
-        self.shape = None
-        preprocessor = Preprocessor(self.safe_dir, self.geotiff_dir)
-
-        preprocessor.self_check(self.crs)
-
-        preprocessor.s2_safe_to_geotiff(self.max_cloud_pct, self.shape)
-
-        preprocessor.warp_files_to_crs(self.crs)
-
-        if self.clip_to_shape: preprocessor.clip_to_shape(self.shape, self.crs)
-
-        preprocessor.warp_files_to_crs(self.crs)
-
-        preprocessor.remove_empty_files(self.max_empty)
-
-        preprocessor.result_mover(self.geotiff_dir, self.sentinel_2_output)
-
-        #TEMPORARY WORKAROUND
-        import shutil
-        shutil.rmtree("sentinel_2_temp_dir/")
+        
+        SAFEToGeotiff(self.safe_dir, self.geotiff_dir, self.max_cloud, shape = self.shape).run()
+        if self.clip_to_shape: ClipToShape(self.geotiff_dir, self.shape, self.crs)
+        RemoveEmpty(self.max_empty)
+        CRSWarp(self.geotiff_dir, self.crs).run()
+        ResultMover(self.geotiff_dir, self.sentinel_2_output).run()
