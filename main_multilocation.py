@@ -31,7 +31,7 @@ location_list = [
     # ('J:/javej/geus_total_rerun/sneum_2024/', "shapes/sneum_aa/POLYGON.shp", "2024-01-11", "2024-01-25"),
     # ('J:/javej/geus_total_rerun/varde_2024/', "shapes/varde/POLYGON.shp", "2023-01-01", "2024-02-01"),
 
-    ('J:/javej/geus_total_rerun/whole_dk_mosaic/', "shapes/dk_single_poly/POLYGON.shp", "2024-01-10", "2024-01-25"),
+    ('download_test_s2', "shapes/dk_single_poly/POLYGON.shp", "2024-01-10", "2024-01-12"),
     # ('J:/javej/alling_aa_bst/', "shapes/alling_aa/POLYGON.shp", "2023-10-18", "2023-11-10"),
 
     ]
@@ -47,7 +47,6 @@ for location_data in location_list:
         start_date=start_date,
         end_date=end_date,
         pre_process_graph=pre_process_graph,
-        denoise_mode="mean",
         max_cloud_pct=80,
         result_dir=result_dir,
         gpt_exe=gpt_exe,
