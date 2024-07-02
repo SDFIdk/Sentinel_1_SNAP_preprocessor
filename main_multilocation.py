@@ -42,7 +42,6 @@ for location_data in location_list:
     pre_processor = PreProcessor(
         threads = 1,
         working_dir=working_dir,
-        crs="EPSG:25832",
         shape=shape,
         start_date=start_date,
         end_date=end_date,

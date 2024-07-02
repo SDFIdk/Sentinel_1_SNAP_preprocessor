@@ -1,6 +1,3 @@
-import sys
-
-import zipfile
 import os
 import shutil
 import glob
@@ -8,32 +5,26 @@ from pathlib import Path
 from osgeo import gdal
 import shutil
 
-gdal.UseExceptions()
+from sentinel_2.s2_utils import Utils
 
-class Tiff_generator(object):
+gdal.UseExceptions()
+gdal.PushErrorHandler(Utils.gdal_error_handler)
+
+class TiffGenerator(object):
     def complete(text, state):
         return (glob.glob(text + "*") + [None])[state]
-
-    def get_immediate_subdirectories(a_dir):
-        return [
-            name
-            for name in os.listdir(a_dir)
-            if os.path.isdir(os.path.join(a_dir, name))
-        ]
 
     def generate_geotiffs(safe_file, geotiff_output_path):
         basename = os.path.basename(safe_file)
         safe_unzip_dir = os.path.join(geotiff_output_path, basename[:-3] + "SAFE")
 
-        zip = zipfile.ZipFile(safe_file)
-        zip.extractall(geotiff_output_path)
-        zip.close()
+        Utils.unzip_data_to_dir(safe_file, geotiff_output_path, direct = True)
 
-        product_name = os.path.basename(safe_file)[:-4]
-        output_subdirectory = os.path.join(geotiff_output_path, product_name + "_PROCESSED")
+        product_name = os.path.basename(safe_file).replace(".zip", "_PROCESSED")
+        output_subdirectory = os.path.join(geotiff_output_path, product_name)
         Path(output_subdirectory).mkdir(exist_ok=True)
 
-        sub_directories = Tiff_generator.get_immediate_subdirectories(
+        sub_directories = Utils.get_immediate_subdirectories(
             safe_unzip_dir + "/GRANULE"
         )
 
@@ -41,7 +32,7 @@ class Tiff_generator(object):
             unprocessed_band = os.path.join(
                 geotiff_output_path, product_name + ".SAFE", "GRANULE", granule, "IMG_DATA"
             )
-            Tiff_generator.generate_all_bands(
+            TiffGenerator.generate_all_bands(
                 unprocessed_band, granule, output_subdirectory, geotiff_output_path
             )
 
@@ -51,9 +42,10 @@ class Tiff_generator(object):
         #TEMPORARY WORKAROUND 
         os.remove(safe_file)
 
+
     def generate_all_bands(unprocessed_band, granule, output_subdirectory, newout):
         granule_part_1 = unprocessed_band.split(".SAFE")[0][-22:-16]
-        granule_part_2 = unprocessed_band.split(".SAFE")[0][-49:-34]
+        granule_part_2 = unprocessed_band.split(".SAFE")[0][-49:-34]    # Hardcoded for standard Sentinel-2 band names 
         band_path = granule_part_1 + "_" + granule_part_2 + "_"
 
         if not os.path.exists(output_subdirectory + "/IMAGE_DATA"):

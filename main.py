@@ -34,7 +34,6 @@ result_dir = "results/"
 pre_processor = PreProcessor(
     # threads=1,
     working_dir=working_dir,
-    crs=crs,
     shape=shape,
     start_date=start_date,
     end_date=end_date,

@@ -33,10 +33,10 @@ class S1Preprocessor:
 
     def __init__(self, **kwargs):
         self.working_dir = kwargs["working_dir"]
-        self.crs = kwargs["crs"]
         self.shape = kwargs["shape"]
         self.pre_process_graph = kwargs["pre_process_graph"]
         self.result_dir = kwargs["result_dir"]
+        self.crs = kwargs.get("crs", "EPSG:25832")
         self.gpt_exe = kwargs.get(
             "gpt_exe", "C:/Users/b307579/AppData/Local/Programs/snap/bin/gpt.exe"
         )

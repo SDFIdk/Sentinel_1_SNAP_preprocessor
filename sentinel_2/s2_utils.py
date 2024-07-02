@@ -4,11 +4,14 @@ import os
 import sys
 import numpy as np
 import rasterio as rio
+from rasterio.mask import mask
 from pathlib import Path
 import glob
 import shutil
 import uuid
 import pyproj
+import geopandas as gpd
+from shapely.geometry import mapping
 
 gdal.UseExceptions()
 
@@ -61,35 +64,44 @@ class Utils(object):
     def check_create_folder(directory):
         Path(directory).mkdir(exist_ok=True)
 
-    def aoi_cloud_cover(safe_file, shape):
+    #OLD FILE, DIDNT HAVE WORKING SHAPE CUT
+    # def aoi_cloud_cover(safe_file, shape):
+    #     scl_filename = Utils.extract_scl(safe_file)
+
+    #     scl_ds = rio.open(scl_filename).read(1)
+
+    #     cloud_pixels = np.sum(np.isin(scl_ds, [8, 9]))
+    #     # 8, 9 represents medium and high probability cloud classes in SRC
+    #     total_data_pixels = scl_ds.size - np.sum(np.isin(scl_ds, [0]))
+
+    #     scl_ds = None
+    #     del scl_filename
+
+    #     return (cloud_pixels / total_data_pixels) * 100
+
+
+    def aoi_cloud_cover(safe_file, shape=None):
         scl_filename = Utils.extract_scl(safe_file)
 
-        if shape:
-            options = gdal.WarpOptions(
-                cutlineDSName=shape, cropToCutline=True, dstSRS="EPSG:4326"
-            )
+        with rio.open(scl_filename) as scl_ds:
+            scl_data = scl_ds.read(1)
+            
+            if shape:
+                shapes = [mapping(geom) for geom in gpd.read_file(shape).geometry]
+                scl_data, _ = mask(scl_ds, shapes, crop=True)
+                scl_data = scl_data[0]
 
-        cloud_percentage = Utils.get_cloud_percentage(scl_filename)
-        del scl_filename
-        return cloud_percentage
+            cloud_pixels = np.sum(np.isin(scl_data, [8, 9])) #medium/high probability cloud classes in SCL
+            total_data_pixels = scl_data.size - np.sum(np.isin(scl_data, [0]))
 
-    def get_cloud_percentage(scl_filename):
-        scl_ds = rio.open(scl_filename).read(1)
-
-        cloud_pixels = np.sum(np.isin(scl_ds, [8, 9]))
-        # 8, 9 represents medium and high probability cloud classes in SRC
-        total_data_pixels = scl_ds.size - np.sum(np.isin(scl_ds, [0]))
-
-        scl_ds = None
+        os.remove(scl_filename)
+        
         return (cloud_pixels / total_data_pixels) * 100
+
 
     def extract_scl(safe_file):
         with zipfile.ZipFile(safe_file, "r") as zip_ref:
             scl_file = [f for f in zip_ref.namelist() if "_SCL_20m.jp2" in f]
-
-            assert (
-                scl_file
-            ), f"## SCL cloud layer not found in {os.path.basename(safe_file)} !"
 
             scl_filename = "tmp/" + os.path.basename(scl_file[0])
 
@@ -99,56 +111,21 @@ class Utils(object):
                 target.write(source.read())
             return scl_filename
 
-    def unzip_data_to_dir(data, tmp):
-        unzipped_safe = tmp + str(uuid.uuid4())
-        Path(unzipped_safe).mkdir(exist_ok=True)
+    def unzip_data_to_dir(data, output_dir, direct = False):
+        if not direct:
+            output_dir = output_dir + str(uuid.uuid4())
+            Path(output_dir).mkdir(exist_ok=True)
         with zipfile.ZipFile(data, "r") as zip_ref:
-            zip_ref.extractall(unzipped_safe)
+            zip_ref.extractall(output_dir)
 
-        return unzipped_safe
+        if not direct:  return output_dir
 
     def remove_folder(folder):
         shutil.rmtree(folder)
 
-    def crs_warp(dataset, crs, output):
-        gdal.UseExceptions()
-
-        gdal_dataset = gdal.Open(dataset)
-
-        options = gdal.WarpOptions(
-            format="GTiff",
-            srcSRS=gdal_dataset.GetProjection(),
-            dstSRS=crs,
-            resampleAlg=gdal.GRA_NearestNeighbour,
-        )
-
-        gdal.Warp(output, gdal_dataset, options=options)
-        shutil.move(output, dataset)
-
-    def remove_empty_files(geotiff, max_empty_percent):
-        with rio.open(geotiff, "r") as src:
-            zero_pixel_count = (src.read(1) == 0).sum()
-            total_pixels = src.read(1).size
-            percentage = (zero_pixel_count / total_pixels) * 100
-
-        if percentage >= max_empty_percent:
-            print(f"# Removed {geotiff}, data coverage: {str(100 - percentage)} %")
-            os.remove(geotiff)
-
-    def move_data(source, destination, copy=False):
-        if copy:
-            shutil.copy(source, destination)
-        else:
-            shutil.move(source, destination)
-
-    def clip_sentinel_2(data, output_tif, shape, crs):
-
-        data = data.replace("\\", "/")
-        options = gdal.WarpOptions(
-            cutlineDSName=shape, cropToCutline=True, dstSRS=crs
-        )
-
-        gdal_dataset = gdal.Open(data)
-        gdal.Warp(output_tif, gdal_dataset, options=options)
-        gdal_dataset = None
-        shutil.move(output_tif, data)
+    def get_immediate_subdirectories(a_dir):
+        return [
+            name
+            for name in os.listdir(a_dir)
+            if os.path.isdir(os.path.join(a_dir, name))
+        ]
