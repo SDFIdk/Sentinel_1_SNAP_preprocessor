@@ -10,6 +10,35 @@ import os
 from datetime import datetime
 from collections import Counter
 
+class StdLogger:
+    """
+    A logger that logs messages to stdout.
+    """
+
+    def debug(self, msg, *args, **kwargs):
+        """
+        Log a debug message to stdout.
+        """
+        print(f"DEBUG: {msg.format(*args, **kwargs)}")
+
+    def error(self, msg, *args, **kwargs):
+        """
+        Log an error message to stdout.
+        """
+        print(f"ERROR: {msg.format(*args, **kwargs)}")
+
+    def info(self, msg, *args, **kwargs):
+        """
+        Log an info message to stdout.
+        """
+        print(f"INFO: {msg.format(*args, **kwargs)}")
+
+    def warning(self, msg, *args, **kwargs):
+        """
+        Log a warning message to stdout.
+        """
+        print(f"WARNING: {msg.format(*args, **kwargs)}")
+
 class Downloader:
     @property
     def sentinel_1_safe_dir(self):
@@ -99,6 +128,7 @@ class Downloader:
                     "concurrency": self.concurrency,
                     "monitor": StatusMonitor(),
                     "credentials": Credentials(),
+                    "logger": StdLogger()
                 },
             )
         )

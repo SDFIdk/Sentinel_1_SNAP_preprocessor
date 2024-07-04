@@ -1,7 +1,6 @@
 import os
 import sys
 import rasterio as rio
-from rasterio.enums import Compression
 from pathlib import Path
 import ast
 
@@ -9,9 +8,8 @@ from sentinel_1.utils import Utils
 from sentinel_1.tools.tif_tool import TifTool
 from sentinel_1.metadata_utils import ExtractMetadata as EM
 
-
 class SplitPolarizations(TifTool):
-    def __init__(self, input_dir, shape, polarization, crs, output_dir=False, threads = 1, clip_to_shape = False):
+    def __init__(self, input_dir, shape, polarization, crs, output_dir=False, threads = 1):
         self.input_dir = input_dir
         if output_dir:
             self.output_dir = output_dir
@@ -21,7 +19,6 @@ class SplitPolarizations(TifTool):
         self.polarization = polarization
         self.crs = crs
         self.threads = threads
-        self.clip_to_shape = clip_to_shape
 
     def printer(self):
         print(f"## Splitting polarization bands...")
@@ -44,18 +41,11 @@ class SplitPolarizations(TifTool):
         data_bands = ast.literal_eval(EM.extract_from_metadata(input_file, 'data_bands'))
         incidence_bands = ast.literal_eval(EM.extract_from_metadata(input_file, 'incidence_bands'))
         orbital_direction = EM.extract_from_metadata(input_file, 'orbital_direction')
-
-        # Clipping file down here saves a lot of compute
-        # WITH METADATA NOW BEING HANDLED BY THE TOOL, CLIPPING CAN BE OUTSOURCED.
-        if self.clip_to_shape:
-            Utils.clip_256_single(input_file, self.shape, self.crs)
             
         with rio.open(input_file) as src:
             meta = src.meta.copy()
             meta.update(
                 count=src.count - (len(self.polarization) - 1),
-                #COMPRESSION OF NEW FILES?
-                # compress=Compression.lzw.name,
             )
 
             selected_data_bands = [
