@@ -46,9 +46,6 @@ class Downloader:
 
     @property
     def sentinel_2_safe_dir(self):
-        # return os.path.join(self.working_dir, "sentinel_2", "safe")
-
-        #TEMPORARY WORKAROUND
         return os.path.join("sentinel_2_temp_dir/", "sentinel_2", "safe")        
 
     def __init__(self, **kwargs):
@@ -71,6 +68,7 @@ class Downloader:
         Path(self.sentinel_2_safe_dir).mkdir(parents=True, exist_ok=True)
 
     def download_sentinel_1(self):
+        return
         features = query_features(
             "Sentinel1",
             {
@@ -99,6 +97,7 @@ class Downloader:
         Utils.safer_remove(self.tmp_shape_dir)
 
     def download_sentinel_2(self):
+        return
         features = query_features(
             "Sentinel2",
             {

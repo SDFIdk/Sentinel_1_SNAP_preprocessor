@@ -15,8 +15,8 @@ class TiffGenerator(object):
         return (glob.glob(text + "*") + [None])[state]
 
     def generate_geotiffs(safe_file, geotiff_output_path):
-        basename = os.path.basename(safe_file)
-        safe_unzip_dir = os.path.join(geotiff_output_path, basename[:-3] + "SAFE")
+
+        safe_unzip_dir = os.path.join(geotiff_output_path, os.path.basename(safe_file)[:-4] + ".SAFE")
 
         Utils.unzip_data_to_dir(safe_file, geotiff_output_path, direct = True)
 
@@ -39,8 +39,7 @@ class TiffGenerator(object):
         shutil.rmtree(safe_unzip_dir)
         shutil.rmtree(output_subdirectory)
 
-        #TEMPORARY WORKAROUND 
-        os.remove(safe_file)
+        os.remove(safe_file)    #somehow necessary
 
 
     def generate_all_bands(unprocessed_band, granule, output_subdirectory, newout):
@@ -79,8 +78,8 @@ class TiffGenerator(object):
             list(bands.values()),
             separate=True,
             resolution="user",
-            xRes=20,
-            yRes=20,
+            xRes=10,
+            yRes=10,
         )
 
         for i, band_name in enumerate(bands, start=1):
