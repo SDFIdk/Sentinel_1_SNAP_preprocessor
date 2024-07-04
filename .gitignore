@@ -13,8 +13,6 @@ COPIES OF TEST DATA DONT DELETE/
 *.tif
 *.png
 *.cpg
-*.dbf
-*.prj
 *.qmd
 *.shp
 *.shz
@@ -23,3 +21,5 @@ COPIES OF TEST DATA DONT DELETE/
 *.7z
 *.aux.xml
 *myGraph.xml
+
+metadata.xml
