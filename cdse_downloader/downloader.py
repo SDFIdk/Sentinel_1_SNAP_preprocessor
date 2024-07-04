@@ -126,7 +126,7 @@ class Downloader:
                 output,
                 {
                     "concurrency": self.concurrency,
-                    #"monitor": StatusMonitor(),
+                    "monitor": StatusMonitor(),
                     "credentials": Credentials(),
                     "logger": StdLogger()
                 },
