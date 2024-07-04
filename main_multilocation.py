@@ -2,7 +2,7 @@ from pre_process_manager import PreProcessor
 from osgeo import gdal  # for some reason it crashes if imported in other modules????
 
 # #CDSE constants
-# concurrency = 4     #CDSE allows for max 4 concurrencies unless you got a special account
+# concurrency = 4     #CDSE allows for max 4 concurrencies unless you have a special account
 
 # #Sentinel-1 constants
 # threads = 1
@@ -14,12 +14,11 @@ from osgeo import gdal  # for some reason it crashes if imported in other module
 # max_cloud_pct = 40 #Fraction agreed upon with GEUS
 # max_empty = 80
 
-result_dir = "whole_dk_mosaic"
-pre_process_graph = "sentinel_1/snap_graphs/preprocessing_workflow_2023_incidence_geotiff.xml"
-# pre_process_graph = "sentinel_1/snap_graphs/safe_to_geotiff.xml"
+result_dir = "refactor_test"
+pre_process_graph = "sentinel_1/snap_graphs/sigma0_incidence.xml"
 # gpt_exe = 'C:/Users/b307579/AppData/Local/snap/bin/gpt.exe'
-# gpt_exe = 'C:/Users/b307579/AppData/Local/Programs/snap10/bin/gpt.exe'
-gpt_exe = 'C:/Users/b025527/AppData/Local/snap/bin/gpt.exe'
+gpt_exe = 'C:/Users/b307579/AppData/Local/Programs/snap10/bin/gpt.exe'
+# gpt_exe = 'C:/Users/b025527/AppData/Local/snap/bin/gpt.exe'
 
 location_list = [
     # ('J:/javej/geus_total_rerun/holstebro_2015/', "shapes/holstebro/POLYGON.shp", "2015-11-20", "2015-12-13"),
@@ -31,9 +30,9 @@ location_list = [
     # ('J:/javej/geus_total_rerun/sneum_2024/', "shapes/sneum_aa/POLYGON.shp", "2024-01-11", "2024-01-25"),
     # ('J:/javej/geus_total_rerun/varde_2024/', "shapes/varde/POLYGON.shp", "2023-01-01", "2024-02-01"),
 
-    ('download_test_s2', "shapes/dk_single_poly/POLYGON.shp", "2024-01-10", "2024-01-12"),
     # ('J:/javej/alling_aa_bst/', "shapes/alling_aa/POLYGON.shp", "2023-10-18", "2023-11-10"),
 
+    ('refactor_test', "shapes/bornholm/POLYGON.shp", "2024-06-01", "2024-07-01"),
     ]
 
 for location_data in location_list:
@@ -41,16 +40,15 @@ for location_data in location_list:
 
     pre_processor = PreProcessor(
         threads = 1,
-        working_dir=working_dir,
-        crs="EPSG:25832",
+        working_dir="working_dir/" + working_dir,
         shape=shape,
         start_date=start_date,
         end_date=end_date,
         pre_process_graph=pre_process_graph,
         max_cloud_pct=80,
-        result_dir=result_dir,
+        result_dir='results/' + result_dir,
         gpt_exe=gpt_exe,
-        mosaic_orbits = True,
-        # clip_to_shape = True
+        # mosaic_orbits = True,
+        clip_to_shape = True
     )
     pre_processor.start_workflow()
