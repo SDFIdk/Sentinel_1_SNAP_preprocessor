@@ -17,7 +17,7 @@ between operations
 #given that split_polarization requires data for each band also, the function should then also
 # have a second dict which stores band data??? Order, Name, Polarization VV/VH, Calibration Y/N, Incidence Y/N
 
-class ExtractMetadata:
+class ExtractSNAPMetadata:
     def __init__(self, input_file):
         self.input_file = input_file
         self.metadata_dict = {}
@@ -55,6 +55,9 @@ class ExtractMetadata:
                 self.metadata_dict['orbital_direction'] = "ASC"
             elif orbital_direction == "DESCENDING":
                 self.metadata_dict['orbital_direction'] = "DSC"
+            else:
+                print('## Error in orbital direction!')
+                sys.exit()
 
     def get_band_info(self):
 
@@ -93,7 +96,6 @@ class ExtractMetadata:
         """
         with rio.open(self.input_file, 'r+') as src:
             src.update_tags(**self.metadata_dict)
-            print(src.tags())
 
     def run(self):
         self.get_snap_xml()
@@ -111,7 +113,8 @@ class UpdataMetadata:
         with rio.open(input_file, 'r') as src:
             return src.tags()
 
-    def paste_metadata(self, input_file,  metadata):
+    def paste_metadata(input_file,  metadata):
+        # print(metadata)
         if not input_file: return
         if not isinstance(input_file, list): 
             input_file = [input_file]
@@ -120,10 +123,22 @@ class UpdataMetadata:
             with rio.open(geotiff, 'r+') as dst:
                 dst.update_tags(**metadata)
 
-# if __name__ == '__main__':
-#     import glob
-#     files = glob.glob('TEST_DATA/sentinel_1/geotiff/*.tif')
-#     print(files)
+class ExtractMetadata:
+    def extract_from_metadata(input_file, tag):
+        with rio.open(input_file, 'r') as src:
+            metadata = src.tags()[tag]
+        return metadata
 
-#     for f in files:
-#         ExtractMetadata(f).run()
+if __name__ == '__main__':
+    import glob
+    files = glob.glob('TEST_DATA/sentinel_1/geotiff/*.tif')
+    print(files)
+
+    for f in files:
+        with rio.open(f, 'r') as src:
+            print(src.tags())
+
+        ExtractSNAPMetadata(f).run()
+
+        with rio.open(f, 'r') as src:
+            print(src.tags())

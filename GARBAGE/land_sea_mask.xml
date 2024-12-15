@@ -1,4 +1,4 @@
-<graph id="Graph">
+sentinel_1/snap_graphs/land_sea_mask.xml sentinel_1/snap_graphs/myGraph.xml sentinel_1/snap_graphs/preprocessing_workflow_2023_band_split.xml sentinel_1/snap_graphs/preprocessing_workflow_2023_incidence.xml sentinel_1/snap_graphs/preprocessing_workflow_2023_lsm.xml sentinel_1/snap_graphs/preprocessing_workflow_2023_no_cal_incidence_geotiff.xml sentinel_1/snap_graphs/preprocessing_workflow_2023_no_cal_incidence.xml sentinel_1/snap_graphs/preprocessing_workflow_2023_no_cal.xml sentinel_1/snap_graphs/preprocessing_workflow_2023.xml sentinel_1/snap_graphs/safe_to_geotiff.xml sentinel_1/snap_graphs/small_val_graph.xml sentinel_1/snap_graphs/test_graph.xml<graph id="Graph">
   <version>1.0</version>
   <node id="Read">
     <operator>Read</operator>

@@ -5,6 +5,7 @@ output/
 shapes/
 tmp
 tmp*
+COPIES OF TEST DATA DONT DELETE/
 
 *.zip
 !shapes/landpolygon_1000.zip
@@ -12,8 +13,6 @@ tmp*
 *.tif
 *.png
 *.cpg
-*.dbf
-*.prj
 *.qmd
 *.shp
 *.shz
@@ -22,3 +21,5 @@ tmp*
 *.7z
 *.aux.xml
 *myGraph.xml
+
+metadata.xml

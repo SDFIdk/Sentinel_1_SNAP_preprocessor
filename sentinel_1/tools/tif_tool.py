@@ -1,8 +1,6 @@
 from concurrent.futures import ProcessPoolExecutor, wait
 from sentinel_1.utils import Utils
 from sentinel_1.metadata_utils import UpdataMetadata
-import rasterio as rio
-
 
 class TifTool:
     """

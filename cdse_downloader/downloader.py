@@ -10,6 +10,35 @@ import os
 from datetime import datetime
 from collections import Counter
 
+class StdLogger:
+    """
+    A logger that logs messages to stdout.
+    """
+
+    def debug(self, msg, *args, **kwargs):
+        """
+        Log a debug message to stdout.
+        """
+        print(f"DEBUG: {msg.format(*args, **kwargs)}")
+
+    def error(self, msg, *args, **kwargs):
+        """
+        Log an error message to stdout.
+        """
+        print(f"ERROR: {msg.format(*args, **kwargs)}")
+
+    def info(self, msg, *args, **kwargs):
+        """
+        Log an info message to stdout.
+        """
+        print(f"INFO: {msg.format(*args, **kwargs)}")
+
+    def warning(self, msg, *args, **kwargs):
+        """
+        Log a warning message to stdout.
+        """
+        print(f"WARNING: {msg.format(*args, **kwargs)}")
+
 class Downloader:
     @property
     def sentinel_1_safe_dir(self):
@@ -17,9 +46,6 @@ class Downloader:
 
     @property
     def sentinel_2_safe_dir(self):
-        # return os.path.join(self.working_dir, "sentinel_2", "safe")
-
-        #TEMPORARY WORKAROUND
         return os.path.join("sentinel_2_temp_dir/", "sentinel_2", "safe")        
 
     def __init__(self, **kwargs):
@@ -42,6 +68,7 @@ class Downloader:
         Path(self.sentinel_2_safe_dir).mkdir(parents=True, exist_ok=True)
 
     def download_sentinel_1(self):
+        return
         features = query_features(
             "Sentinel1",
             {
@@ -70,6 +97,7 @@ class Downloader:
         Utils.safer_remove(self.tmp_shape_dir)
 
     def download_sentinel_2(self):
+        return
         features = query_features(
             "Sentinel2",
             {
@@ -99,6 +127,7 @@ class Downloader:
                     "concurrency": self.concurrency,
                     "monitor": StatusMonitor(),
                     "credentials": Credentials(),
+                    "logger": StdLogger()
                 },
             )
         )

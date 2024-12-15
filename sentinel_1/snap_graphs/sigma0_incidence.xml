@@ -94,8 +94,8 @@
       <saveDEM>false</saveDEM>
       <saveLatLon>false</saveLatLon>
       <saveIncidenceAngleFromEllipsoid>true</saveIncidenceAngleFromEllipsoid>
-      <saveLocalIncidenceAngle>true</saveLocalIncidenceAngle>
-      <saveProjectedLocalIncidenceAngle>true</saveProjectedLocalIncidenceAngle>
+      <saveLocalIncidenceAngle>false</saveLocalIncidenceAngle>
+      <saveProjectedLocalIncidenceAngle>false</saveProjectedLocalIncidenceAngle>
       <saveSelectedSourceBand>true</saveSelectedSourceBand>
       <saveLayoverShadowMask>false</saveLayoverShadowMask>
       <outputComplex>false</outputComplex>
@@ -116,7 +116,7 @@
     </sources>
     <parameters class="com.bc.ceres.binding.dom.XppDomElement">
       <file>${outputSafeFile}</file>
-      <formatName>NetCDF4-CF</formatName>
+      <formatName>GeoTIFF-BigTIFF</formatName>
     </parameters>
   </node>
   <applicationData id="Presentation">
